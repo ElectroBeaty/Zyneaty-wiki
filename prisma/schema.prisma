@@ -1,0 +1,25 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Submission {
+  id         Int      @id @default(autoincrement())
+
+  title      String
+  category   String
+  people     String
+  story      String
+  whyFunny   String
+  usage      String
+
+  authorId   String
+  authorName String
+
+  approved   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}

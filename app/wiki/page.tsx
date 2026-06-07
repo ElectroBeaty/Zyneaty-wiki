@@ -30,13 +30,9 @@ export default function WikiPage() {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
-      <section className="mx-auto max-w-6xl px-6 py-14">
-        <Link href="/" className="text-sm text-zinc-400 hover:text-white">
-          ← Zurück zur Startseite
-        </Link>
+      <section className="mx-auto max-w-6xl px-6 pt-6 pb-14">
 
-        <div className="mt-10">
-          <div className="text-5xl">☯</div>
+        <div>
           <h1 className="mt-4 text-5xl font-black tracking-tight">Wiki</h1>
           <p className="mt-4 max-w-2xl text-lg text-zinc-300">
             Alle Insider, Running Gags und Server-Legenden an einem Ort.

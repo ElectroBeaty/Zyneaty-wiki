@@ -19,14 +19,10 @@ export default async function WikiEntryPage({
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#ffffff1f,transparent_30%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
-      <article className="mx-auto max-w-4xl px-6 py-14">
-        <Link href="/wiki" className="text-sm text-zinc-400 hover:text-white">
-          ← Zurück zum Wiki
-        </Link>
 
-        <div className="mt-10 rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 shadow-2xl shadow-black/30">
-          <div className="text-5xl">☯</div>
+      <article className="mx-auto max-w-4xl px-6 pt-8 pb-14">
 
+        <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 shadow-2xl shadow-black/30">
           <div className="mt-6">
             <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-zinc-300">
               {entry.category}
