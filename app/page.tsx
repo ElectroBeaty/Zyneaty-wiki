@@ -1,6 +1,10 @@
 import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession(authOptions);
+
   return (
     <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,#ffffff22,transparent_30%),linear-gradient(135deg,#050505,#18181b,#050505)] text-white">
       <section className="mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-6 py-16">
@@ -20,20 +24,37 @@ export default function Home() {
         </p>
 
         <div className="mt-10 flex flex-wrap gap-4">
-          <Link
-            href="/wiki"
-            className="rounded-full bg-white px-6 py-3 font-semibold text-black transition hover:scale-105 hover:bg-zinc-200"
-          >
-            Wiki öffnen
-          </Link>
+          {session?.user ? (
+            <>
+              <Link
+                href="/wiki"
+                className="rounded-full bg-white px-6 py-3 font-semibold text-black transition hover:scale-105 hover:bg-zinc-200"
+              >
+                Wiki öffnen
+              </Link>
 
-          <Link
-            href="/wiki/marek-incident"
-            className="rounded-full border border-white/20 px-6 py-3 font-semibold text-white transition hover:border-white hover:bg-white/10"
-          >
-            Erster Insider
-          </Link>
+              <Link
+  href="/api/auth/signout"
+  className="rounded-full border border-white/20 px-6 py-3 font-semibold text-white transition hover:border-white hover:bg-white/10"
+>
+  Abmelden
+</Link>
+            </>
+          ) : (
+            <Link
+  href="/api/auth/signin/discord"
+  className="rounded-full bg-white px-6 py-3 font-semibold text-black transition hover:scale-105 hover:bg-zinc-200"
+>
+  Mit Discord anmelden
+</Link>
+          )}
         </div>
+
+        {session?.user && (
+          <p className="mt-6 text-sm text-zinc-400">
+            Angemeldet als {session.user.name}
+          </p>
+        )}
       </section>
     </main>
   );
