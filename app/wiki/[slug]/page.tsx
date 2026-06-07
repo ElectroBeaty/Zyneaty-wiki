@@ -60,13 +60,14 @@ export default async function WikiEntryPage({
             <h2 className="text-2xl font-bold">Beteiligte</h2>
             <div className="mt-4 flex flex-wrap gap-2">
               {entry.people.map((person) => (
-                <span
-                  key={person}
-                  className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-black"
-                >
-                  {person}
-                </span>
-              ))}
+  <Link
+    key={person}
+    href={`/people/${person.toLowerCase()}`}
+    className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-black transition hover:scale-105 hover:bg-zinc-200"
+  >
+    {person}
+  </Link>
+))}
             </div>
           </section>
         )}
