@@ -41,6 +41,19 @@ export const authOptions = {
 
       return true;
     },
+
+    async jwt({ token, profile }: any) {
+      if (profile?.id) {
+        token.discordId = profile.id;
+      }
+
+      return token;
+    },
+
+    async session({ session, token }: any) {
+      session.user.id = token.discordId;
+      return session;
+    },
   },
 };
 

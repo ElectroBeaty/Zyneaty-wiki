@@ -31,16 +31,34 @@ export default async function TopBar() {
                 Einreichen
               </Link>
 
-              <span className="hidden text-zinc-400 md:inline">
-                Eingeloggt als {session.user.name}
-              </span>
+              {session.user.id === process.env.ADMIN_DISCORD_ID && (
+  <Link
+    href="/admin/submissions"
+    className="text-zinc-300 hover:text-white"
+  >
+    Admin
+  </Link>
+)}
 
-              <Link
-                href="/api/auth/signout"
-                className="rounded-full border border-white/20 px-5 py-2 text-white transition hover:border-white hover:bg-white/10"
-              >
-                Abmelden
-              </Link>
+              <div className="hidden items-center gap-2 text-zinc-400 md:flex">
+  {session.user.image && (
+    <img
+      src={session.user.image}
+      alt=""
+      className="h-7 w-7 rounded-full border border-white/10"
+    />
+  )}
+
+  <span>Eingeloggt als {session.user.name}</span>
+</div>
+
+<Link
+  href="/logout"
+  className="rounded-full border border-white/20 px-5 py-2 text-white transition hover:border-white hover:bg-white/10"
+>
+  Abmelden
+</Link>
+
             </>
           ) : (
             <Link

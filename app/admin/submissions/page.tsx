@@ -1,34 +1,87 @@
-import fs from "fs/promises";
-import path from "path";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
+import { supabase } from "@/lib/supabase";
 import { approveSubmission, deleteSubmission } from "./actions";
 
 type Submission = {
   id: string;
   title: string;
   category: string;
-  people: string;
+  people: string | null;
   story: string;
-  whyFunny: string;
-  usage: string;
-  authorName: string;
-  createdAt: string;
+  why_funny: string;
+  usage: string | null;
+  author_name: string;
+  created_at: string;
   approved: boolean;
 };
 
-async function getSubmissions(): Promise<Submission[]> {
-  const filePath = path.join(process.cwd(), "data", "submissions.json");
+function splitPeople(value: string | null) {
+  if (!value) return [];
 
-  try {
-    const raw = await fs.readFile(filePath, "utf-8");
-    return JSON.parse(raw);
-  } catch {
-    return [];
+  return value
+    .split(",")
+    .map((person) => person.trim())
+    .filter(Boolean);
+}
+
+async function getSubmissions(): Promise<Submission[]> {
+  const { data, error } = await supabase
+    .from("submissions")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    throw new Error(error.message);
   }
+
+  return data ?? [];
 }
 
 export default async function SubmissionsPage() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user || session.user.id !== process.env.ADMIN_DISCORD_ID) {
+    redirect("/denied");
+  }
+
   const submissions = await getSubmissions();
+
+  const openSubmissions = submissions.filter((item) => !item.approved);
+  const approvedSubmissions = submissions.filter((item) => item.approved);
+
+  const people = new Set(
+    approvedSubmissions.flatMap((item) => splitPeople(item.people))
+  );
+
+  const categories = new Set(
+    approvedSubmissions.map((item) => item.category)
+  );
+
+  const stats = [
+    {
+      label: "Offen",
+      value: openSubmissions.length,
+      text: "wartende Vorschläge",
+    },
+    {
+      label: "Freigegeben",
+      value: approvedSubmissions.length,
+      text: "sichtbare Wiki-Einträge",
+    },
+    {
+      label: "Personen",
+      value: people.size,
+      text: "beteiligte Namen",
+    },
+    {
+      label: "Typen",
+      value: categories.size,
+      text: "Eintrag / Zitat",
+    },
+  ];
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
@@ -38,77 +91,106 @@ export default async function SubmissionsPage() {
         </Link>
 
         <h1 className="mt-8 text-5xl font-black tracking-tight">
-          Eingereichte Vorschläge
+          Admin Dashboard
         </h1>
 
         <p className="mt-4 text-zinc-300">
-          Hier landen alle Insider, die von Servermitgliedern vorgeschlagen
-          wurden.
+          Hier prüfst du Vorschläge, gibst Einträge frei und behältst den
+          Überblick über die Zyneaty Wiki.
         </p>
 
-        <div className="mt-10 space-y-5">
-          {submissions.length === 0 && (
-            <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-zinc-400">
-              Noch keine Vorschläge vorhanden.
-            </div>
-          )}
-
-          {submissions.map((submission) => (
-            <article
-              key={submission.id}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20"
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/20"
             >
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-zinc-300">
-                  {submission.category}
-                </span>
+              <div className="text-4xl font-black">{stat.value}</div>
+              <div className="mt-2 text-lg font-bold">{stat.label}</div>
+              <p className="mt-1 text-sm text-zinc-400">{stat.text}</p>
+            </div>
+          ))}
+        </div>
 
-                <span className="text-sm text-zinc-500">
-                  Eingereicht von {submission.authorName}
-                </span>
+        <div className="mt-12">
+          <h2 className="text-3xl font-black tracking-tight">
+            Offene Vorschläge
+          </h2>
 
-                <span className="text-sm text-zinc-500">
-                  {new Date(submission.createdAt).toLocaleString("de-DE")}
-                </span>
+          <div className="mt-6 space-y-5">
+            {openSubmissions.length === 0 && (
+              <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-zinc-400">
+                Keine offenen Vorschläge.
               </div>
+            )}
 
-              <h2 className="mt-5 text-3xl font-black">{submission.title}</h2>
+            {openSubmissions.map((submission) => (
+              <article
+                key={submission.id}
+                className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20"
+              >
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-zinc-300">
+                    {submission.category}
+                  </span>
 
-              {submission.people && (
-                <p className="mt-3 text-zinc-400">
-                  Beteiligte: {submission.people}
-                </p>
-              )}
+                  <span className="text-sm text-zinc-500">
+                    Eingereicht von {submission.author_name}
+                  </span>
 
-              <section className="mt-6">
-                <h3 className="font-bold">Was ist passiert?</h3>
-                <p className="mt-2 text-zinc-300">{submission.story}</p>
-              </section>
+                  <span className="text-sm text-zinc-500">
+                    {new Date(submission.created_at).toLocaleString("de-DE")}
+                  </span>
+                </div>
 
-              <section className="mt-5">
-                <h3 className="font-bold">Warum ist es lustig?</h3>
-                <p className="mt-2 text-zinc-300">{submission.whyFunny}</p>
-              </section>
+                <h3 className="mt-5 text-3xl font-black">
+                  {submission.title}
+                </h3>
 
-              {submission.usage && (
-                <section className="mt-5">
-                  <h3 className="font-bold">Typische Verwendung</h3>
-                  <p className="mt-2 text-zinc-300">{submission.usage}</p>
+                {submission.people && (
+                  <p className="mt-3 text-zinc-400">
+                    Beteiligte: {submission.people}
+                  </p>
+                )}
+
+                <section className="mt-6">
+                  <h4 className="font-bold">
+                    {submission.category === "Zitat"
+                      ? "Zitat / Kontext"
+                      : "Was ist passiert?"}
+                  </h4>
+                  <p className="mt-2 text-zinc-300">{submission.story}</p>
                 </section>
-              )}
 
-              <div className="mt-6 flex flex-wrap items-center gap-3">
-                <span
-                  className={`rounded-full px-3 py-1 text-sm ${
-                    submission.approved
-                      ? "bg-green-500/20 text-green-300"
-                      : "bg-yellow-500/20 text-yellow-300"
-                  }`}
-                >
-                  {submission.approved ? "Freigegeben" : "Offen"}
-                </span>
+                <section className="mt-5">
+                  <h4 className="font-bold">
+                    {submission.category === "Zitat"
+                      ? "Warum ist es legendär?"
+                      : "Warum ist es lustig?"}
+                  </h4>
+                  <p className="mt-2 text-zinc-300">
+                    {submission.why_funny}
+                  </p>
+                </section>
 
-                {!submission.approved && (
+                {submission.usage && (
+                  <section className="mt-5">
+                    <h4 className="font-bold">
+                      {submission.category === "Zitat"
+                        ? "Kontext"
+                        : "Typische Verwendung"}
+                    </h4>
+                    <p className="mt-2 text-zinc-300">
+                      {submission.usage}
+                    </p>
+                  </section>
+                )}
+
+                <div className="mt-6 flex flex-wrap items-center gap-3">
+                  <span className="rounded-full bg-yellow-500/20 px-3 py-1 text-sm text-yellow-300">
+                    Offen
+                  </span>
+
                   <form
                     action={async () => {
                       "use server";
@@ -122,24 +204,90 @@ export default async function SubmissionsPage() {
                       Freigeben
                     </button>
                   </form>
-                )}
 
-                <form
-                  action={async () => {
-                    "use server";
-                    await deleteSubmission(submission.id);
-                  }}
-                >
-                  <button
-                    type="submit"
-                    className="rounded-full border border-red-500/20 px-3 py-1 text-sm text-red-300 transition hover:bg-red-500/10"
+                  <form
+                    action={async () => {
+                      "use server";
+                      await deleteSubmission(submission.id);
+                    }}
                   >
-                    Löschen
-                  </button>
-                </form>
+                    <button
+                      type="submit"
+                      className="rounded-full border border-red-500/20 px-3 py-1 text-sm text-red-300 transition hover:bg-red-500/10"
+                    >
+                      Löschen
+                    </button>
+                  </form>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-14">
+          <h2 className="text-3xl font-black tracking-tight">
+            Freigegebene Einträge
+          </h2>
+
+          <div className="mt-6 space-y-4">
+            {approvedSubmissions.length === 0 && (
+              <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-zinc-400">
+                Noch keine freigegebenen Einträge.
               </div>
-            </article>
-          ))}
+            )}
+
+            {approvedSubmissions.map((submission) => (
+              <div
+                key={submission.id}
+                className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/10 bg-white/[0.04] p-5"
+              >
+                <div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span className="rounded-full bg-green-500/20 px-3 py-1 text-sm text-green-300">
+                      Freigegeben
+                    </span>
+
+                    <span className="text-sm text-zinc-500">
+                      {submission.category}
+                    </span>
+                  </div>
+
+                  <h3 className="mt-3 text-xl font-bold">
+                    {submission.title}
+                  </h3>
+
+                  {submission.people && (
+                    <p className="mt-1 text-sm text-zinc-400">
+                      Beteiligte: {submission.people}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    href="/wiki"
+                    className="rounded-full border border-white/10 px-3 py-1 text-sm text-zinc-300 transition hover:bg-white/10"
+                  >
+                    Im Wiki ansehen
+                  </Link>
+
+                  <form
+                    action={async () => {
+                      "use server";
+                      await deleteSubmission(submission.id);
+                    }}
+                  >
+                    <button
+                      type="submit"
+                      className="rounded-full border border-red-500/20 px-3 py-1 text-sm text-red-300 transition hover:bg-red-500/10"
+                    >
+                      Löschen
+                    </button>
+                  </form>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </main>

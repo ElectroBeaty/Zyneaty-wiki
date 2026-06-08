@@ -1,10 +1,17 @@
 "use server";
 
-import fs from "fs/promises";
-import path from "path";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
+import { supabase } from "@/lib/supabase";
+
+function normalizePeople(value: string) {
+  return value
+    .split(/[,\s]+/)
+    .map((person) => person.trim())
+    .filter(Boolean)
+    .join(", ");
+}
 
 export async function createSubmission(formData: FormData) {
   const session = await getServerSession(authOptions);
@@ -13,25 +20,32 @@ export async function createSubmission(formData: FormData) {
     throw new Error("Nicht eingeloggt");
   }
 
-  const filePath = path.join(process.cwd(), "data", "submissions.json");
+  const title = String(formData.get("title")).trim();
 
-  const raw = await fs.readFile(filePath, "utf-8");
-  const submissions = JSON.parse(raw);
+  const { data: existing } = await supabase
+    .from("submissions")
+    .select("id")
+    .ilike("title", title)
+    .limit(1);
 
-  submissions.push({
-    id: crypto.randomUUID(),
-    title: String(formData.get("title")),
+  if (existing && existing.length > 0) {
+    redirect("/submit?error=duplicate");
+  }
+
+  const { error } = await supabase.from("submissions").insert({
+    title,
     category: String(formData.get("category")),
-    people: String(formData.get("people")),
+    people: normalizePeople(String(formData.get("people") ?? "")),
     story: String(formData.get("story")),
-    whyFunny: String(formData.get("whyFunny")),
-    usage: String(formData.get("usage")),
-    authorName: session.user.name ?? "Unknown",
-    createdAt: new Date().toISOString(),
+    why_funny: String(formData.get("whyFunny")),
+    usage: String(formData.get("usage") ?? ""),
+    author_name: session.user.name ?? "Unknown",
     approved: false,
   });
 
-  await fs.writeFile(filePath, JSON.stringify(submissions, null, 2));
+  if (error) {
+    throw new Error(error.message);
+  }
 
   redirect("/submit?success=1");
 }

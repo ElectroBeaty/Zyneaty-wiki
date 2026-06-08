@@ -1,98 +1,97 @@
-"use client";
+import { supabase } from "@/lib/supabase";
+import WikiClient from "./WikiClient";
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
-import { wikiEntries } from "@/wikiData";
+function createSlug(title: string) {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[ä]/g, "ae")
+    .replace(/[ö]/g, "oe")
+    .replace(/[ü]/g, "ue")
+    .replace(/[ß]/g, "ss")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
-const categories = ["Alle", ...new Set(wikiEntries.map((entry) => entry.category))];
+async function getApprovedSubmissions() {
+  const { data, error } = await supabase
+    .from("submissions")
+    .select("*")
+    .eq("approved", true)
+    .order("created_at", { ascending: false });
 
-export default function WikiPage() {
-  const [activeCategory, setActiveCategory] = useState("Alle");
-  const [search, setSearch] = useState("");
+  if (error) {
+    throw new Error(error.message);
+  }
 
-  const filteredEntries = useMemo(() => {
-    let entries =
-      activeCategory === "Alle"
-        ? wikiEntries
-        : wikiEntries.filter((entry) => entry.category === activeCategory);
+  return (data ?? []).map((submission) => ({
+    slug: createSlug(submission.title),
+    title: submission.title,
+    category: submission.category,
+    summary: submission.story.slice(0, 100) + "...",
+    people: submission.people
+      ? submission.people
+          .split(",")
+          .map((person: string) => person.trim())
+          .filter(Boolean)
+      : [],
+  }));
+}
 
-    if (!search.trim()) return entries;
+export default async function WikiPage() {
+  const entries = await getApprovedSubmissions();
 
-    const query = search.toLowerCase();
+  const uniquePeople = new Set(
+    entries.flatMap((entry) => entry.people)
+  );
 
-    return entries.filter(
-      (entry) =>
-        entry.title.toLowerCase().includes(query) ||
-        entry.summary.toLowerCase().includes(query) ||
-        entry.people.some((person) => person.toLowerCase().includes(query))
-    );
-  }, [activeCategory, search]);
+  const uniqueCategories = new Set(
+    entries.map((entry) => entry.category)
+  );
+
+  const stats = [
+    {
+      label: "Einträge",
+      value: entries.length,
+      text: "gesammelte Insider",
+    },
+    {
+      label: "Personen",
+      value: uniquePeople.size,
+      text: "beteiligte Legenden",
+    },
+    {
+      label: "Kategorien",
+      value: uniqueCategories.size,
+      text: "Arten von Lore",
+    },
+  ];
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
       <section className="mx-auto max-w-6xl px-6 pt-6 pb-14">
-
         <div>
           <h1 className="mt-4 text-5xl font-black tracking-tight">Wiki</h1>
+
           <p className="mt-4 max-w-2xl text-lg text-zinc-300">
             Alle Insider, Running Gags und Server-Legenden an einem Ort.
           </p>
         </div>
 
-        <div className="mt-8">
-          <input
-            type="text"
-            placeholder="Suche nach Insidern..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white outline-none transition placeholder:text-zinc-500 focus:border-white/30"
-          />
-        </div>
-
-        <div className="mt-6 flex flex-wrap gap-2">
-          {categories.map((category) => {
-            const isActive = activeCategory === category;
-
-            return (
-              <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`rounded-full border px-4 py-2 text-sm transition ${
-                  isActive
-                    ? "border-white bg-white text-black"
-                    : "border-white/10 bg-white/5 text-zinc-300 hover:border-white/30 hover:bg-white/10"
-                }`}
-              >
-                {category}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-10 grid gap-5 md:grid-cols-2">
-          {filteredEntries.map((entry) => (
-            <Link
-              key={entry.slug}
-              href={`/wiki/${entry.slug}`}
-              className="group rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          {stats.map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20"
             >
-              <div className="text-sm text-zinc-500">{entry.category}</div>
-              <h2 className="mt-3 text-2xl font-bold group-hover:text-zinc-200">
-                {entry.title}
-              </h2>
-              <p className="mt-3 text-zinc-400">{entry.summary}</p>
-              <div className="mt-6 text-sm font-semibold text-zinc-300">
-                Weiterlesen →
-              </div>
-            </Link>
+              <div className="text-4xl font-black">{stat.value}</div>
+              <div className="mt-2 text-lg font-bold">{stat.label}</div>
+              <p className="mt-1 text-sm text-zinc-400">{stat.text}</p>
+            </div>
           ))}
         </div>
 
-        {filteredEntries.length === 0 && (
-          <p className="mt-10 text-zinc-400">
-            Keine Einträge gefunden.
-          </p>
-        )}
+        <WikiClient entries={entries} />
       </section>
     </main>
   );
