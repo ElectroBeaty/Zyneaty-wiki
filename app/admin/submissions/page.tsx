@@ -16,6 +16,8 @@ type Submission = {
   author_name: string;
   created_at: string;
   approved: boolean;
+  media_url: string | null;
+  media_type: string | null;
 };
 
 function splitPeople(value: string | null) {
@@ -25,6 +27,48 @@ function splitPeople(value: string | null) {
     .split(",")
     .map((person) => person.trim())
     .filter(Boolean);
+}
+
+function MediaPreview({
+  mediaUrl,
+  mediaType,
+}: {
+  mediaUrl: string | null;
+  mediaType: string | null;
+}) {
+  if (!mediaUrl || !mediaType) return null;
+
+  return (
+    <section className="mt-6 rounded-3xl border border-white/10 bg-black/20 p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <h4 className="font-bold">Hochgeladenes Medium</h4>
+
+        <a
+          href={mediaUrl}
+          target="_blank"
+          className="text-sm text-zinc-400 underline transition hover:text-white"
+        >
+          In neuem Tab öffnen
+        </a>
+      </div>
+
+      {mediaType === "image" && (
+        <img
+          src={mediaUrl}
+          alt=""
+          className="max-h-[420px] w-full rounded-2xl object-contain"
+        />
+      )}
+
+      {mediaType === "video" && (
+        <video src={mediaUrl} controls className="w-full rounded-2xl" />
+      )}
+
+      {mediaType === "audio" && (
+        <audio src={mediaUrl} controls className="w-full" />
+      )}
+    </section>
+  );
 }
 
 async function getSubmissions(): Promise<Submission[]> {
@@ -56,9 +100,9 @@ export default async function SubmissionsPage() {
     approvedSubmissions.flatMap((item) => splitPeople(item.people))
   );
 
-  const categories = new Set(
-    approvedSubmissions.map((item) => item.category)
-  );
+  const categories = new Set(approvedSubmissions.map((item) => item.category));
+
+  const mediaCount = submissions.filter((item) => item.media_url).length;
 
   const stats = [
     {
@@ -77,9 +121,9 @@ export default async function SubmissionsPage() {
       text: "beteiligte Namen",
     },
     {
-      label: "Typen",
-      value: categories.size,
-      text: "Eintrag / Zitat",
+      label: "Medien",
+      value: mediaCount,
+      text: "Uploads insgesamt",
     },
   ];
 
@@ -134,6 +178,14 @@ export default async function SubmissionsPage() {
                     {submission.category}
                   </span>
 
+                  {submission.media_url && (
+                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-zinc-300">
+                      {submission.media_type === "image" && "📷 Bild"}
+                      {submission.media_type === "video" && "🎬 Video"}
+                      {submission.media_type === "audio" && "🎵 Audio"}
+                    </span>
+                  )}
+
                   <span className="text-sm text-zinc-500">
                     Eingereicht von {submission.author_name}
                   </span>
@@ -152,6 +204,11 @@ export default async function SubmissionsPage() {
                     Beteiligte: {submission.people}
                   </p>
                 )}
+
+                <MediaPreview
+                  mediaUrl={submission.media_url}
+                  mediaType={submission.media_type}
+                />
 
                 <section className="mt-6">
                   <h4 className="font-bold">
@@ -180,9 +237,7 @@ export default async function SubmissionsPage() {
                         ? "Kontext"
                         : "Typische Verwendung"}
                     </h4>
-                    <p className="mt-2 text-zinc-300">
-                      {submission.usage}
-                    </p>
+                    <p className="mt-2 text-zinc-300">{submission.usage}</p>
                   </section>
                 )}
 
@@ -250,6 +305,12 @@ export default async function SubmissionsPage() {
                     <span className="text-sm text-zinc-500">
                       {submission.category}
                     </span>
+
+                    {submission.media_url && (
+                      <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-400">
+                        Medium
+                      </span>
+                    )}
                   </div>
 
                   <h3 className="mt-3 text-xl font-bold">
@@ -264,6 +325,16 @@ export default async function SubmissionsPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-3">
+                  {submission.media_url && (
+                    <a
+                      href={submission.media_url}
+                      target="_blank"
+                      className="rounded-full border border-white/10 px-3 py-1 text-sm text-zinc-300 transition hover:bg-white/10"
+                    >
+                      Medium ansehen
+                    </a>
+                  )}
+
                   <Link
                     href="/wiki"
                     className="rounded-full border border-white/10 px-3 py-1 text-sm text-zinc-300 transition hover:bg-white/10"
