@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createSubmission } from "./actions";
 
 export default function SubmitForm() {
-  const [type, setType] = useState("Eintrag");
+const [type, setType] = useState("Insider");
 
   const isQuote = type === "Zitat";
 
@@ -25,7 +25,7 @@ export default function SubmitForm() {
             onChange={(e) => setType(e.target.value)}
             className="mt-2 w-full rounded-2xl border border-white/10 bg-zinc-900 p-4 text-white outline-none transition focus:border-white/30"
           >
-            <option value="Eintrag">Eintrag</option>
+            <option value="Insider">Insider</option>
             <option value="Zitat">Zitat</option>
           </select>
         </div>
