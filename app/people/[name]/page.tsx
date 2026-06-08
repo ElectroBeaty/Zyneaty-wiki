@@ -13,6 +13,10 @@ function createSlug(title: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function createSummary(text: string) {
+  return text.length > 100 ? text.slice(0, 100) + "..." : text;
+}
+
 function splitPeople(value: string | null) {
   if (!value) return [];
 
@@ -41,11 +45,17 @@ export default async function PersonPage({
     throw new Error(error.message);
   }
 
+  const { data: profile } = await supabase
+    .from("people_profiles")
+    .select("*")
+    .ilike("name", decodeURIComponent(name))
+    .maybeSingle();
+
   const entries = (data ?? []).map((entry) => ({
     slug: createSlug(entry.title),
     title: entry.title,
     category: entry.category,
-    summary: entry.story.slice(0, 100) + "...",
+    summary: createSummary(entry.story),
     people: splitPeople(entry.people),
   }));
 
@@ -54,29 +64,53 @@ export default async function PersonPage({
   );
 
   const prettyName =
+    profile?.name ??
     relatedEntries[0]?.people.find(
       (person) => person.toLowerCase() === displayName
-    ) ?? decodeURIComponent(name);
+    ) ??
+    decodeURIComponent(name);
+
+  const avatarUrl = profile?.avatar_url ?? null;
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
       <section className="mx-auto max-w-5xl px-6 pt-8 pb-16">
-        <Link href="/wiki" className="text-sm text-zinc-400 hover:text-white">
-          ← Zurück zum Wiki
+        <Link href="/people" className="text-sm text-zinc-400 hover:text-white">
+          ← Zurück zu Personen
         </Link>
 
         <div className="mt-8 rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 shadow-2xl shadow-black/30">
-          <div className="text-5xl">👤</div>
+          <div className="flex flex-wrap items-center gap-6">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt=""
+                className="h-28 w-28 rounded-full border border-white/10 object-cover shadow-2xl shadow-black/30"
+              />
+            ) : (
+              <div className="flex h-28 w-28 items-center justify-center rounded-full border border-white/10 bg-white/5 text-5xl">
+                👤
+              </div>
+            )}
 
-          <h1 className="mt-6 text-5xl font-black tracking-tight">
-            {prettyName}
-          </h1>
+            <div>
+              <h1 className="text-5xl font-black tracking-tight">
+                {prettyName}
+              </h1>
 
-          <p className="mt-4 text-lg text-zinc-300">
-            Alle Wiki-Einträge, bei denen {prettyName} beteiligt ist.
-          </p>
+              <p className="mt-4 text-lg text-zinc-300">
+                Alle Wiki-Einträge, bei denen {prettyName} beteiligt ist.
+              </p>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {profile?.discord_id && (
+                <p className="mt-2 text-sm text-zinc-500">
+                  Discord ID: {profile.discord_id}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
               <div className="text-3xl font-black">
                 {relatedEntries.length}
@@ -88,11 +122,7 @@ export default async function PersonPage({
 
             <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
               <div className="text-3xl font-black">
-                {
-                  new Set(
-                    relatedEntries.map((entry) => entry.category)
-                  ).size
-                }
+                {new Set(relatedEntries.map((entry) => entry.category)).size}
               </div>
               <div className="mt-1 text-sm text-zinc-400">
                 verschiedene Typen

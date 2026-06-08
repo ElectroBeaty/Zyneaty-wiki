@@ -37,14 +37,18 @@ export default async function PeoplePage() {
 
   const peopleMap = new Map<
     string,
-    { name: string; count: number; avatarUrl: string | null }
+    {
+      name: string;
+      count: number;
+      avatarUrl: string | null;
+      discordId: string | null;
+    }
   >();
 
   for (const entry of submissions ?? []) {
     for (const person of splitPeople(entry.people)) {
       const key = person.toLowerCase();
       const profile = profileMap.get(key);
-
       const existing = peopleMap.get(key);
 
       if (existing) {
@@ -54,6 +58,7 @@ export default async function PeoplePage() {
           name: profile?.name ?? person,
           count: 1,
           avatarUrl: profile?.avatar_url ?? null,
+          discordId: profile?.discord_id ?? null,
         });
       }
     }
@@ -109,6 +114,12 @@ export default async function PeoplePage() {
                   <h2 className="text-2xl font-black group-hover:text-zinc-200">
                     {person.name}
                   </h2>
+
+                  {person.discordId && (
+                    <p className="mt-1 text-xs text-zinc-500">
+                      Discord verknüpft
+                    </p>
+                  )}
                 </div>
               </div>
 
