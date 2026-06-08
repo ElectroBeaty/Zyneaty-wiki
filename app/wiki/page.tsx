@@ -40,6 +40,8 @@ async function getApprovedSubmissions() {
           .map((person: string) => person.trim())
           .filter(Boolean)
       : [],
+    mediaUrl: submission.media_url ?? null,
+    mediaType: submission.media_type ?? null,
   }));
 }
 
@@ -67,31 +69,21 @@ export default async function WikiPage() {
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
             <div className="text-4xl font-black">{entries.length}</div>
             <div className="mt-2 text-lg font-bold">Einträge</div>
-            <p className="mt-1 text-sm text-zinc-400">
-              gesammelte Insider
-            </p>
+            <p className="mt-1 text-sm text-zinc-400">gesammelte Insider</p>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
             <div className="text-4xl font-black">{quoteCount}</div>
             <div className="mt-2 text-lg font-bold">Zitate</div>
-            <p className="mt-1 text-sm text-zinc-400">
-              legendäre Aussagen
-            </p>
+            <p className="mt-1 text-sm text-zinc-400">legendäre Aussagen</p>
           </div>
 
           <Link
             href="/people"
             className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
           >
-            <div className="text-4xl font-black">
-              {uniquePeople.size}
-            </div>
-
-            <div className="mt-2 text-lg font-bold">
-              Personen
-            </div>
-
+            <div className="text-4xl font-black">{uniquePeople.size}</div>
+            <div className="mt-2 text-lg font-bold">Personen</div>
             <p className="mt-1 text-sm text-zinc-400">
               Beteiligte Legenden →
             </p>

@@ -9,20 +9,18 @@ type WikiEntry = {
   category: string;
   summary: string;
   people: string[];
+  mediaUrl: string | null;
+  mediaType: string | null;
 };
 
-export default function WikiClient({
-  entries,
-}: {
-  entries: WikiEntry[];
-}) {
+export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
   const [activeCategory, setActiveCategory] = useState("Alle");
   const [search, setSearch] = useState("");
 
-  const categories = [
-    "Alle",
-    ...new Set(entries.map((entry) => entry.category)),
-  ];
+  const categories = useMemo(
+    () => ["Alle", ...new Set(entries.map((entry) => entry.category))],
+    [entries]
+  );
 
   const filteredEntries = useMemo(() => {
     let result =
@@ -44,7 +42,7 @@ export default function WikiClient({
 
   return (
     <>
-      <div className="mt-8">
+      <div className="mt-10">
         <input
           type="text"
           placeholder="Suche nach Insidern..."
@@ -79,18 +77,50 @@ export default function WikiClient({
           <Link
             key={entry.slug}
             href={`/wiki/${entry.slug}`}
-            className="group rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
+            className="group overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
           >
-            <div className="text-sm text-zinc-500">{entry.category}</div>
+            {entry.mediaUrl && entry.mediaType === "image" && (
+              <img
+                src={entry.mediaUrl}
+                alt=""
+                className="h-56 w-full object-cover opacity-90 transition group-hover:opacity-100"
+              />
+            )}
 
-            <h2 className="mt-3 text-2xl font-bold group-hover:text-zinc-200">
-              {entry.title}
-            </h2>
+            {entry.mediaUrl && entry.mediaType === "video" && (
+              <div className="flex h-56 w-full items-center justify-center bg-black/40 text-5xl">
+                🎬
+              </div>
+            )}
 
-            <p className="mt-3 text-zinc-400">{entry.summary}</p>
+            {entry.mediaUrl && entry.mediaType === "audio" && (
+              <div className="flex h-56 w-full items-center justify-center bg-black/40 text-5xl">
+                🎵
+              </div>
+            )}
 
-            <div className="mt-6 text-sm font-semibold text-zinc-300">
-              Weiterlesen →
+            <div className="p-6">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm text-zinc-500">
+                  {entry.category}
+                </span>
+
+                {entry.mediaUrl && (
+                  <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-400">
+                    Medium
+                  </span>
+                )}
+              </div>
+
+              <h2 className="mt-3 text-2xl font-bold group-hover:text-zinc-200">
+                {entry.title}
+              </h2>
+
+              <p className="mt-3 text-zinc-400">{entry.summary}</p>
+
+              <div className="mt-6 text-sm font-semibold text-zinc-300">
+                Weiterlesen →
+              </div>
             </div>
           </Link>
         ))}

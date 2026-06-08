@@ -33,10 +33,7 @@ export default function SubmitForm() {
         {!isQuote ? (
           <>
             <div>
-              <label className="text-sm font-semibold text-zinc-300">
-                Titel
-              </label>
-
+              <label className="text-sm font-semibold text-zinc-300">Titel</label>
               <input
                 name="title"
                 required
@@ -46,10 +43,7 @@ export default function SubmitForm() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-zinc-300">
-                Beteiligte
-              </label>
-
+              <label className="text-sm font-semibold text-zinc-300">Beteiligte</label>
               <input
                 name="people"
                 placeholder="z.B. Marek Amoun Dave"
@@ -58,10 +52,7 @@ export default function SubmitForm() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-zinc-300">
-                Was ist passiert?
-              </label>
-
+              <label className="text-sm font-semibold text-zinc-300">Was ist passiert?</label>
               <textarea
                 name="story"
                 required
@@ -71,10 +62,7 @@ export default function SubmitForm() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-zinc-300">
-                Warum ist es lustig?
-              </label>
-
+              <label className="text-sm font-semibold text-zinc-300">Warum ist es lustig?</label>
               <textarea
                 name="whyFunny"
                 required
@@ -84,10 +72,7 @@ export default function SubmitForm() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-zinc-300">
-                Typische Verwendung
-              </label>
-
+              <label className="text-sm font-semibold text-zinc-300">Typische Verwendung</label>
               <textarea
                 name="usage"
                 placeholder="z.B. Wird gesagt, wenn jemand wieder komplett lost ist."
@@ -100,10 +85,7 @@ export default function SubmitForm() {
             <input type="hidden" name="title" value="Zitat" />
 
             <div>
-              <label className="text-sm font-semibold text-zinc-300">
-                Zitat
-              </label>
-
+              <label className="text-sm font-semibold text-zinc-300">Zitat</label>
               <textarea
                 name="story"
                 required
@@ -113,10 +95,7 @@ export default function SubmitForm() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-zinc-300">
-                Wer war beteiligt?
-              </label>
-
+              <label className="text-sm font-semibold text-zinc-300">Wer war beteiligt?</label>
               <input
                 name="people"
                 required
@@ -126,10 +105,7 @@ export default function SubmitForm() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-zinc-300">
-                In welchem Kontext?
-              </label>
-
+              <label className="text-sm font-semibold text-zinc-300">In welchem Kontext?</label>
               <textarea
                 name="usage"
                 placeholder="z.B. Während einem Call, nachdem ..."
@@ -138,10 +114,7 @@ export default function SubmitForm() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-zinc-300">
-                Warum ist es legendär?
-              </label>
-
+              <label className="text-sm font-semibold text-zinc-300">Warum ist es legendär?</label>
               <textarea
                 name="whyFunny"
                 required
@@ -164,9 +137,11 @@ export default function SubmitForm() {
             className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-zinc-300 file:mr-4 file:rounded-full file:border-0 file:bg-white file:px-4 file:py-2 file:font-semibold file:text-black hover:file:bg-zinc-200"
           />
 
-          <p className="mt-2 text-sm text-zinc-500">
-            Optional: Screenshot, Clip oder Audio-Mitschnitt hochladen.
-          </p>
+          <div className="mt-2 text-sm text-zinc-500">
+            📷 Bilder • 🎬 Videos • 🎵 Audio
+            <br />
+            Maximale Dateigröße: 100 MB
+          </div>
         </div>
       </div>
 
