@@ -1,4 +1,3 @@
-import { wikiEntries } from "@/wikiData";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { getServerSession } from "next-auth";
@@ -17,7 +16,16 @@ function createSlug(title: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-async function getApprovedSubmissions() {
+function splitPeople(value: string | null) {
+  if (!value) return [];
+
+  return value
+    .split(",")
+    .map((person) => person.trim())
+    .filter(Boolean);
+}
+
+async function getApprovedEntries() {
   const { data, error } = await supabase
     .from("submissions")
     .select("*")
@@ -27,20 +35,15 @@ async function getApprovedSubmissions() {
     throw new Error(error.message);
   }
 
-  return (data ?? []).map((submission) => ({
-    id: submission.id,
-    source: "supabase" as const,
-    slug: createSlug(submission.title),
-    title: submission.title,
-    category: submission.category,
-    summary: submission.story.slice(0, 100) + "...",
-    people: submission.people
-      ? submission.people.split(",").map((person: string) => person.trim())
-      : [],
-    story: submission.story,
-    whyFunny: submission.why_funny,
-    usage: submission.usage ?? "",
-    quote: "",
+  return (data ?? []).map((entry) => ({
+    id: entry.id,
+    slug: createSlug(entry.title),
+    title: entry.title,
+    category: entry.category,
+    people: splitPeople(entry.people),
+    story: entry.story,
+    whyFunny: entry.why_funny,
+    usage: entry.usage ?? "",
   }));
 }
 
@@ -52,17 +55,8 @@ export default async function WikiEntryPage({
   const { slug } = await params;
   const session = await getServerSession(authOptions);
 
-  const approvedEntries = await getApprovedSubmissions();
-
-  const staticEntries = wikiEntries.map((entry) => ({
-    ...entry,
-    id: null,
-    source: "static" as const,
-  }));
-
-  const allEntries = [...approvedEntries, ...staticEntries];
-
-  const entry = allEntries.find((entry) => entry.slug === slug);
+  const entries = await getApprovedEntries();
+  const entry = entries.find((entry) => entry.slug === slug);
 
   const isAdmin = session?.user?.id === process.env.ADMIN_DISCORD_ID;
 
@@ -73,6 +67,8 @@ export default async function WikiEntryPage({
       </main>
     );
   }
+
+  const isQuote = entry.category === "Zitat";
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#ffffff1f,transparent_30%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
@@ -88,57 +84,63 @@ export default async function WikiEntryPage({
             {entry.title}
           </h1>
 
-          {isAdmin && entry.source === "supabase" && entry.id && (
-  <div className="mt-8 flex flex-wrap gap-3">
-    <Link
-      href={`/admin/wiki/${entry.id}/edit`}
-      className="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-    >
-      Eintrag bearbeiten
-    </Link>
+          {isAdmin && (
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                href={`/admin/wiki/${entry.id}/edit`}
+                className="rounded-full border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
+              >
+                Eintrag bearbeiten
+              </Link>
 
-    <form
-      action={async () => {
-        "use server";
-        await deleteWikiEntry(entry.id!);
-      }}
-    >
-      <button
-        type="submit"
-        className="rounded-full border border-red-500/20 px-4 py-2 text-sm font-semibold text-red-300 transition hover:bg-red-500/10"
-      >
-        Eintrag löschen
-      </button>
-    </form>
-  </div>
-)}
-
-          {isAdmin && entry.source === "static" && (
-            <p className="mt-6 text-sm text-zinc-500">
-              Dieser Eintrag ist noch fest im Code gespeichert und kann hier
-              nicht gelöscht werden.
-            </p>
+              <form
+                action={async () => {
+                  "use server";
+                  await deleteWikiEntry(entry.id);
+                }}
+              >
+                <button
+                  type="submit"
+                  className="rounded-full border border-red-500/20 px-4 py-2 text-sm font-semibold text-red-300 transition hover:bg-red-500/10"
+                >
+                  Eintrag löschen
+                </button>
+              </form>
+            </div>
           )}
         </div>
 
         <section className="mt-10 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
-          <h2 className="text-2xl font-bold">Was ist passiert?</h2>
+          <h2 className="text-2xl font-bold">
+            {isQuote ? "Zitat" : "Was ist passiert?"}
+          </h2>
+
           <p className="mt-3 leading-7 text-zinc-300">{entry.story}</p>
         </section>
 
         <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
-          <h2 className="text-2xl font-bold">Warum ist es lustig?</h2>
+          <h2 className="text-2xl font-bold">
+            {isQuote ? "Warum ist es legendär?" : "Warum ist es lustig?"}
+          </h2>
+
           <p className="mt-3 leading-7 text-zinc-300">{entry.whyFunny}</p>
         </section>
 
-        <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
-          <h2 className="text-2xl font-bold">Typische Verwendung</h2>
-          <p className="mt-3 leading-7 text-zinc-300">{entry.usage}</p>
-        </section>
+        {entry.usage && (
+          <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+            <h2 className="text-2xl font-bold">
+              {isQuote ? "Kontext" : "Typische Verwendung"}
+            </h2>
+
+            <p className="mt-3 leading-7 text-zinc-300">{entry.usage}</p>
+          </section>
+        )}
 
         {entry.people.length > 0 && (
           <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
-            <h2 className="text-2xl font-bold">Beteiligte</h2>
+            <h2 className="text-2xl font-bold">
+              {isQuote ? "Gesagt von" : "Beteiligte"}
+            </h2>
 
             <div className="mt-4 flex flex-wrap gap-2">
               {entry.people.map((person) => (
@@ -151,16 +153,6 @@ export default async function WikiEntryPage({
                 </Link>
               ))}
             </div>
-          </section>
-        )}
-
-        {entry.quote && (
-          <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
-            <h2 className="text-2xl font-bold">Legendäres Zitat</h2>
-
-            <blockquote className="mt-4 border-l-4 border-white/40 pl-4 text-lg italic text-zinc-300">
-              “{entry.quote}”
-            </blockquote>
           </section>
         )}
       </article>
