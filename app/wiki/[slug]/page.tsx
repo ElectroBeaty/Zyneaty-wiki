@@ -47,6 +47,34 @@ async function getApprovedEntries() {
   }));
 }
 
+function PeopleLinks({
+  people,
+  label,
+}: {
+  people: string[];
+  label: string;
+}) {
+  if (people.length === 0) return null;
+
+  return (
+    <div className="mt-5">
+      <div className="text-sm font-semibold text-zinc-400">{label}</div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        {people.map((person) => (
+          <Link
+            key={person}
+            href={`/people/${person.toLowerCase()}`}
+            className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-black transition hover:scale-105 hover:bg-zinc-200"
+          >
+            {person}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default async function WikiEntryPage({
   params,
 }: {
@@ -84,6 +112,17 @@ export default async function WikiEntryPage({
             {entry.title}
           </h1>
 
+          {isQuote && (
+            <blockquote className="mt-6 rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-2xl font-semibold leading-relaxed text-zinc-100">
+              “{entry.story}”
+            </blockquote>
+          )}
+
+          <PeopleLinks
+            people={entry.people}
+            label={isQuote ? "Gesagt von" : "Beteiligte"}
+          />
+
           {isAdmin && (
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
@@ -110,13 +149,12 @@ export default async function WikiEntryPage({
           )}
         </div>
 
-        <section className="mt-10 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
-          <h2 className="text-2xl font-bold">
-            {isQuote ? "Zitat" : "Was ist passiert?"}
-          </h2>
-
-          <p className="mt-3 leading-7 text-zinc-300">{entry.story}</p>
-        </section>
+        {!isQuote && (
+          <section className="mt-10 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+            <h2 className="text-2xl font-bold">Was ist passiert?</h2>
+            <p className="mt-3 leading-7 text-zinc-300">{entry.story}</p>
+          </section>
+        )}
 
         <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
           <h2 className="text-2xl font-bold">
@@ -133,26 +171,6 @@ export default async function WikiEntryPage({
             </h2>
 
             <p className="mt-3 leading-7 text-zinc-300">{entry.usage}</p>
-          </section>
-        )}
-
-        {entry.people.length > 0 && (
-          <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
-            <h2 className="text-2xl font-bold">
-              {isQuote ? "Gesagt von" : "Beteiligte"}
-            </h2>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              {entry.people.map((person) => (
-                <Link
-                  key={person}
-                  href={`/people/${person.toLowerCase()}`}
-                  className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-black transition hover:scale-105 hover:bg-zinc-200"
-                >
-                  {person}
-                </Link>
-              ))}
-            </div>
           </section>
         )}
       </article>

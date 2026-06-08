@@ -5,6 +5,14 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { supabase } from "@/lib/supabase";
 
+function normalizePeople(value: string) {
+  return value
+    .split(/[,\s]+/)
+    .map((person) => person.trim())
+    .filter(Boolean)
+    .join(", ");
+}
+
 export async function updateWikiEntry(id: string, formData: FormData) {
   const session = await getServerSession(authOptions);
 
@@ -15,9 +23,9 @@ export async function updateWikiEntry(id: string, formData: FormData) {
   const { error } = await supabase
     .from("submissions")
     .update({
-      title: String(formData.get("title")),
+      title: String(formData.get("title")).trim(),
       category: String(formData.get("category")),
-      people: String(formData.get("people") ?? ""),
+      people: normalizePeople(String(formData.get("people") ?? "")),
       story: String(formData.get("story")),
       why_funny: String(formData.get("whyFunny")),
       usage: String(formData.get("usage") ?? ""),
