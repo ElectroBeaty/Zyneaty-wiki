@@ -55,6 +55,7 @@ export default async function EditWikiEntryPage({
             "use server";
             await updateWikiEntry(id, formData);
           }}
+          encType="multipart/form-data"
           className="mt-10 rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 shadow-2xl shadow-black/30"
         >
           <div className="space-y-6">
@@ -73,7 +74,7 @@ export default async function EditWikiEntryPage({
 
             <div>
               <label className="text-sm font-semibold text-zinc-300">
-                Kategorie
+                Typ
               </label>
 
               <select
@@ -82,10 +83,8 @@ export default async function EditWikiEntryPage({
                 defaultValue={entry.category}
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-zinc-900 p-4 text-white outline-none transition focus:border-white/30"
               >
-                <option value="Insider">Insider</option>
-                <option value="Lore">Lore</option>
+                <option value="Eintrag">Eintrag</option>
                 <option value="Zitat">Zitat</option>
-                <option value="Event">Event</option>
               </select>
             </div>
 
@@ -97,13 +96,14 @@ export default async function EditWikiEntryPage({
               <input
                 name="people"
                 defaultValue={entry.people ?? ""}
+                placeholder="z.B. Marek Tom Dave"
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-white placeholder:text-zinc-500 outline-none transition focus:border-white/30"
               />
             </div>
 
             <div>
               <label className="text-sm font-semibold text-zinc-300">
-                Was ist passiert?
+                Inhalt / Story / Zitat
               </label>
 
               <textarea
@@ -116,7 +116,7 @@ export default async function EditWikiEntryPage({
 
             <div>
               <label className="text-sm font-semibold text-zinc-300">
-                Warum ist es lustig?
+                Warum ist es lustig / legendär?
               </label>
 
               <textarea
@@ -129,7 +129,7 @@ export default async function EditWikiEntryPage({
 
             <div>
               <label className="text-sm font-semibold text-zinc-300">
-                Typische Verwendung / Zitat
+                Kontext / Verwendung
               </label>
 
               <textarea
@@ -138,6 +138,44 @@ export default async function EditWikiEntryPage({
                 className="mt-2 min-h-24 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-white placeholder:text-zinc-500 outline-none transition focus:border-white/30"
               />
             </div>
+
+            <div>
+              <label className="text-sm font-semibold text-zinc-300">
+                Neues Bild, Video oder Audio optional
+              </label>
+
+              <input
+                name="media"
+                type="file"
+                accept="image/*,video/*,audio/*"
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-zinc-300 file:mr-4 file:rounded-full file:border-0 file:bg-white file:px-4 file:py-2 file:font-semibold file:text-black hover:file:bg-zinc-200"
+              />
+
+              <p className="mt-2 text-sm text-zinc-500">
+                Wenn du eine neue Datei auswählst, ersetzt sie das aktuelle Medium.
+              </p>
+            </div>
+
+            {entry.media_url && (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                <p className="text-sm font-semibold text-zinc-300">
+                  Aktuelles Medium vorhanden
+                </p>
+
+                <a
+                  href={entry.media_url}
+                  target="_blank"
+                  className="mt-2 block text-sm text-zinc-400 underline hover:text-white"
+                >
+                  Medium öffnen
+                </a>
+
+                <label className="mt-4 flex items-center gap-2 text-sm text-red-300">
+                  <input type="checkbox" name="removeMedia" />
+                  Medium entfernen
+                </label>
+              </div>
+            )}
           </div>
 
           <button

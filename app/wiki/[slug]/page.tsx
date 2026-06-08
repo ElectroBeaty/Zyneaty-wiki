@@ -10,8 +10,8 @@ function createSlug(title: string) {
     .trim()
     .replace(/[ä]/g, "ae")
     .replace(/[ö]/g, "oe")
-    .replace(/[ü]/g, "ue")
     .replace(/[ß]/g, "ss")
+    .replace(/[ü]/g, "ue")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
@@ -44,6 +44,8 @@ async function getApprovedEntries() {
     story: entry.story,
     whyFunny: entry.why_funny,
     usage: entry.usage ?? "",
+    mediaUrl: entry.media_url ?? null,
+    mediaType: entry.media_type ?? null,
   }));
 }
 
@@ -72,6 +74,46 @@ function PeopleLinks({
         ))}
       </div>
     </div>
+  );
+}
+
+function MediaBlock({
+  mediaUrl,
+  mediaType,
+}: {
+  mediaUrl: string | null;
+  mediaType: string | null;
+}) {
+  if (!mediaUrl || !mediaType) return null;
+
+  return (
+    <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <h2 className="text-2xl font-bold">Medien</h2>
+
+      {mediaType === "image" && (
+        <img
+          src={mediaUrl}
+          alt=""
+          className="mt-4 max-h-[600px] w-full rounded-2xl object-contain"
+        />
+      )}
+
+      {mediaType === "video" && (
+        <video
+          src={mediaUrl}
+          controls
+          className="mt-4 w-full rounded-2xl"
+        />
+      )}
+
+      {mediaType === "audio" && (
+        <audio
+          src={mediaUrl}
+          controls
+          className="mt-4 w-full"
+        />
+      )}
+    </section>
   );
 }
 
@@ -117,10 +159,8 @@ export default async function WikiEntryPage({
               “{entry.story}”
             </blockquote>
           )}
-<PeopleLinks
-  people={entry.people}
-  label="Beteiligte"
-/>
+
+          <PeopleLinks people={entry.people} label="Beteiligte" />
 
           {isAdmin && (
             <div className="mt-8 flex flex-wrap gap-3">
@@ -147,6 +187,8 @@ export default async function WikiEntryPage({
             </div>
           )}
         </div>
+
+        <MediaBlock mediaUrl={entry.mediaUrl} mediaType={entry.mediaType} />
 
         {!isQuote && (
           <section className="mt-10 rounded-3xl border border-white/10 bg-white/[0.03] p-6">

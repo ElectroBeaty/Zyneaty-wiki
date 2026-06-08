@@ -11,13 +11,12 @@ export default function SubmitForm() {
   return (
     <form
       action={createSubmission}
+      encType="multipart/form-data"
       className="mt-10 rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 shadow-2xl shadow-black/30"
     >
       <div className="space-y-6">
         <div>
-          <label className="text-sm font-semibold text-zinc-300">
-            Typ
-          </label>
+          <label className="text-sm font-semibold text-zinc-300">Typ</label>
 
           <select
             name="category"
@@ -115,13 +114,13 @@ export default function SubmitForm() {
 
             <div>
               <label className="text-sm font-semibold text-zinc-300">
-                Wer hat das gesagt?
+                Wer war beteiligt?
               </label>
 
               <input
                 name="people"
                 required
-                placeholder="z.B. Marek"
+                placeholder="z.B. Marek Tom Dave"
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-white placeholder:text-zinc-500 outline-none transition focus:border-white/30"
               />
             </div>
@@ -152,6 +151,23 @@ export default function SubmitForm() {
             </div>
           </>
         )}
+
+        <div>
+          <label className="text-sm font-semibold text-zinc-300">
+            Bild, Video oder Audio optional
+          </label>
+
+          <input
+            name="media"
+            type="file"
+            accept="image/*,video/*,audio/*"
+            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-zinc-300 file:mr-4 file:rounded-full file:border-0 file:bg-white file:px-4 file:py-2 file:font-semibold file:text-black hover:file:bg-zinc-200"
+          />
+
+          <p className="mt-2 text-sm text-zinc-500">
+            Optional: Screenshot, Clip oder Audio-Mitschnitt hochladen.
+          </p>
+        </div>
       </div>
 
       <button
