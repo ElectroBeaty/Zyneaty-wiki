@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import WikiClient from "./WikiClient";
 
@@ -51,24 +52,6 @@ export default async function WikiPage() {
     (entry) => entry.category === "Zitat"
   ).length;
 
-  const stats = [
-    {
-      label: "Einträge",
-      value: entries.length,
-      text: "gesammelte Insider",
-    },
-    {
-      label: "Personen",
-      value: uniquePeople.size,
-      text: "beteiligte Legenden",
-    },
-    {
-      label: "Zitate",
-      value: quoteCount,
-      text: "legendäre Aussagen",
-    },
-  ];
-
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
       <section className="mx-auto max-w-6xl px-6 pt-6 pb-14">
@@ -81,16 +64,38 @@ export default async function WikiPage() {
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20"
-            >
-              <div className="text-4xl font-black">{stat.value}</div>
-              <div className="mt-2 text-lg font-bold">{stat.label}</div>
-              <p className="mt-1 text-sm text-zinc-400">{stat.text}</p>
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
+            <div className="text-4xl font-black">{entries.length}</div>
+            <div className="mt-2 text-lg font-bold">Einträge</div>
+            <p className="mt-1 text-sm text-zinc-400">
+              gesammelte Insider
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
+            <div className="text-4xl font-black">{quoteCount}</div>
+            <div className="mt-2 text-lg font-bold">Zitate</div>
+            <p className="mt-1 text-sm text-zinc-400">
+              legendäre Aussagen
+            </p>
+          </div>
+
+          <Link
+            href="/people"
+            className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
+          >
+            <div className="text-4xl font-black">
+              {uniquePeople.size}
             </div>
-          ))}
+
+            <div className="mt-2 text-lg font-bold">
+              Personen
+            </div>
+
+            <p className="mt-1 text-sm text-zinc-400">
+              Beteiligte Legenden →
+            </p>
+          </Link>
         </div>
 
         <WikiClient entries={entries} />
