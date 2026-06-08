@@ -11,20 +11,39 @@ function splitPeople(value: string | null) {
 }
 
 export default async function PeoplePage() {
-  const { data, error } = await supabase
+  const { data: submissions, error: submissionsError } = await supabase
     .from("submissions")
     .select("people")
     .eq("approved", true);
 
-  if (error) {
-    throw new Error(error.message);
+  if (submissionsError) {
+    throw new Error(submissionsError.message);
   }
 
-  const peopleMap = new Map<string, { name: string; count: number }>();
+  const { data: profiles, error: profilesError } = await supabase
+    .from("people_profiles")
+    .select("*");
 
-  for (const entry of data ?? []) {
+  if (profilesError) {
+    throw new Error(profilesError.message);
+  }
+
+  const profileMap = new Map(
+    (profiles ?? []).map((profile) => [
+      profile.name.toLowerCase(),
+      profile,
+    ])
+  );
+
+  const peopleMap = new Map<
+    string,
+    { name: string; count: number; avatarUrl: string | null }
+  >();
+
+  for (const entry of submissions ?? []) {
     for (const person of splitPeople(entry.people)) {
       const key = person.toLowerCase();
+      const profile = profileMap.get(key);
 
       const existing = peopleMap.get(key);
 
@@ -32,16 +51,18 @@ export default async function PeoplePage() {
         existing.count += 1;
       } else {
         peopleMap.set(key, {
-          name: person,
+          name: profile?.name ?? person,
           count: 1,
+          avatarUrl: profile?.avatar_url ?? null,
         });
       }
     }
   }
 
-  const people = Array.from(peopleMap.values()).sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
+  const people = Array.from(peopleMap.values()).sort((a, b) => {
+    if (b.count !== a.count) return b.count - a.count;
+    return a.name.localeCompare(b.name);
+  });
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
@@ -58,24 +79,40 @@ export default async function PeoplePage() {
           </h1>
 
           <p className="mt-4 text-lg text-zinc-300">
-            Alle Legenden, Verdächtigen und Beteiligten aus der Zyneaty Wiki.
+            Sortiert nach Anzahl der Wiki-Einträge.
           </p>
         </div>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {people.map((person) => (
+          {people.map((person, index) => (
             <Link
               key={person.name}
               href={`/people/${person.name.toLowerCase()}`}
               className="group rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
             >
-              <div className="text-4xl">👤</div>
+              <div className="flex items-center gap-4">
+                {person.avatarUrl ? (
+                  <img
+                    src={person.avatarUrl}
+                    alt=""
+                    className="h-16 w-16 rounded-full border border-white/10 object-cover"
+                  />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/5 text-3xl">
+                    👤
+                  </div>
+                )}
 
-              <h2 className="mt-4 text-2xl font-black group-hover:text-zinc-200">
-                {person.name}
-              </h2>
+                <div>
+                  <div className="text-sm text-zinc-500">#{index + 1}</div>
 
-              <p className="mt-2 text-zinc-400">
+                  <h2 className="text-2xl font-black group-hover:text-zinc-200">
+                    {person.name}
+                  </h2>
+                </div>
+              </div>
+
+              <p className="mt-5 text-zinc-400">
                 {person.count} {person.count === 1 ? "Eintrag" : "Einträge"}
               </p>
 
