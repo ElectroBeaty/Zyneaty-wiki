@@ -13,6 +13,10 @@ function createSlug(title: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function createSummary(text: string) {
+  return text.length > 100 ? text.slice(0, 100) + "..." : text;
+}
+
 async function getApprovedSubmissions() {
   const { data, error } = await supabase
     .from("submissions")
@@ -28,7 +32,7 @@ async function getApprovedSubmissions() {
     slug: createSlug(submission.title),
     title: submission.title,
     category: submission.category,
-    summary: submission.story.slice(0, 100) + "...",
+    summary: createSummary(submission.story),
     people: submission.people
       ? submission.people
           .split(",")
@@ -41,13 +45,9 @@ async function getApprovedSubmissions() {
 export default async function WikiPage() {
   const entries = await getApprovedSubmissions();
 
-  const uniquePeople = new Set(
-    entries.flatMap((entry) => entry.people)
-  );
+  const uniquePeople = new Set(entries.flatMap((entry) => entry.people));
 
-  const uniqueCategories = new Set(
-    entries.map((entry) => entry.category)
-  );
+  const uniqueCategories = new Set(entries.map((entry) => entry.category));
 
   const stats = [
     {
