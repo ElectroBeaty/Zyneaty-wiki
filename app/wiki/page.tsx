@@ -47,7 +47,9 @@ export default async function WikiPage() {
 
   const uniquePeople = new Set(entries.flatMap((entry) => entry.people));
 
-  const uniqueCategories = new Set(entries.map((entry) => entry.category));
+  const quoteCount = entries.filter(
+    (entry) => entry.category === "Zitat"
+  ).length;
 
   const stats = [
     {
@@ -61,9 +63,9 @@ export default async function WikiPage() {
       text: "beteiligte Legenden",
     },
     {
-      label: "Kategorien",
-      value: uniqueCategories.size,
-      text: "Arten von Lore",
+      label: "Zitate",
+      value: quoteCount,
+      text: "legendäre Aussagen",
     },
   ];
 

@@ -117,11 +117,10 @@ export default async function WikiEntryPage({
               “{entry.story}”
             </blockquote>
           )}
-
-          <PeopleLinks
-            people={entry.people}
-            label={isQuote ? "Gesagt von" : "Beteiligte"}
-          />
+<PeopleLinks
+  people={entry.people}
+  label="Beteiligte"
+/>
 
           {isAdmin && (
             <div className="mt-8 flex flex-wrap gap-3">
