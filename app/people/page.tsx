@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
+type DiscordUser = {
+  id: string;
+  username: string;
+  global_name?: string | null;
+  avatar?: string | null;
+};
+
 function splitPeople(value: string | null) {
   if (!value) return [];
 
@@ -8,6 +15,40 @@ function splitPeople(value: string | null) {
     .split(",")
     .map((person) => person.trim())
     .filter(Boolean);
+}
+
+function getDefaultDiscordAvatar(discordId: string) {
+  const index = BigInt(discordId) >> BigInt(22);
+  return `https://cdn.discordapp.com/embed/avatars/${Number(index % BigInt(6))}.png`;
+}
+
+async function getDiscordAvatar(discordId: string | null) {
+  if (!discordId) return null;
+
+  const token = process.env.DISCORD_BOT_TOKEN;
+
+  if (!token) return null;
+
+  const res = await fetch(`https://discord.com/api/v10/users/${discordId}`, {
+    headers: {
+      Authorization: `Bot ${token}`,
+    },
+    next: {
+      revalidate: 60 * 60,
+    },
+  });
+
+  if (!res.ok) return null;
+
+  const user = (await res.json()) as DiscordUser;
+
+  if (!user.avatar) {
+    return getDefaultDiscordAvatar(discordId);
+  }
+
+  const extension = user.avatar.startsWith("a_") ? "gif" : "png";
+
+  return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${extension}?size=128`;
 }
 
 export default async function PeoplePage() {
@@ -40,7 +81,7 @@ export default async function PeoplePage() {
     {
       name: string;
       count: number;
-      avatarUrl: string | null;
+      manualAvatarUrl: string | null;
       discordId: string | null;
     }
   >();
@@ -57,17 +98,25 @@ export default async function PeoplePage() {
         peopleMap.set(key, {
           name: profile?.name ?? person,
           count: 1,
-          avatarUrl: profile?.avatar_url ?? null,
+          manualAvatarUrl: profile?.avatar_url ?? null,
           discordId: profile?.discord_id ?? null,
         });
       }
     }
   }
 
-  const people = Array.from(peopleMap.values()).sort((a, b) => {
+  const peopleWithoutAvatars = Array.from(peopleMap.values()).sort((a, b) => {
     if (b.count !== a.count) return b.count - a.count;
     return a.name.localeCompare(b.name);
   });
+
+  const people = await Promise.all(
+    peopleWithoutAvatars.map(async (person) => ({
+      ...person,
+      avatarUrl:
+        person.manualAvatarUrl ?? (await getDiscordAvatar(person.discordId)),
+    }))
+  );
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
