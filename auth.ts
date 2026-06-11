@@ -1,5 +1,19 @@
-import NextAuth from "next-auth";
+import NextAuth, { type DefaultSession, type NextAuthOptions } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
+
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id?: string;
+    } & DefaultSession["user"];
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    discordId?: string;
+  }
+}
 
 async function isInDiscordServer(accessToken: string) {
   const guildId = process.env.DISCORD_GUILD_ID;
@@ -12,12 +26,12 @@ async function isInDiscordServer(accessToken: string) {
 
   if (!res.ok) return false;
 
-  const guilds = await res.json();
+  const guilds = (await res.json()) as Array<{ id: string }>;
 
-  return guilds.some((guild: { id: string }) => guild.id === guildId);
+  return guilds.some((guild) => guild.id === guildId);
 }
 
-export const authOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     DiscordProvider({
       clientId: process.env.AUTH_DISCORD_ID!,
@@ -30,7 +44,7 @@ export const authOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ account }: any) {
+    async signIn({ account }) {
       if (!account?.access_token) return false;
 
       const isMember = await isInDiscordServer(account.access_token);
@@ -42,16 +56,24 @@ export const authOptions = {
       return true;
     },
 
-    async jwt({ token, profile }: any) {
-      if (profile?.id) {
-        token.discordId = profile.id;
+    async jwt({ token, profile }) {
+      const profileId =
+        profile && "id" in profile && typeof profile.id === "string"
+          ? profile.id
+          : undefined;
+
+      if (profileId) {
+        token.discordId = profileId;
       }
 
       return token;
     },
 
-    async session({ session, token }: any) {
-      session.user.id = token.discordId;
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.discordId;
+      }
+
       return session;
     },
   },

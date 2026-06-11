@@ -23,7 +23,7 @@ export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
   );
 
   const filteredEntries = useMemo(() => {
-    let result =
+    const result =
       activeCategory === "Alle"
         ? entries
         : entries.filter((entry) => entry.category === activeCategory);

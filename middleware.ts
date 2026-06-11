@@ -1,22 +1,31 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
+import { isAdminDiscordId } from "@/lib/admin";
 
-export function middleware(request: NextRequest) {
-  const sessionToken =
-    request.cookies.get("authjs.session-token") ||
-    request.cookies.get("__Secure-authjs.session-token") ||
-    request.cookies.get("next-auth.session-token") ||
-    request.cookies.get("__Secure-next-auth.session-token");
+export async function middleware(request: NextRequest) {
+  const token = await getToken({
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
+  });
 
-  const isLoggedIn = Boolean(sessionToken);
-
-  if (!isLoggedIn) {
+  if (!token) {
     return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  const discordId =
+    typeof token.discordId === "string" ? token.discordId : undefined;
+
+  if (
+    request.nextUrl.pathname.startsWith("/admin") &&
+    !isAdminDiscordId(discordId)
+  ) {
+    return NextResponse.redirect(new URL("/denied", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/wiki/:path*", "/submit/:path*", "/admin/:path*"],
+  matcher: ["/wiki/:path*", "/submit/:path*", "/admin/:path*", "/people/:path*"],
 };

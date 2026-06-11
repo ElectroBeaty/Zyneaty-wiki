@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { escapePostgrestLikePattern } from "@/lib/query-pattern";
 import { supabase } from "@/lib/supabase";
 
 function createSlug(title: string) {
@@ -32,8 +33,9 @@ export default async function PersonPage({
   params: Promise<{ name: string }>;
 }) {
   const { name } = await params;
+  const decodedName = decodeURIComponent(name);
 
-  const displayName = decodeURIComponent(name).toLowerCase();
+  const displayName = decodedName.toLowerCase();
 
   const { data, error } = await supabase
     .from("submissions")
@@ -45,11 +47,15 @@ export default async function PersonPage({
     throw new Error(error.message);
   }
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("people_profiles")
     .select("*")
-    .ilike("name", decodeURIComponent(name))
+    .ilike("name", escapePostgrestLikePattern(decodedName))
     .maybeSingle();
+
+  if (profileError) {
+    throw new Error(profileError.message);
+  }
 
   const entries = (data ?? []).map((entry) => ({
     slug: createSlug(entry.title),
@@ -68,7 +74,7 @@ export default async function PersonPage({
     relatedEntries[0]?.people.find(
       (person) => person.toLowerCase() === displayName
     ) ??
-    decodeURIComponent(name);
+    decodedName;
 
   const avatarUrl = profile?.avatar_url ?? null;
 

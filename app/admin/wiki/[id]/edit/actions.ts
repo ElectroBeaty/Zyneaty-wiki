@@ -3,6 +3,8 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
+import { isAdminDiscordId } from "@/lib/admin";
+import { verifyMediaFile } from "@/lib/media-validation";
 import { supabase } from "@/lib/supabase";
 
 function normalizePeople(value: string) {
@@ -13,23 +15,12 @@ function normalizePeople(value: string) {
     .join(", ");
 }
 
-function getMediaType(file: File) {
-  if (file.type.startsWith("image/")) return "image";
-  if (file.type.startsWith("video/")) return "video";
-  if (file.type.startsWith("audio/")) return "audio";
-  return null;
-}
-
-function getFileExtension(fileName: string) {
-  return fileName.split(".").pop() || "file";
-}
-
 async function uploadMedia(file: File) {
   if (!file || file.size === 0) {
     return { mediaUrl: null, mediaType: null };
   }
 
-  const mediaType = getMediaType(file);
+  const { contentType, extension, mediaType } = await verifyMediaFile(file);
 
   if (!mediaType) {
     throw new Error("Nur Bild-, Video- oder Audiodateien sind erlaubt.");
@@ -41,7 +32,7 @@ async function uploadMedia(file: File) {
     throw new Error("Die Datei ist zu groß. Maximal erlaubt sind 50 MB.");
   }
 
-  const fileExt = getFileExtension(file.name);
+  const fileExt = extension;
   const fileName = `${Date.now()}-${Math.random()
     .toString(36)
     .slice(2)}.${fileExt}`;
@@ -51,7 +42,7 @@ async function uploadMedia(file: File) {
   const { error } = await supabase.storage
     .from("wiki-media")
     .upload(filePath, file, {
-      contentType: file.type,
+      contentType,
       upsert: false,
     });
 
@@ -72,7 +63,7 @@ async function uploadMedia(file: File) {
 export async function updateWikiEntry(id: string, formData: FormData) {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user || session.user.id !== process.env.ADMIN_DISCORD_ID) {
+  if (!isAdminDiscordId(session?.user?.id)) {
     redirect("/denied");
   }
 

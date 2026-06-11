@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
+import { isAdminDiscordId } from "@/lib/admin";
 
 export default async function TopBar() {
   const session = await getServerSession(authOptions);
@@ -31,7 +32,7 @@ export default async function TopBar() {
                 Einreichen
               </Link>
 
-              {session.user.id === process.env.ADMIN_DISCORD_ID && (
+              {isAdminDiscordId(session.user.id) && (
   <Link
     href="/admin/submissions"
     className="text-zinc-300 hover:text-white"

@@ -4,12 +4,13 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
+import { isAdminDiscordId } from "@/lib/admin";
 import { supabase } from "@/lib/supabase";
 
 export async function deleteWikiEntry(id: string) {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user || session.user.id !== process.env.ADMIN_DISCORD_ID) {
+  if (!isAdminDiscordId(session?.user?.id)) {
     redirect("/denied");
   }
 

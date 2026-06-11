@@ -2,6 +2,7 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
+import { isAdminDiscordId } from "@/lib/admin";
 import { deleteWikiEntry } from "./actions";
 
 function createSlug(title: string) {
@@ -128,7 +129,7 @@ export default async function WikiEntryPage({
   const entries = await getApprovedEntries();
   const entry = entries.find((entry) => entry.slug === slug);
 
-  const isAdmin = session?.user?.id === process.env.ADMIN_DISCORD_ID;
+  const isAdmin = isAdminDiscordId(session?.user?.id);
 
   if (!entry) {
     return (

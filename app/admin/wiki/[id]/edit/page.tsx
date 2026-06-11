@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
+import { isAdminDiscordId } from "@/lib/admin";
 import { supabase } from "@/lib/supabase";
 import { updateWikiEntry } from "./actions";
 
@@ -12,7 +13,7 @@ export default async function EditWikiEntryPage({
 }) {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user || session.user.id !== process.env.ADMIN_DISCORD_ID) {
+  if (!isAdminDiscordId(session?.user?.id)) {
     redirect("/denied");
   }
 
@@ -147,7 +148,7 @@ export default async function EditWikiEntryPage({
               <input
                 name="media"
                 type="file"
-                accept="image/*,video/*,audio/*"
+                accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,audio/mpeg,audio/mp4,audio/ogg,audio/wav,audio/webm"
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-zinc-300 file:mr-4 file:rounded-full file:border-0 file:bg-white file:px-4 file:py-2 file:font-semibold file:text-black hover:file:bg-zinc-200"
               />
 

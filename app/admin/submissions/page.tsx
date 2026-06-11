@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
+import { isAdminDiscordId } from "@/lib/admin";
 import { supabase } from "@/lib/supabase";
 import { approveSubmission, deleteSubmission } from "./actions";
 
@@ -87,7 +88,7 @@ async function getSubmissions(): Promise<Submission[]> {
 export default async function SubmissionsPage() {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user || session.user.id !== process.env.ADMIN_DISCORD_ID) {
+  if (!isAdminDiscordId(session?.user?.id)) {
     redirect("/denied");
   }
 

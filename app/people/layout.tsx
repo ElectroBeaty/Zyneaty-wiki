@@ -1,9 +1,8 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
-import TopBar from "@/components/TopBar";
 
-export default async function WikiLayout({
+export default async function PeopleLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -14,10 +13,5 @@ export default async function WikiLayout({
     redirect("/");
   }
 
-  return (
-    <>
-      <TopBar />
-      {children}
-    </>
-  );
+  return children;
 }
