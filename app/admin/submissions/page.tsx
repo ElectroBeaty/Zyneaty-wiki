@@ -101,8 +101,6 @@ export default async function SubmissionsPage() {
     approvedSubmissions.flatMap((item) => splitPeople(item.people))
   );
 
-  const categories = new Set(approvedSubmissions.map((item) => item.category));
-
   const mediaCount = submissions.filter((item) => item.media_url).length;
 
   const stats = [

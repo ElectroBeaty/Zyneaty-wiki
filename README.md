@@ -16,6 +16,27 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Zyneaty Wiki Setup
+
+The social wiki features use two additional Supabase tables:
+
+```sql
+supabase/migrations/202606130001_wiki_social.sql
+```
+
+Run that SQL in Supabase before enabling reactions and comments in production.
+
+Optional environment variables:
+
+```bash
+SUPABASE_SERVICE_ROLE_KEY=
+DISCORD_WIKI_WEBHOOK_URL=
+NEXT_PUBLIC_SITE_URL=
+```
+
+`DISCORD_WIKI_WEBHOOK_URL` posts a Discord message when an admin approves a new wiki entry.
+`NEXT_PUBLIC_SITE_URL` is used to include the public entry link in that Discord message.
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

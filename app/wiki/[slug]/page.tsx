@@ -1,30 +1,42 @@
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { isAdminDiscordId } from "@/lib/admin";
-import { deleteWikiEntry } from "./actions";
+import { reactionOptions, type ReactionKey } from "@/lib/reactions";
+import {
+  getPersonHref,
+  mapSubmissionToWikiEntry,
+  type WikiEntry,
+} from "@/lib/wiki";
+import { supabase } from "@/lib/supabase";
+import {
+  addComment,
+  deleteComment,
+  deleteWikiEntry,
+  toggleReaction,
+} from "./actions";
 
-function createSlug(title: string) {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[ä]/g, "ae")
-    .replace(/[ö]/g, "oe")
-    .replace(/[ß]/g, "ss")
-    .replace(/[ü]/g, "ue")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+type ReactionRow = {
+  reaction: string;
+  user_id: string;
+};
 
-function splitPeople(value: string | null) {
-  if (!value) return [];
+type CommentRow = {
+  id: string;
+  user_id: string;
+  user_name: string;
+  user_image: string | null;
+  body: string;
+  created_at: string;
+};
 
-  return value
-    .split(",")
-    .map((person) => person.trim())
-    .filter(Boolean);
-}
+type ReactionState = Record<
+  ReactionKey,
+  {
+    count: number;
+    active: boolean;
+  }
+>;
 
 async function getApprovedEntries() {
   const { data, error } = await supabase
@@ -36,18 +48,58 @@ async function getApprovedEntries() {
     throw new Error(error.message);
   }
 
-  return (data ?? []).map((entry) => ({
-    id: entry.id,
-    slug: createSlug(entry.title),
-    title: entry.title,
-    category: entry.category,
-    people: splitPeople(entry.people),
-    story: entry.story,
-    whyFunny: entry.why_funny,
-    usage: entry.usage ?? "",
-    mediaUrl: entry.media_url ?? null,
-    mediaType: entry.media_type ?? null,
-  }));
+  return (data ?? []).map(mapSubmissionToWikiEntry);
+}
+
+async function getSocialData(entryId: string, userId: string | undefined) {
+  const emptyReactions = Object.fromEntries(
+    reactionOptions.map((option) => [
+      option.key,
+      {
+        count: 0,
+        active: false,
+      },
+    ])
+  ) as ReactionState;
+
+  const [reactionsResult, commentsResult] = await Promise.all([
+    supabase
+      .from("wiki_reactions")
+      .select("reaction,user_id")
+      .eq("submission_id", entryId),
+    supabase
+      .from("wiki_comments")
+      .select("id,user_id,user_name,user_image,body,created_at")
+      .eq("submission_id", entryId)
+      .order("created_at", { ascending: false }),
+  ]);
+
+  if (reactionsResult.error || commentsResult.error) {
+    return {
+      enabled: false,
+      reactions: emptyReactions,
+      comments: [] as CommentRow[],
+    };
+  }
+
+  const reactions = { ...emptyReactions };
+
+  for (const row of (reactionsResult.data ?? []) as ReactionRow[]) {
+    const reaction = row.reaction as ReactionKey;
+
+    if (!reactions[reaction]) continue;
+
+    reactions[reaction] = {
+      count: reactions[reaction].count + 1,
+      active: reactions[reaction].active || row.user_id === userId,
+    };
+  }
+
+  return {
+    enabled: true,
+    reactions,
+    comments: (commentsResult.data ?? []) as CommentRow[],
+  };
 }
 
 function PeopleLinks({
@@ -67,7 +119,7 @@ function PeopleLinks({
         {people.map((person) => (
           <Link
             key={person}
-            href={`/people/${person.toLowerCase()}`}
+            href={getPersonHref(person)}
             className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-black transition hover:scale-105 hover:bg-zinc-200"
           >
             {person}
@@ -89,7 +141,16 @@ function MediaBlock({
 
   return (
     <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
-      <h2 className="text-2xl font-bold">Medien</h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-2xl font-bold">Medien</h2>
+
+        <Link
+          href="/media"
+          className="text-sm font-semibold text-zinc-300 transition hover:text-white"
+        >
+          Zur Galerie →
+        </Link>
+      </div>
 
       {mediaType === "image" && (
         <img
@@ -100,20 +161,157 @@ function MediaBlock({
       )}
 
       {mediaType === "video" && (
-        <video
-          src={mediaUrl}
-          controls
-          className="mt-4 w-full rounded-2xl"
-        />
+        <video src={mediaUrl} controls className="mt-4 w-full rounded-2xl" />
       )}
 
       {mediaType === "audio" && (
-        <audio
-          src={mediaUrl}
-          controls
-          className="mt-4 w-full"
-        />
+        <audio src={mediaUrl} controls className="mt-4 w-full" />
       )}
+    </section>
+  );
+}
+
+function ReactionPanel({
+  entry,
+  reactions,
+}: {
+  entry: WikiEntry;
+  reactions: ReactionState;
+}) {
+  return (
+    <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <h2 className="text-2xl font-bold">Reaktionen</h2>
+
+      <div className="mt-4 flex flex-wrap gap-3">
+        {reactionOptions.map((option) => {
+          const state = reactions[option.key];
+
+          return (
+            <form
+              key={option.key}
+              action={toggleReaction.bind(
+                null,
+                entry.id,
+                entry.slug,
+                option.key
+              )}
+            >
+              <button
+                type="submit"
+                className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                  state.active
+                    ? "border-white bg-white text-black"
+                    : "border-white/10 bg-white/5 text-zinc-300 hover:border-white/30 hover:bg-white/10"
+                }`}
+              >
+                {option.label} · {state.count}
+              </button>
+            </form>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function CommentsPanel({
+  comments,
+  entry,
+  isAdmin,
+  userId,
+}: {
+  comments: CommentRow[];
+  entry: WikiEntry;
+  isAdmin: boolean;
+  userId: string | undefined;
+}) {
+  return (
+    <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+      <h2 className="text-2xl font-bold">Kommentare</h2>
+
+      <form
+        action={addComment.bind(null, entry.id, entry.slug)}
+        className="mt-4"
+      >
+        <textarea
+          name="body"
+          required
+          maxLength={500}
+          placeholder="Kontext, Erinnerung oder kurzer Kommentar..."
+          className="min-h-28 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-white outline-none transition placeholder:text-zinc-500 focus:border-white/30"
+        />
+
+        <div className="mt-3 flex justify-end">
+          <button
+            type="submit"
+            className="rounded-full bg-white px-5 py-2 font-semibold text-black transition hover:bg-zinc-200"
+          >
+            Kommentieren
+          </button>
+        </div>
+      </form>
+
+      <div className="mt-6 space-y-4">
+        {comments.map((comment) => {
+          const canDelete = isAdmin || comment.user_id === userId;
+
+          return (
+            <article
+              key={comment.id}
+              className="rounded-2xl border border-white/10 bg-black/20 p-4"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  {comment.user_image ? (
+                    <img
+                      src={comment.user_image}
+                      alt=""
+                      className="h-9 w-9 rounded-full border border-white/10"
+                    />
+                  ) : (
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-sm font-bold">
+                      {comment.user_name.slice(0, 1).toUpperCase()}
+                    </div>
+                  )}
+
+                  <div>
+                    <div className="font-semibold text-white">
+                      {comment.user_name}
+                    </div>
+                    <div className="text-xs text-zinc-500">
+                      {new Date(comment.created_at).toLocaleString("de-DE", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {canDelete && (
+                  <form action={deleteComment.bind(null, comment.id, entry.slug)}>
+                    <button
+                      type="submit"
+                      className="rounded-full border border-red-500/20 px-3 py-1 text-xs font-semibold text-red-300 transition hover:bg-red-500/10"
+                    >
+                      Löschen
+                    </button>
+                  </form>
+                )}
+              </div>
+
+              <p className="mt-4 whitespace-pre-wrap leading-7 text-zinc-300">
+                {comment.body}
+              </p>
+            </article>
+          );
+        })}
+
+        {comments.length === 0 && (
+          <div className="rounded-2xl border border-white/10 bg-black/20 p-4 text-zinc-400">
+            Noch keine Kommentare.
+          </div>
+        )}
+      </div>
     </section>
   );
 }
@@ -127,18 +325,19 @@ export default async function WikiEntryPage({
   const session = await getServerSession(authOptions);
 
   const entries = await getApprovedEntries();
-  const entry = entries.find((entry) => entry.slug === slug);
-
-  const isAdmin = isAdminDiscordId(session?.user?.id);
+  const entry = entries.find((item) => item.slug === slug);
+  const userId = session?.user?.id;
+  const isAdmin = isAdminDiscordId(userId);
 
   if (!entry) {
     return (
       <main className="min-h-screen bg-zinc-950 p-10 text-white">
-        <h1 className="text-4xl font-bold">Nicht gefunden 😢</h1>
+        <h1 className="text-4xl font-bold">Nicht gefunden</h1>
       </main>
     );
   }
 
+  const social = await getSocialData(entry.id, userId);
   const isQuote = entry.category === "Zitat";
 
   return (
@@ -213,6 +412,23 @@ export default async function WikiEntryPage({
             </h2>
 
             <p className="mt-3 leading-7 text-zinc-300">{entry.usage}</p>
+          </section>
+        )}
+
+        {social.enabled ? (
+          <>
+            <ReactionPanel entry={entry} reactions={social.reactions} />
+            <CommentsPanel
+              comments={social.comments}
+              entry={entry}
+              isAdmin={isAdmin}
+              userId={userId}
+            />
+          </>
+        ) : (
+          <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6 text-zinc-400">
+            Reaktionen und Kommentare werden sichtbar, sobald die
+            Datenbankmigration eingespielt ist.
           </section>
         )}
       </article>

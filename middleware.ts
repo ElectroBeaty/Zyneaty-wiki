@@ -27,5 +27,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/wiki/:path*", "/submit/:path*", "/admin/:path*", "/people/:path*"],
+  matcher: [
+    "/wiki/:path*",
+    "/submit/:path*",
+    "/admin/:path*",
+    "/people/:path*",
+    "/media/:path*",
+  ],
 };

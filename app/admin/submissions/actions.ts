@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { isAdminDiscordId } from "@/lib/admin";
+import { announceApprovedSubmission } from "@/lib/discord-webhook";
 import { supabase } from "@/lib/supabase";
 
 async function requireAdmin() {
@@ -30,15 +31,23 @@ export async function deleteSubmission(id: string) {
 export async function approveSubmission(id: string) {
   await requireAdmin();
 
-  const { error } = await supabase
+  const { data: submission, error } = await supabase
     .from("submissions")
     .update({ approved: true })
-    .eq("id", id);
+    .eq("id", id)
+    .select("title,category,story,media_url")
+    .single();
 
   if (error) {
     throw new Error(error.message);
   }
 
+  if (submission) {
+    await announceApprovedSubmission(submission);
+  }
+
   revalidatePath("/admin/submissions");
   revalidatePath("/wiki");
+  revalidatePath("/media");
+  revalidatePath("/people");
 }

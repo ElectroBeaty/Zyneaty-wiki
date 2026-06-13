@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import TopBar from "@/components/TopBar";
 
-export default async function PeopleLayout({
+export default async function MediaLayout({
   children,
 }: {
   children: React.ReactNode;

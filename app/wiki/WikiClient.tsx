@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 type WikiEntry = {
@@ -14,6 +15,7 @@ type WikiEntry = {
 };
 
 export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState("Alle");
   const [search, setSearch] = useState("");
 
@@ -40,16 +42,32 @@ export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
     );
   }, [activeCategory, search, entries]);
 
+  function openRandomEntry() {
+    if (entries.length === 0) return;
+
+    const randomEntry = entries[Math.floor(Math.random() * entries.length)];
+    router.push(`/wiki/${randomEntry.slug}`);
+  }
+
   return (
     <>
-      <div className="mt-10">
+      <div className="mt-10 flex flex-col gap-3 sm:flex-row">
         <input
           type="text"
           placeholder="Suche nach Insidern..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white outline-none transition placeholder:text-zinc-500 focus:border-white/30"
+          className="min-w-0 flex-1 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white outline-none transition placeholder:text-zinc-500 focus:border-white/30"
         />
+
+        <button
+          type="button"
+          onClick={openRandomEntry}
+          disabled={entries.length === 0}
+          className="rounded-2xl border border-white/10 bg-white px-5 py-4 font-semibold text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Zufälliger Eintrag
+        </button>
       </div>
 
       <div className="mt-6 flex flex-wrap gap-2">
@@ -89,13 +107,13 @@ export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
 
             {entry.mediaUrl && entry.mediaType === "video" && (
               <div className="flex h-56 w-full items-center justify-center bg-black/40 text-5xl">
-                🎬
+                Video
               </div>
             )}
 
             {entry.mediaUrl && entry.mediaType === "audio" && (
               <div className="flex h-56 w-full items-center justify-center bg-black/40 text-5xl">
-                🎵
+                Audio
               </div>
             )}
 

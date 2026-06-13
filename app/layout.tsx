@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Zyneaty Wiki",
   description:
     "Die gesammelte Chronik aller Insider, Legenden, Quotes und unvergesslichen Ereignisse.",

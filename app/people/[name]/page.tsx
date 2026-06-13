@@ -1,30 +1,40 @@
 import Link from "next/link";
+import { getDiscordAvatar } from "@/lib/discord";
 import { escapePostgrestLikePattern } from "@/lib/query-pattern";
+import {
+  createSummary,
+  mapSubmissionToWikiEntry,
+  type WikiEntry,
+} from "@/lib/wiki";
 import { supabase } from "@/lib/supabase";
 
-function createSlug(title: string) {
-  return title
-    .toLowerCase()
-    .trim()
-    .replace(/[ä]/g, "ae")
-    .replace(/[ö]/g, "oe")
-    .replace(/[ü]/g, "ue")
-    .replace(/[ß]/g, "ss")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+function EntryCard({ entry }: { entry: WikiEntry }) {
+  return (
+    <Link
+      href={`/wiki/${entry.slug}`}
+      className="group rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
+    >
+      <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-500">
+        <span>{entry.category}</span>
+        {entry.mediaUrl && (
+          <>
+            <span>·</span>
+            <span>Medium</span>
+          </>
+        )}
+      </div>
 
-function createSummary(text: string) {
-  return text.length > 100 ? text.slice(0, 100) + "..." : text;
-}
+      <h2 className="mt-3 text-2xl font-bold group-hover:text-zinc-200">
+        {entry.title}
+      </h2>
 
-function splitPeople(value: string | null) {
-  if (!value) return [];
+      <p className="mt-3 text-zinc-400">{createSummary(entry.story, 100)}</p>
 
-  return value
-    .split(",")
-    .map((person) => person.trim())
-    .filter(Boolean);
+      <div className="mt-6 text-sm font-semibold text-zinc-300">
+        Weiterlesen →
+      </div>
+    </Link>
+  );
 }
 
 export default async function PersonPage({
@@ -34,7 +44,6 @@ export default async function PersonPage({
 }) {
   const { name } = await params;
   const decodedName = decodeURIComponent(name);
-
   const displayName = decodedName.toLowerCase();
 
   const { data, error } = await supabase
@@ -57,17 +66,15 @@ export default async function PersonPage({
     throw new Error(profileError.message);
   }
 
-  const entries = (data ?? []).map((entry) => ({
-    slug: createSlug(entry.title),
-    title: entry.title,
-    category: entry.category,
-    summary: createSummary(entry.story),
-    people: splitPeople(entry.people),
-  }));
-
+  const entries = (data ?? []).map(mapSubmissionToWikiEntry);
   const relatedEntries = entries.filter((entry) =>
     entry.people.some((person) => person.toLowerCase() === displayName)
   );
+  const quoteEntries = relatedEntries.filter(
+    (entry) => entry.category === "Zitat"
+  );
+  const mediaEntries = relatedEntries.filter((entry) => entry.mediaUrl);
+  const categories = new Set(relatedEntries.map((entry) => entry.category));
 
   const prettyName =
     profile?.name ??
@@ -76,11 +83,14 @@ export default async function PersonPage({
     ) ??
     decodedName;
 
-  const avatarUrl = profile?.avatar_url ?? null;
+  const avatarUrl =
+    profile?.avatar_url ?? (await getDiscordAvatar(profile?.discord_id ?? null));
+  const knownFor =
+    profile?.known_for ?? quoteEntries[0]?.title ?? relatedEntries[0]?.title;
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
-      <section className="mx-auto max-w-5xl px-6 pt-8 pb-16">
+      <section className="mx-auto max-w-6xl px-6 pt-8 pb-16">
         <Link href="/people" className="text-sm text-zinc-400 hover:text-white">
           ← Zurück zu Personen
         </Link>
@@ -94,68 +104,80 @@ export default async function PersonPage({
                 className="h-28 w-28 rounded-full border border-white/10 object-cover shadow-2xl shadow-black/30"
               />
             ) : (
-              <div className="flex h-28 w-28 items-center justify-center rounded-full border border-white/10 bg-white/5 text-5xl">
-                👤
+              <div className="flex h-28 w-28 items-center justify-center rounded-full border border-white/10 bg-white/5 text-5xl font-black">
+                {prettyName.slice(0, 1).toUpperCase()}
               </div>
             )}
 
-            <div>
+            <div className="min-w-0">
               <h1 className="text-5xl font-black tracking-tight">
                 {prettyName}
               </h1>
 
-              <p className="mt-4 text-lg text-zinc-300">
-                Alle Wiki-Einträge, bei denen {prettyName} beteiligt ist.
+              <p className="mt-4 max-w-2xl text-lg text-zinc-300">
+                {profile?.bio ??
+                  `Alle Wiki-Einträge, bei denen ${prettyName} beteiligt ist.`}
               </p>
 
-              {profile?.discord_id && (
-                <p className="mt-2 text-sm text-zinc-500">
-                  Discord ID: {profile.discord_id}
+              {knownFor && (
+                <p className="mt-3 text-sm text-zinc-400">
+                  Bekannt für: {knownFor}
                 </p>
               )}
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+          <div className="mt-8 grid gap-4 sm:grid-cols-4">
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
               <div className="text-3xl font-black">
                 {relatedEntries.length}
               </div>
-              <div className="mt-1 text-sm text-zinc-400">
-                Einträge mit Beteiligung
-              </div>
+              <div className="mt-1 text-sm text-zinc-400">Einträge</div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
-              <div className="text-3xl font-black">
-                {new Set(relatedEntries.map((entry) => entry.category)).size}
-              </div>
-              <div className="mt-1 text-sm text-zinc-400">
-                verschiedene Typen
-              </div>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div className="text-3xl font-black">{quoteEntries.length}</div>
+              <div className="mt-1 text-sm text-zinc-400">Zitate</div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div className="text-3xl font-black">{mediaEntries.length}</div>
+              <div className="mt-1 text-sm text-zinc-400">Medien</div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div className="text-3xl font-black">{categories.size}</div>
+              <div className="mt-1 text-sm text-zinc-400">Typen</div>
             </div>
           </div>
         </div>
 
+        {quoteEntries.length > 0 && (
+          <section className="mt-10 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <h2 className="text-2xl font-bold">Top-Zitate</h2>
+
+            <div className="mt-5 grid gap-4 md:grid-cols-2">
+              {quoteEntries.slice(0, 4).map((entry) => (
+                <Link
+                  key={entry.id}
+                  href={`/wiki/${entry.slug}`}
+                  className="rounded-2xl border border-white/10 bg-black/20 p-5 transition hover:bg-white/10"
+                >
+                  <blockquote className="text-lg font-semibold leading-7 text-zinc-100">
+                    “{entry.story}”
+                  </blockquote>
+                  <div className="mt-4 text-sm text-zinc-500">
+                    {entry.title}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
         <div className="mt-10 grid gap-5 md:grid-cols-2">
           {relatedEntries.map((entry) => (
-            <Link
-              key={entry.slug}
-              href={`/wiki/${entry.slug}`}
-              className="group rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
-            >
-              <div className="text-sm text-zinc-500">{entry.category}</div>
-
-              <h2 className="mt-3 text-2xl font-bold group-hover:text-zinc-200">
-                {entry.title}
-              </h2>
-
-              <p className="mt-3 text-zinc-400">{entry.summary}</p>
-
-              <div className="mt-6 text-sm font-semibold text-zinc-300">
-                Weiterlesen →
-              </div>
-            </Link>
+            <EntryCard key={entry.id} entry={entry} />
           ))}
         </div>
 
