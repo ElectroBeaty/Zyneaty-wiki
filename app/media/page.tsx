@@ -2,6 +2,8 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { createSummary, mapSubmissionToWikiEntry } from "@/lib/wiki";
 
+export const dynamic = "force-dynamic";
+
 async function getMediaEntries() {
   const { data, error } = await supabase
     .from("submissions")

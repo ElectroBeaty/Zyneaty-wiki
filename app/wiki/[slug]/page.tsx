@@ -16,6 +16,8 @@ import {
   toggleReaction,
 } from "./actions";
 
+export const dynamic = "force-dynamic";
+
 type ReactionRow = {
   reaction: string;
   user_id: string;

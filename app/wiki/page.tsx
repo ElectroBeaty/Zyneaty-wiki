@@ -3,6 +3,8 @@ import { supabase } from "@/lib/supabase";
 import { createSummary, mapSubmissionToWikiEntry } from "@/lib/wiki";
 import WikiClient from "./WikiClient";
 
+export const dynamic = "force-dynamic";
+
 async function getApprovedSubmissions() {
   const { data, error } = await supabase
     .from("submissions")

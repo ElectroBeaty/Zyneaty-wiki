@@ -1,11 +1,13 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { isAdminDiscordId } from "@/lib/admin";
 import { verifyMediaFile } from "@/lib/media-validation";
 import { supabase } from "@/lib/supabase";
+import { createSlug } from "@/lib/wiki";
 
 function normalizePeople(value: string) {
   return value
@@ -109,6 +111,11 @@ export async function updateWikiEntry(id: string, formData: FormData) {
   if (error) {
     throw new Error(error.message);
   }
+
+  revalidatePath("/wiki");
+  revalidatePath("/media");
+  revalidatePath(`/wiki/${createSlug(updateData.title)}`);
+  revalidatePath(`/admin/wiki/${id}/edit`);
 
   redirect(`/admin/wiki/${id}/edit?status=${updateStatus}`);
 }
