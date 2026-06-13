@@ -14,9 +14,11 @@ type UploadState = "idle" | "uploading" | "ready" | "error";
 export default function MediaUploadField({
   label,
   note,
+  onUploaded,
 }: {
   label: string;
   note: string;
+  onUploaded?: (mediaUrl: string, mediaType: MediaType) => Promise<void>;
 }) {
   const [state, setState] = useState<UploadState>("idle");
   const [message, setMessage] = useState("");
@@ -49,10 +51,19 @@ export default function MediaUploadField({
 
       const { data } = supabase.storage.from("wiki-media").getPublicUrl(filePath);
 
+      if (onUploaded) {
+        setMessage("Datei ist hochgeladen und wird im Eintrag gespeichert...");
+        await onUploaded(data.publicUrl, mediaType);
+      }
+
       setMediaUrl(data.publicUrl);
       setMediaType(mediaType);
       setState("ready");
-      setMessage("Datei ist hochgeladen und wird beim Speichern übernommen.");
+      setMessage(
+        onUploaded
+          ? "Datei ist hochgeladen und im Eintrag gespeichert."
+          : "Datei ist hochgeladen und wird beim Speichern übernommen."
+      );
     } catch (error) {
       setState("error");
       setMessage(error instanceof Error ? error.message : "Upload fehlgeschlagen.");

@@ -128,3 +128,44 @@ export async function updateWikiEntry(id: string, formData: FormData) {
 
   redirect(`/admin/wiki/${id}/edit?status=${updateStatus}`);
 }
+
+export async function attachUploadedMedia(
+  id: string,
+  mediaUrl: string,
+  mediaType: string
+) {
+  const session = await getServerSession(authOptions);
+
+  if (!isAdminDiscordId(session?.user?.id)) {
+    redirect("/denied");
+  }
+
+  const formData = new FormData();
+  formData.set("uploadedMediaUrl", mediaUrl);
+  formData.set("uploadedMediaType", mediaType);
+
+  const uploadedMedia = getUploadedMedia(formData);
+
+  if (!uploadedMedia.mediaUrl || !uploadedMedia.mediaType) {
+    throw new Error("Der Medienupload ist unvollständig.");
+  }
+
+  const { data, error } = await supabase
+    .from("submissions")
+    .update({
+      media_url: uploadedMedia.mediaUrl,
+      media_type: uploadedMedia.mediaType,
+    })
+    .eq("id", id)
+    .select("title")
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/wiki");
+  revalidatePath("/media");
+  revalidatePath(`/wiki/${createSlug(data.title)}`);
+  revalidatePath(`/admin/wiki/${id}/edit`);
+}

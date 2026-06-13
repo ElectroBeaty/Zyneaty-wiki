@@ -5,7 +5,7 @@ import { authOptions } from "@/auth";
 import { isAdminDiscordId } from "@/lib/admin";
 import { supabase } from "@/lib/supabase";
 import MediaUploadField from "@/components/MediaUploadField";
-import { updateWikiEntry } from "./actions";
+import { attachUploadedMedia, updateWikiEntry } from "./actions";
 
 export default async function EditWikiEntryPage({
   params,
@@ -161,6 +161,7 @@ export default async function EditWikiEntryPage({
             <MediaUploadField
               label="Neues Bild, Video oder Audio optional"
               note="Wenn du eine neue Datei auswählst, ersetzt sie das aktuelle Medium. Warte kurz, bis der Upload fertig ist."
+              onUploaded={attachUploadedMedia.bind(null, id)}
             />
 
             <div className="hidden">
