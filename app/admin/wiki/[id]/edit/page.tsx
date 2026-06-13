@@ -8,8 +8,10 @@ import { updateWikiEntry } from "./actions";
 
 export default async function EditWikiEntryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ status?: string }>;
 }) {
   const session = await getServerSession(authOptions);
 
@@ -18,6 +20,15 @@ export default async function EditWikiEntryPage({
   }
 
   const { id } = await params;
+  const { status } = await searchParams;
+  const statusMessage =
+    status === "media-updated"
+      ? "Medium wurde aktualisiert."
+      : status === "media-removed"
+        ? "Medium wurde entfernt."
+        : status === "saved"
+          ? "Eintrag wurde gespeichert."
+          : null;
 
   const { data: entry, error } = await supabase
     .from("submissions")
@@ -50,6 +61,12 @@ export default async function EditWikiEntryPage({
         <p className="mt-4 text-zinc-300">
           Bearbeite den Wiki-Eintrag. Änderungen werden direkt gespeichert.
         </p>
+
+        {statusMessage && (
+          <div className="mt-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm font-semibold text-emerald-200">
+            {statusMessage}
+          </div>
+        )}
 
         <form
           action={async (formData) => {

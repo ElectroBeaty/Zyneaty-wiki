@@ -68,6 +68,7 @@ export async function updateWikiEntry(id: string, formData: FormData) {
   }
 
   const mediaFile = formData.get("media");
+  let updateStatus = "saved";
 
   const updateData: {
     title: string;
@@ -91,11 +92,13 @@ export async function updateWikiEntry(id: string, formData: FormData) {
     const { mediaUrl, mediaType } = await uploadMedia(mediaFile);
     updateData.media_url = mediaUrl;
     updateData.media_type = mediaType;
+    updateStatus = "media-updated";
   }
 
   if (formData.get("removeMedia") === "on") {
     updateData.media_url = null;
     updateData.media_type = null;
+    updateStatus = "media-removed";
   }
 
   const { error } = await supabase
@@ -107,5 +110,5 @@ export async function updateWikiEntry(id: string, formData: FormData) {
     throw new Error(error.message);
   }
 
-  redirect("/wiki");
+  redirect(`/admin/wiki/${id}/edit?status=${updateStatus}`);
 }
