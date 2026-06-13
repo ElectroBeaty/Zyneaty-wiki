@@ -37,7 +37,7 @@ async function uploadMedia(file: File) {
     .toString(36)
     .slice(2)}.${fileExt}`;
 
-  const filePath = `entries/${fileName}`;
+  const filePath = `submissions/${fileName}`;
 
   const { error } = await supabase.storage
     .from("wiki-media")
