@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { isAdminDiscordId } from "@/lib/admin";
 import { supabase } from "@/lib/supabase";
+import MediaUploadField from "@/components/MediaUploadField";
 import { updateWikiEntry } from "./actions";
 
 export default async function EditWikiEntryPage({
@@ -157,13 +158,17 @@ export default async function EditWikiEntryPage({
               />
             </div>
 
-            <div>
+            <MediaUploadField
+              label="Neues Bild, Video oder Audio optional"
+              note="Wenn du eine neue Datei auswählst, ersetzt sie das aktuelle Medium. Warte kurz, bis der Upload fertig ist."
+            />
+
+            <div className="hidden">
               <label className="text-sm font-semibold text-zinc-300">
                 Neues Bild, Video oder Audio optional
               </label>
 
               <input
-                name="media"
                 type="file"
                 accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,audio/mpeg,audio/mp4,audio/ogg,audio/wav,audio/webm"
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-zinc-300 file:mr-4 file:rounded-full file:border-0 file:bg-white file:px-4 file:py-2 file:font-semibold file:text-black hover:file:bg-zinc-200"

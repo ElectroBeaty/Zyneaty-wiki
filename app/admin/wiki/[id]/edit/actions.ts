@@ -8,6 +8,7 @@ import { isAdminDiscordId } from "@/lib/admin";
 import { verifyMediaFile } from "@/lib/media-validation";
 import { supabase } from "@/lib/supabase";
 import { createSlug } from "@/lib/wiki";
+import { getUploadedMedia } from "@/lib/uploaded-media";
 
 function normalizePeople(value: string) {
   return value
@@ -94,6 +95,14 @@ export async function updateWikiEntry(id: string, formData: FormData) {
     const { mediaUrl, mediaType } = await uploadMedia(mediaFile);
     updateData.media_url = mediaUrl;
     updateData.media_type = mediaType;
+    updateStatus = "media-updated";
+  }
+
+  const uploadedMedia = getUploadedMedia(formData);
+
+  if (uploadedMedia.mediaUrl && uploadedMedia.mediaType) {
+    updateData.media_url = uploadedMedia.mediaUrl;
+    updateData.media_type = uploadedMedia.mediaType;
     updateStatus = "media-updated";
   }
 

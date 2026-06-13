@@ -6,6 +6,7 @@ import { authOptions } from "@/auth";
 import { verifyMediaFile } from "@/lib/media-validation";
 import { escapePostgrestLikePattern } from "@/lib/query-pattern";
 import { supabase } from "@/lib/supabase";
+import { getUploadedMedia } from "@/lib/uploaded-media";
 
 function normalizePeople(value: string) {
   return value
@@ -88,10 +89,13 @@ export async function createSubmission(formData: FormData) {
   }
 
   const mediaFile = formData.get("media");
+  const uploadedMedia = getUploadedMedia(formData);
   const { mediaUrl, mediaType } =
-    mediaFile instanceof File
-      ? await uploadMedia(mediaFile)
-      : { mediaUrl: null, mediaType: null };
+    uploadedMedia.mediaUrl || uploadedMedia.mediaType
+      ? uploadedMedia
+      : mediaFile instanceof File
+        ? await uploadMedia(mediaFile)
+        : { mediaUrl: null, mediaType: null };
 
   const { error } = await supabase.from("submissions").insert({
     title,
