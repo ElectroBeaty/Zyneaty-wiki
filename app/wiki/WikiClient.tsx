@@ -90,40 +90,42 @@ export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
         })}
       </div>
 
-      <div className="mt-10 grid items-start gap-5 md:grid-cols-2">
+      <div className="mt-10 grid gap-5 md:grid-cols-2">
         {filteredEntries.map((entry) => (
           <Link
             key={entry.slug}
             href={`/wiki/${entry.slug}`}
-            className="group overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
+            className="group relative flex min-h-72 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
           >
             {entry.mediaUrl && entry.mediaType === "image" && (
-              <div className="bg-black/30 p-3 pb-0">
-                <img
-                  src={entry.mediaUrl}
-                  alt=""
-                  className="h-44 w-full rounded-2xl object-cover opacity-90 transition group-hover:opacity-100 sm:h-48"
-                />
-              </div>
+              <img
+                src={entry.mediaUrl}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover opacity-50 transition duration-300 group-hover:scale-105 group-hover:opacity-65"
+              />
             )}
 
             {entry.mediaUrl && entry.mediaType === "video" && (
-              <div className="bg-black/30 p-3 pb-0">
-                <div className="flex h-44 w-full items-center justify-center rounded-2xl border border-white/10 bg-black/50 text-sm font-semibold uppercase tracking-[0.2em] text-zinc-400 sm:h-48">
-                  Video
-                </div>
+              <div className="absolute inset-0 flex items-center justify-center bg-black/45 text-sm font-semibold uppercase tracking-[0.2em] text-zinc-400 transition group-hover:bg-black/35">
+                Video
               </div>
             )}
 
             {entry.mediaUrl && entry.mediaType === "audio" && (
-              <div className="bg-black/30 p-3 pb-0">
-                <div className="flex h-44 w-full items-center justify-center rounded-2xl border border-white/10 bg-black/50 text-sm font-semibold uppercase tracking-[0.2em] text-zinc-400 sm:h-48">
-                  Audio
-                </div>
+              <div className="absolute inset-0 flex items-center justify-center bg-black/45 text-sm font-semibold uppercase tracking-[0.2em] text-zinc-400 transition group-hover:bg-black/35">
+                Audio
               </div>
             )}
 
-            <div className="p-6">
+            <div
+              className={`absolute inset-0 ${
+                entry.mediaUrl
+                  ? "bg-gradient-to-t from-black via-black/75 to-black/10"
+                  : "bg-gradient-to-br from-white/[0.06] via-transparent to-transparent"
+              }`}
+            />
+
+            <div className="relative z-10 mt-auto p-6">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm text-zinc-500">
                   {entry.category}
@@ -140,7 +142,7 @@ export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
                 {entry.title}
               </h2>
 
-              <p className="mt-3 text-zinc-400">{entry.summary}</p>
+              <p className="mt-3 text-zinc-300">{entry.summary}</p>
 
               <div className="mt-6 text-sm font-semibold text-zinc-300">
                 Weiterlesen →
