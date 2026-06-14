@@ -90,7 +90,7 @@ export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
         })}
       </div>
 
-      <div className="mt-10 grid gap-5 md:grid-cols-2">
+      <div className="mt-10 grid items-start gap-5 md:grid-cols-2">
         {filteredEntries.map((entry) => (
           <Link
             key={entry.slug}
@@ -98,22 +98,28 @@ export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
             className="group overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
           >
             {entry.mediaUrl && entry.mediaType === "image" && (
-              <img
-                src={entry.mediaUrl}
-                alt=""
-                className="h-56 w-full object-cover opacity-90 transition group-hover:opacity-100"
-              />
+              <div className="bg-black/30 p-3 pb-0">
+                <img
+                  src={entry.mediaUrl}
+                  alt=""
+                  className="h-44 w-full rounded-2xl object-cover opacity-90 transition group-hover:opacity-100 sm:h-48"
+                />
+              </div>
             )}
 
             {entry.mediaUrl && entry.mediaType === "video" && (
-              <div className="flex h-56 w-full items-center justify-center bg-black/40 text-5xl">
-                Video
+              <div className="bg-black/30 p-3 pb-0">
+                <div className="flex h-44 w-full items-center justify-center rounded-2xl border border-white/10 bg-black/50 text-sm font-semibold uppercase tracking-[0.2em] text-zinc-400 sm:h-48">
+                  Video
+                </div>
               </div>
             )}
 
             {entry.mediaUrl && entry.mediaType === "audio" && (
-              <div className="flex h-56 w-full items-center justify-center bg-black/40 text-5xl">
-                Audio
+              <div className="bg-black/30 p-3 pb-0">
+                <div className="flex h-44 w-full items-center justify-center rounded-2xl border border-white/10 bg-black/50 text-sm font-semibold uppercase tracking-[0.2em] text-zinc-400 sm:h-48">
+                  Audio
+                </div>
               </div>
             )}
 
