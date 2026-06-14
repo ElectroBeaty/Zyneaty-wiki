@@ -164,6 +164,13 @@ export async function attachUploadedMedia(
     throw new Error(error.message);
   }
 
+  console.info("admin_media_attached", {
+    id,
+    mediaType: uploadedMedia.mediaType,
+    hasMediaUrl: Boolean(uploadedMedia.mediaUrl),
+    title: data.title,
+  });
+
   revalidatePath("/wiki");
   revalidatePath("/media");
   revalidatePath(`/wiki/${createSlug(data.title)}`);

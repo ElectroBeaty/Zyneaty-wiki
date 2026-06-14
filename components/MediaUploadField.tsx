@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { verifyMediaFile, type MediaType } from "@/lib/media-validation";
 
@@ -20,6 +21,7 @@ export default function MediaUploadField({
   note: string;
   onUploaded?: (mediaUrl: string, mediaType: MediaType) => Promise<void>;
 }) {
+  const router = useRouter();
   const [state, setState] = useState<UploadState>("idle");
   const [message, setMessage] = useState("");
   const [mediaUrl, setMediaUrl] = useState("");
@@ -54,6 +56,7 @@ export default function MediaUploadField({
       if (onUploaded) {
         setMessage("Datei ist hochgeladen und wird im Eintrag gespeichert...");
         await onUploaded(data.publicUrl, mediaType);
+        router.refresh();
       }
 
       setMediaUrl(data.publicUrl);
