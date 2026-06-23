@@ -30,7 +30,7 @@ export default async function EditWikiEntryPage({
         : status === "saved"
           ? "Eintrag wurde gespeichert."
           : status === "schema-missing"
-            ? "Eintrag wurde gespeichert, aber Zitat/Zitat-Sprecher brauchen noch die neue Supabase-Migration."
+            ? "Eintrag wurde gespeichert. Einzelne Zitat-Felder warten noch auf die Supabase-Migration."
           : null;
   const isWarningStatus = status === "schema-missing";
 
@@ -45,10 +45,20 @@ export default async function EditWikiEntryPage({
   }
 
   const isQuote = entry.category === "Zitat";
+  const hasQuoteSpeakerColumn = Object.prototype.hasOwnProperty.call(
+    entry,
+    "quote_speaker"
+  );
+  const hasQuoteTextColumn = Object.prototype.hasOwnProperty.call(
+    entry,
+    "quote_text"
+  );
   const quoteTextDefault =
     entry.quote_text?.trim() || (isQuote ? entry.story ?? "" : "");
   const storyDefault =
     isQuote && !entry.quote_text?.trim() ? "" : entry.story ?? "";
+  const quoteSetupMissing =
+    isQuote && (!hasQuoteSpeakerColumn || !hasQuoteTextColumn);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
@@ -84,6 +94,19 @@ export default async function EditWikiEntryPage({
           </div>
         )}
 
+        {quoteSetupMissing && (
+          <div className="mt-6 rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4 text-sm text-amber-100">
+            Die Zitat-Felder sind im Code vorbereitet, aber Supabase braucht
+            noch die Migrationen für{" "}
+            <code className="rounded bg-black/30 px-1 py-0.5">
+              quote_speaker
+            </code>{" "}
+            und{" "}
+            <code className="rounded bg-black/30 px-1 py-0.5">quote_text</code>.
+            Bis dahin wird das Zitat im alten Feld gespeichert.
+          </div>
+        )}
+
         <form
           action={async (formData) => {
             "use server";
@@ -92,6 +115,17 @@ export default async function EditWikiEntryPage({
           encType="multipart/form-data"
           className="mt-10 rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 shadow-2xl shadow-black/30"
         >
+          <input
+            type="hidden"
+            name="quoteSpeakerColumnAvailable"
+            value={hasQuoteSpeakerColumn ? "1" : "0"}
+          />
+          <input
+            type="hidden"
+            name="quoteTextColumnAvailable"
+            value={hasQuoteTextColumn ? "1" : "0"}
+          />
+
           <div className="space-y-6">
             <div>
               <label className="text-sm font-semibold text-zinc-300">
@@ -144,13 +178,21 @@ export default async function EditWikiEntryPage({
                 name="quoteSpeaker"
                 defaultValue={entry.quote_speaker ?? ""}
                 placeholder="z.B. Marek"
-                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-white placeholder:text-zinc-500 outline-none transition focus:border-white/30"
+                disabled={!hasQuoteSpeakerColumn}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-white placeholder:text-zinc-500 outline-none transition focus:border-white/30 disabled:cursor-not-allowed disabled:opacity-50"
               />
+
+              {!hasQuoteSpeakerColumn && (
+                <p className="mt-2 text-sm text-amber-200">
+                  Dieses Feld wird aktiv, sobald die Supabase-Migration für den
+                  Zitat-Sprecher eingespielt ist.
+                </p>
+              )}
             </div>
 
             <div>
               <label className="text-sm font-semibold text-zinc-300">
-                Zitat
+                {hasQuoteTextColumn ? "Zitat" : "Zitat / bisheriger Inhalt"}
               </label>
 
               <textarea
@@ -161,22 +203,26 @@ export default async function EditWikiEntryPage({
               />
 
               <p className="mt-2 text-sm text-zinc-500">
-                Wird nur verwendet, wenn der Typ auf Zitat steht.
+                {hasQuoteTextColumn
+                  ? "Wird nur verwendet, wenn der Typ auf Zitat steht."
+                  : "Die getrennte Story-Spalte wird nach der Supabase-Migration aktiv."}
               </p>
             </div>
 
-            <div>
-              <label className="text-sm font-semibold text-zinc-300">
-                {isQuote ? "Story / Was ist passiert?" : "Was ist passiert?"}
-              </label>
+            {(!isQuote || hasQuoteTextColumn) && (
+              <div>
+                <label className="text-sm font-semibold text-zinc-300">
+                  {isQuote ? "Story / Was ist passiert?" : "Was ist passiert?"}
+                </label>
 
-              <textarea
-                name="story"
-                required={!isQuote}
-                defaultValue={storyDefault}
-                className="mt-2 min-h-32 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-white placeholder:text-zinc-500 outline-none transition focus:border-white/30"
-              />
-            </div>
+                <textarea
+                  name="story"
+                  required={!isQuote}
+                  defaultValue={storyDefault}
+                  className="mt-2 min-h-32 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-white placeholder:text-zinc-500 outline-none transition focus:border-white/30"
+                />
+              </div>
+            )}
 
             <div>
               <label className="text-sm font-semibold text-zinc-300">

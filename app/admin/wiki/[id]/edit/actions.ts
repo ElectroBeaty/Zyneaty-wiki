@@ -134,18 +134,28 @@ export async function updateWikiEntry(id: string, formData: FormData) {
   const mediaFile = formData.get("media");
   let updateStatus = "saved";
   const category = String(formData.get("category"));
+  const canWriteQuoteSpeaker =
+    formData.get("quoteSpeakerColumnAvailable") === "1";
+  const canWriteQuoteText = formData.get("quoteTextColumnAvailable") === "1";
   const quoteText = String(formData.get("quoteText") ?? "").trim();
+  const storyText = String(formData.get("story") ?? "").trim();
 
   const updateData: UpdateData = {
     title: String(formData.get("title")).trim(),
     category,
     people: normalizePeople(String(formData.get("people") ?? "")),
-    quote_speaker:
-      category === "Zitat"
+    quote_speaker: canWriteQuoteSpeaker
+      ? category === "Zitat"
         ? normalizePerson(String(formData.get("quoteSpeaker") ?? "")) || null
-        : null,
-    quote_text: category === "Zitat" ? quoteText || null : null,
-    story: String(formData.get("story") ?? "").trim(),
+        : null
+      : undefined,
+    quote_text:
+      canWriteQuoteText
+        ? category === "Zitat"
+          ? quoteText || null
+          : null
+        : undefined,
+    story: category === "Zitat" && !canWriteQuoteText ? quoteText : storyText,
     why_funny: String(formData.get("whyFunny")),
     usage: String(formData.get("usage") ?? ""),
   };
