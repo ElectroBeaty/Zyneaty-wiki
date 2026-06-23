@@ -3,6 +3,7 @@ import { getDiscordAvatar } from "@/lib/discord";
 import { escapePostgrestLikePattern } from "@/lib/query-pattern";
 import {
   createSummary,
+  getPrimaryText,
   mapSubmissionToWikiEntry,
   samePerson,
   type WikiEntry,
@@ -29,7 +30,9 @@ function EntryCard({ entry }: { entry: WikiEntry }) {
         {entry.title}
       </h2>
 
-      <p className="mt-3 text-zinc-400">{createSummary(entry.story, 100)}</p>
+      <p className="mt-3 text-zinc-400">
+        {createSummary(getPrimaryText(entry), 100)}
+      </p>
 
       <div className="mt-6 text-sm font-semibold text-zinc-300">
         Weiterlesen →
@@ -79,7 +82,6 @@ export default async function PersonPage({
       entry.category === "Zitat" && samePerson(entry.quoteSpeaker, displayName)
   );
   const mediaEntries = relatedEntries.filter((entry) => entry.mediaUrl);
-  const categories = new Set(relatedEntries.map((entry) => entry.category));
 
   const prettyName =
     profile?.name ??
@@ -131,7 +133,7 @@ export default async function PersonPage({
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
               <div className="text-3xl font-black">
                 {relatedEntries.length}
@@ -158,10 +160,6 @@ export default async function PersonPage({
               <div className="mt-1 text-sm text-zinc-400">Medien</div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <div className="text-3xl font-black">{categories.size}</div>
-              <div className="mt-1 text-sm text-zinc-400">Typen</div>
-            </div>
           </div>
         </div>
 
@@ -177,7 +175,7 @@ export default async function PersonPage({
                   className="rounded-2xl border border-white/10 bg-black/20 p-5 transition hover:bg-white/10"
                 >
                   <blockquote className="text-lg font-semibold leading-7 text-zinc-100">
-                    “{entry.story}”
+                    “{getPrimaryText(entry)}”
                   </blockquote>
                   <div className="mt-4 text-sm text-zinc-500">
                     {entry.title}

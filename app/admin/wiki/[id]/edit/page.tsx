@@ -29,7 +29,10 @@ export default async function EditWikiEntryPage({
         ? "Medium wurde entfernt."
         : status === "saved"
           ? "Eintrag wurde gespeichert."
+          : status === "schema-missing"
+            ? "Eintrag wurde gespeichert, aber Zitat/Zitat-Sprecher brauchen noch die neue Supabase-Migration."
           : null;
+  const isWarningStatus = status === "schema-missing";
 
   const { data: entry, error } = await supabase
     .from("submissions")
@@ -40,6 +43,12 @@ export default async function EditWikiEntryPage({
   if (error || !entry) {
     redirect("/wiki");
   }
+
+  const isQuote = entry.category === "Zitat";
+  const quoteTextDefault =
+    entry.quote_text?.trim() || (isQuote ? entry.story ?? "" : "");
+  const storyDefault =
+    isQuote && !entry.quote_text?.trim() ? "" : entry.story ?? "";
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
@@ -64,7 +73,13 @@ export default async function EditWikiEntryPage({
         </p>
 
         {statusMessage && (
-          <div className="mt-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-4 text-sm font-semibold text-emerald-200">
+          <div
+            className={`mt-6 rounded-2xl border p-4 text-sm font-semibold ${
+              isWarningStatus
+                ? "border-amber-400/20 bg-amber-400/10 text-amber-200"
+                : "border-emerald-400/20 bg-emerald-400/10 text-emerald-200"
+            }`}
+          >
             {statusMessage}
           </div>
         )}
@@ -135,13 +150,30 @@ export default async function EditWikiEntryPage({
 
             <div>
               <label className="text-sm font-semibold text-zinc-300">
-                Inhalt / Story / Zitat
+                Zitat
+              </label>
+
+              <textarea
+                name="quoteText"
+                defaultValue={quoteTextDefault}
+                placeholder='Nur bei Zitaten, z.B. "Achtung, ich kotze gleich!"'
+                className="mt-2 min-h-24 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-white placeholder:text-zinc-500 outline-none transition focus:border-white/30"
+              />
+
+              <p className="mt-2 text-sm text-zinc-500">
+                Wird nur verwendet, wenn der Typ auf Zitat steht.
+              </p>
+            </div>
+
+            <div>
+              <label className="text-sm font-semibold text-zinc-300">
+                {isQuote ? "Story / Was ist passiert?" : "Was ist passiert?"}
               </label>
 
               <textarea
                 name="story"
-                required
-                defaultValue={entry.story}
+                required={!isQuote}
+                defaultValue={storyDefault}
                 className="mt-2 min-h-32 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-white placeholder:text-zinc-500 outline-none transition focus:border-white/30"
               />
             </div>

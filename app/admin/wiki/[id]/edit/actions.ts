@@ -22,6 +22,63 @@ function normalizePerson(value: string) {
   return value.trim().replace(/\s+/g, " ");
 }
 
+type UpdateData = {
+  title: string;
+  category: string;
+  people: string;
+  quote_speaker?: string | null;
+  quote_text?: string | null;
+  story: string;
+  why_funny: string;
+  usage: string;
+  media_url?: string | null;
+  media_type?: string | null;
+};
+
+async function updateSubmissionWithSchemaFallback(
+  id: string,
+  data: UpdateData
+) {
+  const optionalColumns = ["quote_text", "quote_speaker"] as const;
+  const missingColumns: string[] = [];
+  let payload: UpdateData = data;
+
+  for (let attempt = 0; attempt <= optionalColumns.length; attempt += 1) {
+    const { error } = await supabase
+      .from("submissions")
+      .update(payload)
+      .eq("id", id);
+
+    if (!error) return missingColumns;
+
+    const missingColumn = optionalColumns.find((column) =>
+      error.message.includes(column)
+    );
+
+    if (!missingColumn) {
+      throw new Error(error.message);
+    }
+
+    missingColumns.push(missingColumn);
+
+    payload = {
+      ...payload,
+      [missingColumn]: undefined,
+    };
+
+    if (
+      missingColumn === "quote_text" &&
+      payload.category === "Zitat" &&
+      !payload.story.trim() &&
+      data.quote_text
+    ) {
+      payload.story = data.quote_text;
+    }
+  }
+
+  throw new Error("Der Eintrag konnte nicht gespeichert werden.");
+}
+
 async function uploadMedia(file: File) {
   if (!file || file.size === 0) {
     return { mediaUrl: null, mediaType: null };
@@ -76,26 +133,19 @@ export async function updateWikiEntry(id: string, formData: FormData) {
 
   const mediaFile = formData.get("media");
   let updateStatus = "saved";
+  const category = String(formData.get("category"));
+  const quoteText = String(formData.get("quoteText") ?? "").trim();
 
-  const updateData: {
-    title: string;
-    category: string;
-    people: string;
-    quote_speaker: string | null;
-    story: string;
-    why_funny: string;
-    usage: string;
-    media_url?: string | null;
-    media_type?: string | null;
-  } = {
+  const updateData: UpdateData = {
     title: String(formData.get("title")).trim(),
-    category: String(formData.get("category")),
+    category,
     people: normalizePeople(String(formData.get("people") ?? "")),
     quote_speaker:
-      String(formData.get("category")) === "Zitat"
+      category === "Zitat"
         ? normalizePerson(String(formData.get("quoteSpeaker") ?? "")) || null
         : null,
-    story: String(formData.get("story")),
+    quote_text: category === "Zitat" ? quoteText || null : null,
+    story: String(formData.get("story") ?? "").trim(),
     why_funny: String(formData.get("whyFunny")),
     usage: String(formData.get("usage") ?? ""),
   };
@@ -121,27 +171,13 @@ export async function updateWikiEntry(id: string, formData: FormData) {
     updateStatus = "media-removed";
   }
 
-  const { error } = await supabase
-    .from("submissions")
-    .update(updateData)
-    .eq("id", id);
+  const missingColumns = await updateSubmissionWithSchemaFallback(
+    id,
+    updateData
+  );
 
-  if (error?.message.includes("quote_speaker")) {
-    const fallbackData = { ...updateData, quote_speaker: undefined };
-    const retry = await supabase
-      .from("submissions")
-      .update(fallbackData)
-      .eq("id", id);
-
-    if (retry.error) {
-      throw new Error(retry.error.message);
-    }
-
-    redirect("/wiki");
-  }
-
-  if (error) {
-    throw new Error(error.message);
+  if (missingColumns.length > 0) {
+    updateStatus = "schema-missing";
   }
 
   revalidatePath("/wiki");

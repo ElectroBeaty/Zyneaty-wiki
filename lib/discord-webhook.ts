@@ -5,6 +5,7 @@ type ApprovedSubmission = {
   category: string;
   people?: string | null;
   quote_speaker?: string | null;
+  quote_text?: string | null;
   story: string;
   media_url?: string | null;
 };
@@ -16,6 +17,10 @@ export async function announceApprovedSubmission(entry: ApprovedSubmission) {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
   const entryUrl = siteUrl ? `${siteUrl}/wiki/${createSlug(entry.title)}` : null;
+  const summaryText =
+    entry.category === "Zitat"
+      ? entry.quote_text?.trim() || entry.story
+      : entry.story;
 
   try {
     await fetch(webhookUrl, {
@@ -30,7 +35,7 @@ export async function announceApprovedSubmission(entry: ApprovedSubmission) {
         embeds: [
           {
             title: entry.title,
-            description: createSummary(entry.story, 180),
+            description: createSummary(summaryText, 180),
             url: entryUrl ?? undefined,
             color: 0xffffff,
             fields: [

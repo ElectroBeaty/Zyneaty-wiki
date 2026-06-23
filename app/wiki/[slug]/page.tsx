@@ -4,6 +4,8 @@ import { authOptions } from "@/auth";
 import { isAdminDiscordId } from "@/lib/admin";
 import { reactionOptions, type ReactionKey } from "@/lib/reactions";
 import {
+  getPrimaryText,
+  getQuoteStory,
   getPersonHref,
   mapSubmissionToWikiEntry,
   type WikiEntry,
@@ -351,6 +353,8 @@ export default async function WikiEntryPage({
 
   const social = await getSocialData(entry.id, userId);
   const isQuote = entry.category === "Zitat";
+  const primaryText = getPrimaryText(entry);
+  const quoteStory = getQuoteStory(entry);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,#ffffff1f,transparent_30%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
@@ -369,7 +373,7 @@ export default async function WikiEntryPage({
           {isQuote && (
             <>
               <blockquote className="mt-6 rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-2xl font-semibold leading-relaxed text-zinc-100">
-                “{entry.story}”
+                “{primaryText}”
               </blockquote>
 
               {entry.quoteSpeaker && (
@@ -423,6 +427,15 @@ export default async function WikiEntryPage({
           </section>
         )}
 
+        {isQuote && quoteStory && (
+          <section className="mt-10 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+            <h2 className="text-2xl font-bold">Story</h2>
+            <p className="mt-3 whitespace-pre-wrap leading-7 text-zinc-300">
+              {quoteStory}
+            </p>
+          </section>
+        )}
+
         <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
           <h2 className="text-2xl font-bold">
             {isQuote ? "Warum ist es legendär?" : "Warum ist es lustig?"}
@@ -454,8 +467,8 @@ export default async function WikiEntryPage({
           </>
         ) : (
           <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6 text-zinc-400">
-            Reaktionen und Kommentare sind noch nicht aktiv. Dafür muss die
-            Supabase-Migration für{" "}
+            Reaktionen und Kommentare sind vorbereitet, aber die Supabase-Tabellen
+            oder Leserechte fehlen noch. Spiele die Migrationen für{" "}
             <code className="rounded bg-black/30 px-1 py-0.5">
               wiki_comments
             </code>{" "}
@@ -463,7 +476,7 @@ export default async function WikiEntryPage({
             <code className="rounded bg-black/30 px-1 py-0.5">
               wiki_reactions
             </code>{" "}
-            eingespielt sein.
+            ein, dann erscheint hier automatisch das Kommentarformular.
           </section>
         )}
       </article>

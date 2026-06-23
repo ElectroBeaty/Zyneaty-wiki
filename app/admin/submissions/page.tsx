@@ -12,6 +12,7 @@ type Submission = {
   category: string;
   people: string | null;
   quote_speaker: string | null;
+  quote_text: string | null;
   story: string;
   why_funny: string;
   usage: string | null;
@@ -29,6 +30,22 @@ function splitPeople(value: string | null) {
     .split(",")
     .map((person) => person.trim())
     .filter(Boolean);
+}
+
+function getSubmissionPrimaryText(submission: Submission) {
+  if (submission.category === "Zitat") {
+    return submission.quote_text?.trim() || submission.story;
+  }
+
+  return submission.story;
+}
+
+function getSubmissionQuoteStory(submission: Submission) {
+  if (submission.category !== "Zitat" || !submission.quote_text?.trim()) {
+    return "";
+  }
+
+  return submission.story.trim();
 }
 
 function MediaPreview({
@@ -220,11 +237,22 @@ export default async function SubmissionsPage() {
                 <section className="mt-6">
                   <h4 className="font-bold">
                     {submission.category === "Zitat"
-                      ? "Zitat / Kontext"
+                      ? "Zitat"
                       : "Was ist passiert?"}
                   </h4>
-                  <p className="mt-2 text-zinc-300">{submission.story}</p>
+                  <p className="mt-2 whitespace-pre-wrap text-zinc-300">
+                    {getSubmissionPrimaryText(submission)}
+                  </p>
                 </section>
+
+                {getSubmissionQuoteStory(submission) && (
+                  <section className="mt-5">
+                    <h4 className="font-bold">Story</h4>
+                    <p className="mt-2 whitespace-pre-wrap text-zinc-300">
+                      {getSubmissionQuoteStory(submission)}
+                    </p>
+                  </section>
+                )}
 
                 <section className="mt-5">
                   <h4 className="font-bold">

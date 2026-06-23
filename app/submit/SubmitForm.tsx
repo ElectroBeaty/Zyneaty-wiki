@@ -88,9 +88,20 @@ export default function SubmitForm() {
             <div>
               <label className="text-sm font-semibold text-zinc-300">Zitat</label>
               <textarea
-                name="story"
+                name="quoteText"
                 required
                 placeholder='z.B. "Ich dachte, das war optional."'
+                className="mt-2 min-h-28 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-white placeholder:text-zinc-500 outline-none transition focus:border-white/30"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-semibold text-zinc-300">
+                Story / Was ist passiert?
+              </label>
+              <textarea
+                name="story"
+                placeholder="z.B. Während einem Call, nachdem ..."
                 className="mt-2 min-h-28 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-white placeholder:text-zinc-500 outline-none transition focus:border-white/30"
               />
             </div>
@@ -120,10 +131,12 @@ export default function SubmitForm() {
             </div>
 
             <div>
-              <label className="text-sm font-semibold text-zinc-300">In welchem Kontext?</label>
+              <label className="text-sm font-semibold text-zinc-300">
+                Zusätzlicher Kontext / Verwendung
+              </label>
               <textarea
                 name="usage"
-                placeholder="z.B. Während einem Call, nachdem ..."
+                placeholder="z.B. Wird gesagt, wenn jemand komplett lost ist."
                 className="mt-2 min-h-28 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-white placeholder:text-zinc-500 outline-none transition focus:border-white/30"
               />
             </div>

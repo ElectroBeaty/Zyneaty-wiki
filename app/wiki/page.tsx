@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { reactionOptions, type ReactionKey } from "@/lib/reactions";
 import { supabase } from "@/lib/supabase";
-import { createSummary, mapSubmissionToWikiEntry } from "@/lib/wiki";
+import {
+  createSummary,
+  getPrimaryText,
+  mapSubmissionToWikiEntry,
+} from "@/lib/wiki";
 import WikiClient from "./WikiClient";
 
 export const dynamic = "force-dynamic";
@@ -31,7 +35,7 @@ async function getApprovedSubmissions() {
 
     return {
       ...entry,
-      summary: createSummary(entry.story, 100),
+      summary: createSummary(getPrimaryText(entry), 100),
     };
   });
 

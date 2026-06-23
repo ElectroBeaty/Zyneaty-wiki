@@ -5,6 +5,7 @@ export type WikiEntry = {
   category: string;
   people: string[];
   quoteSpeaker: string | null;
+  quoteText: string | null;
   story: string;
   whyFunny: string;
   usage: string;
@@ -19,6 +20,7 @@ type SubmissionRow = {
   category: string;
   people: string | null;
   quote_speaker?: string | null;
+  quote_text?: string | null;
   story: string;
   why_funny: string;
   usage: string | null;
@@ -60,6 +62,26 @@ export function samePerson(left: string | null | undefined, right: string) {
   return left?.trim().toLowerCase() === right.trim().toLowerCase();
 }
 
+export function getPrimaryText(
+  entry: Pick<WikiEntry, "category" | "quoteText" | "story">
+) {
+  if (entry.category === "Zitat") {
+    return entry.quoteText?.trim() || entry.story;
+  }
+
+  return entry.story;
+}
+
+export function getQuoteStory(
+  entry: Pick<WikiEntry, "category" | "quoteText" | "story">
+) {
+  if (entry.category !== "Zitat" || !entry.quoteText?.trim()) {
+    return "";
+  }
+
+  return entry.story.trim();
+}
+
 export function mapSubmissionToWikiEntry(entry: SubmissionRow): WikiEntry {
   return {
     id: String(entry.id),
@@ -68,6 +90,7 @@ export function mapSubmissionToWikiEntry(entry: SubmissionRow): WikiEntry {
     category: entry.category,
     people: splitPeople(entry.people),
     quoteSpeaker: entry.quote_speaker?.trim() || null,
+    quoteText: entry.quote_text?.trim() || null,
     story: entry.story,
     whyFunny: entry.why_funny,
     usage: entry.usage ?? "",

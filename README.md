@@ -22,10 +22,12 @@ The social wiki features use two additional Supabase tables:
 
 ```sql
 supabase/migrations/202606130001_wiki_social.sql
+supabase/migrations/202606170001_enable_rls.sql
 supabase/migrations/202606230001_add_quote_speaker.sql
+supabase/migrations/202606230002_add_quote_text.sql
 ```
 
-Run that SQL in Supabase before enabling reactions and comments in production.
+Run that SQL in Supabase before enabling reactions, comments, and separated quote editing in production.
 
 Optional environment variables:
 
@@ -35,6 +37,7 @@ DISCORD_WIKI_WEBHOOK_URL=
 NEXT_PUBLIC_SITE_URL=
 ```
 
+`SUPABASE_SERVICE_ROLE_KEY` is recommended for server-side comment, reaction, and admin writes while keeping public RLS read policies tight.
 `DISCORD_WIKI_WEBHOOK_URL` posts a Discord message when an admin approves a new wiki entry.
 `NEXT_PUBLIC_SITE_URL` is used to include the public entry link in that Discord message.
 

@@ -16,6 +16,16 @@ async function requireAdmin() {
   }
 }
 
+type ApprovedSubmission = {
+  title: string;
+  category: string;
+  people?: string | null;
+  quote_speaker?: string | null;
+  quote_text?: string | null;
+  story: string;
+  media_url?: string | null;
+};
+
 export async function deleteSubmission(id: string) {
   await requireAdmin();
 
@@ -31,31 +41,53 @@ export async function deleteSubmission(id: string) {
 export async function approveSubmission(id: string) {
   await requireAdmin();
 
-  const result = await supabase
-    .from("submissions")
-    .update({ approved: true })
-    .eq("id", id)
-    .select("title,category,people,quote_speaker,story,media_url")
-    .single();
+  const optionalColumns = ["quote_text", "quote_speaker"] as const;
+  let selectColumns = [
+    "title",
+    "category",
+    "people",
+    "quote_speaker",
+    "quote_text",
+    "story",
+    "media_url",
+  ];
+  let submission: ApprovedSubmission | null = null;
+  let error: { message: string } | null = null;
 
-  const { data: submission, error } = result.error?.message.includes(
-    "quote_speaker"
-  )
-    ? await supabase
-        .from("submissions")
-        .update({ approved: true })
-        .eq("id", id)
-        .select("title,category,people,story,media_url")
-        .single()
-    : result;
+  for (let attempt = 0; attempt <= optionalColumns.length; attempt += 1) {
+    const result = await supabase
+      .from("submissions")
+      .update({ approved: true })
+      .eq("id", id)
+      .select(selectColumns.join(","))
+      .single();
+
+    if (!result.error) {
+      submission = result.data as unknown as ApprovedSubmission;
+      break;
+    }
+
+    const missingColumn = optionalColumns.find((column) =>
+      result.error?.message.includes(column)
+    );
+
+    if (!missingColumn) {
+      error = result.error;
+      break;
+    }
+
+    selectColumns = selectColumns.filter((column) => column !== missingColumn);
+  }
 
   if (error) {
     throw new Error(error.message);
   }
 
-  if (submission) {
-    await announceApprovedSubmission(submission);
+  if (!submission) {
+    throw new Error("Der Vorschlag konnte nicht freigegeben werden.");
   }
+
+  await announceApprovedSubmission(submission);
 
   revalidatePath("/admin/submissions");
   revalidatePath("/wiki");

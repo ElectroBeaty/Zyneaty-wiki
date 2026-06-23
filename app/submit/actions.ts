@@ -20,6 +20,56 @@ function normalizePerson(value: string) {
   return value.trim().replace(/\s+/g, " ");
 }
 
+type SubmissionInsertData = {
+  title: string;
+  category: string;
+  people: string;
+  quote_speaker?: string | null;
+  quote_text?: string | null;
+  story: string;
+  why_funny: string;
+  usage: string;
+  author_name: string;
+  approved: boolean;
+  media_url: string | null;
+  media_type: string | null;
+};
+
+async function insertSubmission(data: SubmissionInsertData) {
+  const optionalColumns = ["quote_text", "quote_speaker"] as const;
+  let payload: SubmissionInsertData = data;
+
+  for (let attempt = 0; attempt <= optionalColumns.length; attempt += 1) {
+    const { error } = await supabase.from("submissions").insert(payload);
+
+    if (!error) return;
+
+    const missingColumn = optionalColumns.find((column) =>
+      error.message.includes(column)
+    );
+
+    if (!missingColumn) {
+      throw new Error(error.message);
+    }
+
+    payload = {
+      ...payload,
+      [missingColumn]: undefined,
+    };
+
+    if (
+      missingColumn === "quote_text" &&
+      payload.category === "Zitat" &&
+      !payload.story.trim() &&
+      data.quote_text
+    ) {
+      payload.story = data.quote_text;
+    }
+  }
+
+  throw new Error("Der Vorschlag konnte nicht gespeichert werden.");
+}
+
 async function uploadMedia(file: File) {
   if (!file || file.size === 0) {
     return { mediaUrl: null, mediaType: null };
@@ -73,13 +123,14 @@ export async function createSubmission(formData: FormData) {
   }
 
   const category = String(formData.get("category"));
-  const story = String(formData.get("story")).trim();
+  const story = String(formData.get("story") ?? "").trim();
+  const quoteText = String(formData.get("quoteText") ?? "").trim();
 
   const rawTitle = String(formData.get("title")).trim();
 
   const title =
     category === "Zitat" && rawTitle === "Zitat"
-      ? story.slice(0, 40) || "Zitat"
+      ? (quoteText || story).slice(0, 40) || "Zitat"
       : rawTitle;
 
   const { data: existing } = await supabase
@@ -101,7 +152,11 @@ export async function createSubmission(formData: FormData) {
         ? await uploadMedia(mediaFile)
         : { mediaUrl: null, mediaType: null };
 
-  const insertData = {
+  if (category === "Zitat" && !quoteText) {
+    throw new Error("Bitte gib das eigentliche Zitat an.");
+  }
+
+  const insertData: SubmissionInsertData = {
     title,
     category,
     people: normalizePeople(String(formData.get("people") ?? "")),
@@ -109,6 +164,7 @@ export async function createSubmission(formData: FormData) {
       category === "Zitat"
         ? normalizePerson(String(formData.get("quoteSpeaker") ?? "")) || null
         : null,
+    quote_text: category === "Zitat" ? quoteText : null,
     story,
     why_funny: String(formData.get("whyFunny")),
     usage: String(formData.get("usage") ?? ""),
@@ -118,22 +174,7 @@ export async function createSubmission(formData: FormData) {
     media_type: mediaType,
   };
 
-  const { error } = await supabase.from("submissions").insert(insertData);
-
-  if (error?.message.includes("quote_speaker")) {
-    const fallbackData = { ...insertData, quote_speaker: undefined };
-    const retry = await supabase.from("submissions").insert(fallbackData);
-
-    if (retry.error) {
-      throw new Error(retry.error.message);
-    }
-
-    redirect("/submit?success=1");
-  }
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  await insertSubmission(insertData);
 
   redirect("/submit?success=1");
 }

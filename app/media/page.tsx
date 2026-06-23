@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
-import { createSummary, mapSubmissionToWikiEntry } from "@/lib/wiki";
+import {
+  createSummary,
+  getPrimaryText,
+  mapSubmissionToWikiEntry,
+} from "@/lib/wiki";
 import MediaGalleryClient from "./MediaGalleryClient";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +26,7 @@ async function getMediaEntries() {
 
     return {
       ...entry,
-      summary: createSummary(entry.story, 120),
+      summary: createSummary(getPrimaryText(entry), 120),
     };
   });
 }
