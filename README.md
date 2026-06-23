@@ -25,9 +25,10 @@ supabase/migrations/202606130001_wiki_social.sql
 supabase/migrations/202606170001_enable_rls.sql
 supabase/migrations/202606230001_add_quote_speaker.sql
 supabase/migrations/202606230002_add_quote_text.sql
+supabase/migrations/202606230003_wiki_runtime_setup.sql
 ```
 
-Run that SQL in Supabase before enabling reactions, comments, and separated quote editing in production.
+Run `202606230003_wiki_runtime_setup.sql` in Supabase SQL Editor if comments, reactions, quote speakers, or separated quote editing are missing in production.
 
 Optional environment variables:
 

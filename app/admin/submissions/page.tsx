@@ -260,7 +260,7 @@ export default async function SubmissionsPage() {
                       ? "Warum ist es legendär?"
                       : "Warum ist es lustig?"}
                   </h4>
-                  <p className="mt-2 text-zinc-300">
+                  <p className="mt-2 whitespace-pre-wrap text-zinc-300">
                     {submission.why_funny}
                   </p>
                 </section>
@@ -272,7 +272,9 @@ export default async function SubmissionsPage() {
                         ? "Kontext"
                         : "Typische Verwendung"}
                     </h4>
-                    <p className="mt-2 text-zinc-300">{submission.usage}</p>
+                    <p className="mt-2 whitespace-pre-wrap text-zinc-300">
+                      {submission.usage}
+                    </p>
                   </section>
                 )}
 

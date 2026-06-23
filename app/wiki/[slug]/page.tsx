@@ -423,7 +423,9 @@ export default async function WikiEntryPage({
         {!isQuote && (
           <section className="mt-10 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
             <h2 className="text-2xl font-bold">Was ist passiert?</h2>
-            <p className="mt-3 leading-7 text-zinc-300">{entry.story}</p>
+            <p className="mt-3 whitespace-pre-wrap leading-7 text-zinc-300">
+              {entry.story}
+            </p>
           </section>
         )}
 
@@ -441,7 +443,9 @@ export default async function WikiEntryPage({
             {isQuote ? "Warum ist es legendär?" : "Warum ist es lustig?"}
           </h2>
 
-          <p className="mt-3 leading-7 text-zinc-300">{entry.whyFunny}</p>
+          <p className="mt-3 whitespace-pre-wrap leading-7 text-zinc-300">
+            {entry.whyFunny}
+          </p>
         </section>
 
         {entry.usage && (
@@ -450,7 +454,9 @@ export default async function WikiEntryPage({
               {isQuote ? "Kontext" : "Typische Verwendung"}
             </h2>
 
-            <p className="mt-3 leading-7 text-zinc-300">{entry.usage}</p>
+            <p className="mt-3 whitespace-pre-wrap leading-7 text-zinc-300">
+              {entry.usage}
+            </p>
           </section>
         )}
 
@@ -476,7 +482,11 @@ export default async function WikiEntryPage({
             <code className="rounded bg-black/30 px-1 py-0.5">
               wiki_reactions
             </code>{" "}
-            ein, dann erscheint hier automatisch das Kommentarformular.
+            ein. Am einfachsten ist{" "}
+            <code className="rounded bg-black/30 px-1 py-0.5">
+              202606230003_wiki_runtime_setup.sql
+            </code>
+            , dann erscheint hier automatisch das Kommentarformular.
           </section>
         )}
       </article>
