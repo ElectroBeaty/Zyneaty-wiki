@@ -4,6 +4,7 @@ import { escapePostgrestLikePattern } from "@/lib/query-pattern";
 import {
   createSummary,
   mapSubmissionToWikiEntry,
+  samePerson,
   type WikiEntry,
 } from "@/lib/wiki";
 import { supabase } from "@/lib/supabase";
@@ -70,8 +71,12 @@ export default async function PersonPage({
   const relatedEntries = entries.filter((entry) =>
     entry.people.some((person) => person.toLowerCase() === displayName)
   );
-  const quoteEntries = relatedEntries.filter(
+  const quoteMentionEntries = relatedEntries.filter(
     (entry) => entry.category === "Zitat"
+  );
+  const spokenQuoteEntries = entries.filter(
+    (entry) =>
+      entry.category === "Zitat" && samePerson(entry.quoteSpeaker, displayName)
   );
   const mediaEntries = relatedEntries.filter((entry) => entry.mediaUrl);
   const categories = new Set(relatedEntries.map((entry) => entry.category));
@@ -85,8 +90,7 @@ export default async function PersonPage({
 
   const avatarUrl =
     profile?.avatar_url ?? (await getDiscordAvatar(profile?.discord_id ?? null));
-  const knownFor =
-    profile?.known_for ?? quoteEntries[0]?.title ?? relatedEntries[0]?.title;
+  const knownFor = profile?.known_for ?? null;
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
@@ -127,7 +131,7 @@ export default async function PersonPage({
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-4">
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
               <div className="text-3xl font-black">
                 {relatedEntries.length}
@@ -136,8 +140,17 @@ export default async function PersonPage({
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <div className="text-3xl font-black">{quoteEntries.length}</div>
-              <div className="mt-1 text-sm text-zinc-400">Zitate</div>
+              <div className="text-3xl font-black">
+                {spokenQuoteEntries.length}
+              </div>
+              <div className="mt-1 text-sm text-zinc-400">Gesagte Zitate</div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+              <div className="text-3xl font-black">
+                {quoteMentionEntries.length}
+              </div>
+              <div className="mt-1 text-sm text-zinc-400">Zitat-Bezüge</div>
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
@@ -152,12 +165,12 @@ export default async function PersonPage({
           </div>
         </div>
 
-        {quoteEntries.length > 0 && (
+        {spokenQuoteEntries.length > 0 && (
           <section className="mt-10 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <h2 className="text-2xl font-bold">Top-Zitate</h2>
+            <h2 className="text-2xl font-bold">Gesagte Zitate</h2>
 
             <div className="mt-5 grid gap-4 md:grid-cols-2">
-              {quoteEntries.slice(0, 4).map((entry) => (
+              {spokenQuoteEntries.slice(0, 4).map((entry) => (
                 <Link
                   key={entry.id}
                   href={`/wiki/${entry.slug}`}

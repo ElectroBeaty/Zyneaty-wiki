@@ -8,6 +8,11 @@ import { isAdminDiscordId } from "@/lib/admin";
 import { isReactionKey, type ReactionKey } from "@/lib/reactions";
 import { supabase } from "@/lib/supabase";
 
+export type CommentFormState = {
+  status: "idle" | "success" | "error";
+  message: string;
+};
+
 async function requireUser() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
@@ -59,7 +64,7 @@ export async function toggleReaction(
   const { data: existing, error: existingError } = await supabase
     .from("wiki_reactions")
     .select("id")
-    .eq("submission_id", submissionId)
+    .eq("submission_id", String(submissionId))
     .eq("user_id", user.id)
     .eq("reaction", reaction)
     .maybeSingle();
@@ -79,7 +84,7 @@ export async function toggleReaction(
     }
   } else {
     const { error } = await supabase.from("wiki_reactions").insert({
-      submission_id: submissionId,
+      submission_id: String(submissionId),
       user_id: user.id,
       reaction,
     });
@@ -92,24 +97,30 @@ export async function toggleReaction(
   revalidatePath(`/wiki/${slug}`);
 }
 
-export async function addComment(
+export async function submitComment(
   submissionId: string,
   slug: string,
   formData: FormData
-) {
+): Promise<CommentFormState> {
   const user = await requireUser();
   const body = String(formData.get("body") ?? "").trim();
 
   if (!body) {
-    return;
+    return {
+      status: "error",
+      message: "Schreib erst einen Kommentar.",
+    };
   }
 
   if (body.length > 500) {
-    throw new Error("Kommentare duerfen maximal 500 Zeichen lang sein.");
+    return {
+      status: "error",
+      message: "Kommentare dürfen maximal 500 Zeichen lang sein.",
+    };
   }
 
   const { error } = await supabase.from("wiki_comments").insert({
-    submission_id: submissionId,
+    submission_id: String(submissionId),
     user_id: user.id,
     user_name: user.name,
     user_image: user.image,
@@ -117,10 +128,19 @@ export async function addComment(
   });
 
   if (error) {
-    throw new Error(error.message);
+    return {
+      status: "error",
+      message:
+        "Kommentar konnte nicht gespeichert werden. Prüfe bitte die Supabase-Migration.",
+    };
   }
 
   revalidatePath(`/wiki/${slug}`);
+
+  return {
+    status: "success",
+    message: "Kommentar gespeichert.",
+  };
 }
 
 export async function deleteComment(commentId: string, slug: string) {
@@ -148,8 +168,9 @@ export async function deleteComment(commentId: string, slug: string) {
     .eq("id", commentId);
 
   if (error) {
-    throw new Error(error.message);
+    redirect(`/wiki/${slug}?comment=failed#comments`);
   }
 
   revalidatePath(`/wiki/${slug}`);
+  redirect(`/wiki/${slug}?comment=deleted#comments`);
 }

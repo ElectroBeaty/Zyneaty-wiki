@@ -122,6 +122,19 @@ export default async function EditWikiEntryPage({
 
             <div>
               <label className="text-sm font-semibold text-zinc-300">
+                Zitat-Sprecher optional
+              </label>
+
+              <input
+                name="quoteSpeaker"
+                defaultValue={entry.quote_speaker ?? ""}
+                placeholder="z.B. Marek"
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-white placeholder:text-zinc-500 outline-none transition focus:border-white/30"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-semibold text-zinc-300">
                 Inhalt / Story / Zitat
               </label>
 

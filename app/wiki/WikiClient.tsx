@@ -12,6 +12,12 @@ type WikiEntry = {
   people: string[];
   mediaUrl: string | null;
   mediaType: string | null;
+  commentCount: number;
+  reactionCount: number;
+  topReactions: Array<{
+    label: string;
+    count: number;
+  }>;
 };
 
 export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
@@ -136,6 +142,12 @@ export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
                     Medium
                   </span>
                 )}
+
+                {entry.commentCount > 0 && (
+                  <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-400">
+                    {entry.commentCount} Kommentare
+                  </span>
+                )}
               </div>
 
               <h2 className="mt-3 text-2xl font-bold group-hover:text-zinc-200">
@@ -143,6 +155,25 @@ export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
               </h2>
 
               <p className="mt-3 text-zinc-300">{entry.summary}</p>
+
+              {(entry.reactionCount > 0 || entry.commentCount > 0) && (
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {entry.topReactions.map((reaction) => (
+                    <span
+                      key={reaction.label}
+                      className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-zinc-300"
+                    >
+                      {reaction.label} · {reaction.count}
+                    </span>
+                  ))}
+
+                  {entry.reactionCount > 0 && entry.topReactions.length === 0 && (
+                    <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-zinc-300">
+                      {entry.reactionCount} Reaktionen
+                    </span>
+                  )}
+                </div>
+              )}
 
               <div className="mt-6 text-sm font-semibold text-zinc-300">
                 Weiterlesen →

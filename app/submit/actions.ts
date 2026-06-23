@@ -16,6 +16,10 @@ function normalizePeople(value: string) {
     .join(", ");
 }
 
+function normalizePerson(value: string) {
+  return value.trim().replace(/\s+/g, " ");
+}
+
 async function uploadMedia(file: File) {
   if (!file || file.size === 0) {
     return { mediaUrl: null, mediaType: null };
@@ -101,6 +105,10 @@ export async function createSubmission(formData: FormData) {
     title,
     category,
     people: normalizePeople(String(formData.get("people") ?? "")),
+    quote_speaker:
+      category === "Zitat"
+        ? normalizePerson(String(formData.get("quoteSpeaker") ?? "")) || null
+        : null,
     story,
     why_funny: String(formData.get("whyFunny")),
     usage: String(formData.get("usage") ?? ""),

@@ -1,9 +1,19 @@
 import Link from "next/link";
+import { reactionOptions, type ReactionKey } from "@/lib/reactions";
 import { supabase } from "@/lib/supabase";
 import { createSummary, mapSubmissionToWikiEntry } from "@/lib/wiki";
 import WikiClient from "./WikiClient";
 
 export const dynamic = "force-dynamic";
+
+type SocialSummary = {
+  commentCount: number;
+  reactionCount: number;
+  topReactions: Array<{
+    label: string;
+    count: number;
+  }>;
+};
 
 async function getApprovedSubmissions() {
   const { data, error } = await supabase
@@ -16,7 +26,7 @@ async function getApprovedSubmissions() {
     throw new Error(error.message);
   }
 
-  return (data ?? []).map((submission) => {
+  const entries = (data ?? []).map((submission) => {
     const entry = mapSubmissionToWikiEntry(submission);
 
     return {
@@ -24,6 +34,79 @@ async function getApprovedSubmissions() {
       summary: createSummary(entry.story, 100),
     };
   });
+
+  const social = await getSocialSummaries(entries.map((entry) => entry.id));
+
+  return entries.map((entry) => ({
+    ...entry,
+    ...social[entry.id],
+  }));
+}
+
+async function getSocialSummaries(entryIds: string[]) {
+  const empty = Object.fromEntries(
+    entryIds.map((id) => [
+      id,
+      {
+        commentCount: 0,
+        reactionCount: 0,
+        topReactions: [],
+      },
+    ])
+  ) as Record<string, SocialSummary>;
+
+  if (entryIds.length === 0) return empty;
+
+  const [commentsResult, reactionsResult] = await Promise.all([
+    supabase
+      .from("wiki_comments")
+      .select("submission_id")
+      .in("submission_id", entryIds),
+    supabase
+      .from("wiki_reactions")
+      .select("submission_id,reaction")
+      .in("submission_id", entryIds),
+  ]);
+
+  if (commentsResult.error || reactionsResult.error) return empty;
+
+  for (const comment of commentsResult.data ?? []) {
+    const id = String(comment.submission_id);
+    if (empty[id]) empty[id].commentCount += 1;
+  }
+
+  const reactionLabels = new Map(
+    reactionOptions.map((option) => [option.key, option.label])
+  );
+  const reactionBuckets = new Map<string, Map<ReactionKey, number>>();
+
+  for (const reaction of reactionsResult.data ?? []) {
+    const id = String(reaction.submission_id);
+    const key = reaction.reaction as ReactionKey;
+
+    if (!empty[id] || !reactionLabels.has(key)) continue;
+
+    empty[id].reactionCount += 1;
+
+    if (!reactionBuckets.has(id)) {
+      reactionBuckets.set(id, new Map());
+    }
+
+    const bucket = reactionBuckets.get(id)!;
+    bucket.set(key, (bucket.get(key) ?? 0) + 1);
+  }
+
+  for (const [id, bucket] of reactionBuckets) {
+    empty[id].topReactions = Array.from(bucket.entries())
+      .map(([key, count]) => ({
+        label: reactionLabels.get(key) ?? key,
+        count,
+      }))
+      .sort((left, right) => right.count - left.count)
+      .slice(0, 2);
+  }
+
+  return empty;
 }
 
 export default async function WikiPage() {

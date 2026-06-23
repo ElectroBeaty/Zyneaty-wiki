@@ -3,6 +3,8 @@ import { createSlug, createSummary } from "@/lib/wiki";
 type ApprovedSubmission = {
   title: string;
   category: string;
+  people?: string | null;
+  quote_speaker?: string | null;
   story: string;
   media_url?: string | null;
 };
@@ -37,6 +39,24 @@ export async function announceApprovedSubmission(entry: ApprovedSubmission) {
                 value: entry.category,
                 inline: true,
               },
+              ...(entry.quote_speaker
+                ? [
+                    {
+                      name: "Gesagt von",
+                      value: entry.quote_speaker,
+                      inline: true,
+                    },
+                  ]
+                : []),
+              ...(entry.people
+                ? [
+                    {
+                      name: "Beteiligte",
+                      value: entry.people,
+                      inline: false,
+                    },
+                  ]
+                : []),
             ],
             image: entry.media_url ? { url: entry.media_url } : undefined,
           },

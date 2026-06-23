@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 export default async function PeoplePage() {
   const { data: submissions, error: submissionsError } = await supabase
     .from("submissions")
-    .select("people,category,media_url")
+    .select("people,quote_speaker,category,media_url")
     .eq("approved", true);
 
   if (submissionsError) {
@@ -31,6 +31,7 @@ export default async function PeoplePage() {
       name: string;
       count: number;
       quoteCount: number;
+      spokenQuoteCount: number;
       mediaCount: number;
       categories: Set<string>;
       manualAvatarUrl: string | null;
@@ -39,28 +40,56 @@ export default async function PeoplePage() {
     }
   >();
 
+  function ensurePerson(
+    person: string,
+    entry: { category: string; media_url: string | null }
+  ) {
+    const key = person.toLowerCase();
+    const profile = profileMap.get(key);
+    const existing = peopleMap.get(key);
+
+    if (existing) {
+      existing.count += 1;
+      existing.quoteCount += entry.category === "Zitat" ? 1 : 0;
+      existing.mediaCount += entry.media_url ? 1 : 0;
+      existing.categories.add(entry.category);
+    } else {
+      peopleMap.set(key, {
+        name: profile?.name ?? person,
+        count: 1,
+        quoteCount: entry.category === "Zitat" ? 1 : 0,
+        spokenQuoteCount: 0,
+        mediaCount: entry.media_url ? 1 : 0,
+        categories: new Set([entry.category]),
+        manualAvatarUrl: profile?.avatar_url ?? null,
+        discordId: profile?.discord_id ?? null,
+        knownFor: profile?.known_for ?? null,
+      });
+    }
+  }
+
   for (const entry of submissions ?? []) {
-    for (const person of splitPeople(entry.people)) {
-      const key = person.toLowerCase();
-      const profile = profileMap.get(key);
+    const participants = splitPeople(entry.people);
+
+    if (
+      entry.quote_speaker &&
+      !participants.some(
+        (person) => person.toLowerCase() === entry.quote_speaker.toLowerCase()
+      )
+    ) {
+      participants.push(entry.quote_speaker);
+    }
+
+    for (const person of participants) {
+      ensurePerson(person, entry);
+    }
+
+    if (entry.category === "Zitat" && entry.quote_speaker) {
+      const key = entry.quote_speaker.toLowerCase();
       const existing = peopleMap.get(key);
 
       if (existing) {
-        existing.count += 1;
-        existing.quoteCount += entry.category === "Zitat" ? 1 : 0;
-        existing.mediaCount += entry.media_url ? 1 : 0;
-        existing.categories.add(entry.category);
-      } else {
-        peopleMap.set(key, {
-          name: profile?.name ?? person,
-          count: 1,
-          quoteCount: entry.category === "Zitat" ? 1 : 0,
-          mediaCount: entry.media_url ? 1 : 0,
-          categories: new Set([entry.category]),
-          manualAvatarUrl: profile?.avatar_url ?? null,
-          discordId: profile?.discord_id ?? null,
-          knownFor: profile?.known_for ?? null,
-        });
+        existing.spokenQuoteCount += 1;
       }
     }
   }
@@ -141,15 +170,24 @@ export default async function PeoplePage() {
                 </p>
               )}
 
-              <div className="mt-5 grid grid-cols-3 gap-2 text-center">
+              <div className="mt-5 grid grid-cols-4 gap-2 text-center">
                 <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
                   <div className="font-black">{person.count}</div>
                   <div className="mt-1 text-xs text-zinc-500">Einträge</div>
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                  <div className="font-black">{person.spokenQuoteCount}</div>
+                  <div className="mt-1 text-xs text-zinc-500">
+                    Gesagt
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
                   <div className="font-black">{person.quoteCount}</div>
-                  <div className="mt-1 text-xs text-zinc-500">Zitate</div>
+                  <div className="mt-1 text-xs text-zinc-500">
+                    Bezüge
+                  </div>
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-black/20 p-3">

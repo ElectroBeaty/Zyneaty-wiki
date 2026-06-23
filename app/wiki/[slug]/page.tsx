@@ -10,11 +10,11 @@ import {
 } from "@/lib/wiki";
 import { supabase } from "@/lib/supabase";
 import {
-  addComment,
   deleteComment,
   deleteWikiEntry,
   toggleReaction,
 } from "./actions";
+import CommentForm from "./CommentForm";
 
 export const dynamic = "force-dynamic";
 
@@ -68,11 +68,11 @@ async function getSocialData(entryId: string, userId: string | undefined) {
     supabase
       .from("wiki_reactions")
       .select("reaction,user_id")
-      .eq("submission_id", entryId),
+      .eq("submission_id", String(entryId)),
     supabase
       .from("wiki_comments")
       .select("id,user_id,user_name,user_image,body,created_at")
-      .eq("submission_id", entryId)
+      .eq("submission_id", String(entryId))
       .order("created_at", { ascending: false }),
   ]);
 
@@ -181,7 +181,10 @@ function ReactionPanel({
   reactions: ReactionState;
 }) {
   return (
-    <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+    <section
+      id="reactions"
+      className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6"
+    >
       <h2 className="text-2xl font-bold">Reaktionen</h2>
 
       <div className="mt-4 flex flex-wrap gap-3">
@@ -221,37 +224,41 @@ function CommentsPanel({
   entry,
   isAdmin,
   userId,
+  commentStatus,
 }: {
   comments: CommentRow[];
   entry: WikiEntry;
   isAdmin: boolean;
   userId: string | undefined;
+  commentStatus: string | undefined;
 }) {
   return (
-    <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6">
+    <section
+      id="comments"
+      className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6"
+    >
       <h2 className="text-2xl font-bold">Kommentare</h2>
 
-      <form
-        action={addComment.bind(null, entry.id, entry.slug)}
-        className="mt-4"
-      >
-        <textarea
-          name="body"
-          required
-          maxLength={500}
-          placeholder="Kontext, Erinnerung oder kurzer Kommentar..."
-          className="min-h-28 w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-white outline-none transition placeholder:text-zinc-500 focus:border-white/30"
-        />
-
-        <div className="mt-3 flex justify-end">
-          <button
-            type="submit"
-            className="rounded-full bg-white px-5 py-2 font-semibold text-black transition hover:bg-zinc-200"
-          >
-            Kommentieren
-          </button>
+      {commentStatus === "added" && (
+        <div className="mt-4 rounded-2xl border border-green-500/20 bg-green-500/10 p-4 text-sm font-semibold text-green-300">
+          Kommentar gespeichert.
         </div>
-      </form>
+      )}
+
+      {commentStatus === "deleted" && (
+        <div className="mt-4 rounded-2xl border border-green-500/20 bg-green-500/10 p-4 text-sm font-semibold text-green-300">
+          Kommentar gelöscht.
+        </div>
+      )}
+
+      {commentStatus === "failed" && (
+        <div className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm font-semibold text-red-300">
+          Kommentar-Aktion konnte nicht abgeschlossen werden. Prüfe bitte, ob die
+          Supabase-Migration für Kommentare und Reaktionen eingespielt ist.
+        </div>
+      )}
+
+      <CommentForm submissionId={entry.id} slug={entry.slug} />
 
       <div className="mt-6 space-y-4">
         {comments.map((comment) => {
@@ -320,10 +327,13 @@ function CommentsPanel({
 
 export default async function WikiEntryPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ comment?: string }>;
 }) {
   const { slug } = await params;
+  const query = await searchParams;
   const session = await getServerSession(authOptions);
 
   const entries = await getApprovedEntries();
@@ -357,9 +367,23 @@ export default async function WikiEntryPage({
           </h1>
 
           {isQuote && (
-            <blockquote className="mt-6 rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-2xl font-semibold leading-relaxed text-zinc-100">
-              “{entry.story}”
-            </blockquote>
+            <>
+              <blockquote className="mt-6 rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-2xl font-semibold leading-relaxed text-zinc-100">
+                “{entry.story}”
+              </blockquote>
+
+              {entry.quoteSpeaker && (
+                <div className="mt-4 text-sm text-zinc-400">
+                  Gesagt von{" "}
+                  <Link
+                    href={getPersonHref(entry.quoteSpeaker)}
+                    className="font-semibold text-zinc-200 transition hover:text-white"
+                  >
+                    {entry.quoteSpeaker}
+                  </Link>
+                </div>
+              )}
+            </>
           )}
 
           <PeopleLinks people={entry.people} label="Beteiligte" />
@@ -425,12 +449,21 @@ export default async function WikiEntryPage({
               entry={entry}
               isAdmin={isAdmin}
               userId={userId}
+              commentStatus={query.comment}
             />
           </>
         ) : (
           <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6 text-zinc-400">
-            Reaktionen und Kommentare werden sichtbar, sobald die
-            Datenbankmigration eingespielt ist.
+            Reaktionen und Kommentare sind noch nicht aktiv. Dafür muss die
+            Supabase-Migration für{" "}
+            <code className="rounded bg-black/30 px-1 py-0.5">
+              wiki_comments
+            </code>{" "}
+            und{" "}
+            <code className="rounded bg-black/30 px-1 py-0.5">
+              wiki_reactions
+            </code>{" "}
+            eingespielt sein.
           </section>
         )}
       </article>

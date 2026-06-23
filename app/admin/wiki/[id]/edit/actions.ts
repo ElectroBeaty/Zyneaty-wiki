@@ -18,6 +18,10 @@ function normalizePeople(value: string) {
     .join(", ");
 }
 
+function normalizePerson(value: string) {
+  return value.trim().replace(/\s+/g, " ");
+}
+
 async function uploadMedia(file: File) {
   if (!file || file.size === 0) {
     return { mediaUrl: null, mediaType: null };
@@ -77,6 +81,7 @@ export async function updateWikiEntry(id: string, formData: FormData) {
     title: string;
     category: string;
     people: string;
+    quote_speaker: string | null;
     story: string;
     why_funny: string;
     usage: string;
@@ -86,6 +91,10 @@ export async function updateWikiEntry(id: string, formData: FormData) {
     title: String(formData.get("title")).trim(),
     category: String(formData.get("category")),
     people: normalizePeople(String(formData.get("people") ?? "")),
+    quote_speaker:
+      String(formData.get("category")) === "Zitat"
+        ? normalizePerson(String(formData.get("quoteSpeaker") ?? "")) || null
+        : null,
     story: String(formData.get("story")),
     why_funny: String(formData.get("whyFunny")),
     usage: String(formData.get("usage") ?? ""),

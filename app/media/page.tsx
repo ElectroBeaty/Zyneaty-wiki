@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { createSummary, mapSubmissionToWikiEntry } from "@/lib/wiki";
+import MediaGalleryClient from "./MediaGalleryClient";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,14 @@ async function getMediaEntries() {
     throw new Error(error.message);
   }
 
-  return (data ?? []).map(mapSubmissionToWikiEntry);
+  return (data ?? []).map((row) => {
+    const entry = mapSubmissionToWikiEntry(row);
+
+    return {
+      ...entry,
+      summary: createSummary(entry.story, 120),
+    };
+  });
 }
 
 export default async function MediaPage() {
@@ -63,59 +71,7 @@ export default async function MediaPage() {
           </div>
         </div>
 
-        <div className="mt-10 grid gap-5 md:grid-cols-2">
-          {entries.map((entry) => (
-            <article
-              key={entry.id}
-              className="overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl shadow-black/20"
-            >
-              {entry.mediaUrl && entry.mediaType === "image" && (
-                <img
-                  src={entry.mediaUrl}
-                  alt=""
-                  className="max-h-[460px] w-full object-cover"
-                />
-              )}
-
-              {entry.mediaUrl && entry.mediaType === "video" && (
-                <video src={entry.mediaUrl} controls className="w-full bg-black" />
-              )}
-
-              {entry.mediaUrl && entry.mediaType === "audio" && (
-                <div className="bg-black/30 p-6">
-                  <audio src={entry.mediaUrl} controls className="w-full" />
-                </div>
-              )}
-
-              <div className="p-6">
-                <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-500">
-                  <span>{entry.category}</span>
-                  <span>·</span>
-                  <span>{entry.mediaType}</span>
-                </div>
-
-                <h2 className="mt-3 text-2xl font-bold">{entry.title}</h2>
-
-                <p className="mt-3 text-zinc-400">
-                  {createSummary(entry.story, 120)}
-                </p>
-
-                <Link
-                  href={`/wiki/${entry.slug}`}
-                  className="mt-6 inline-flex rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-zinc-300 transition hover:bg-white/10 hover:text-white"
-                >
-                  Eintrag ansehen →
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {entries.length === 0 && (
-          <div className="mt-10 rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-zinc-400">
-            Noch keine Medien vorhanden.
-          </div>
-        )}
+        <MediaGalleryClient entries={entries} />
       </section>
     </main>
   );

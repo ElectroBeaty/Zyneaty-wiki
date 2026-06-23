@@ -22,6 +22,7 @@ The social wiki features use two additional Supabase tables:
 
 ```sql
 supabase/migrations/202606130001_wiki_social.sql
+supabase/migrations/202606230001_add_quote_speaker.sql
 ```
 
 Run that SQL in Supabase before enabling reactions and comments in production.

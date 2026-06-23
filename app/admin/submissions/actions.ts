@@ -35,7 +35,7 @@ export async function approveSubmission(id: string) {
     .from("submissions")
     .update({ approved: true })
     .eq("id", id)
-    .select("title,category,story,media_url")
+    .select("title,category,people,quote_speaker,story,media_url")
     .single();
 
   if (error) {

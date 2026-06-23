@@ -11,6 +11,7 @@ type Submission = {
   title: string;
   category: string;
   people: string | null;
+  quote_speaker: string | null;
   story: string;
   why_funny: string;
   usage: string | null;
@@ -204,6 +205,13 @@ export default async function SubmissionsPage() {
                   </p>
                 )}
 
+                {submission.category === "Zitat" &&
+                  submission.quote_speaker && (
+                    <p className="mt-2 text-zinc-400">
+                      Gesagt von: {submission.quote_speaker}
+                    </p>
+                  )}
+
                 <MediaPreview
                   mediaUrl={submission.media_url}
                   mediaType={submission.media_type}
@@ -321,6 +329,13 @@ export default async function SubmissionsPage() {
                       Beteiligte: {submission.people}
                     </p>
                   )}
+
+                  {submission.category === "Zitat" &&
+                    submission.quote_speaker && (
+                      <p className="mt-1 text-sm text-zinc-400">
+                        Gesagt von: {submission.quote_speaker}
+                      </p>
+                    )}
                 </div>
 
                 <div className="flex flex-wrap gap-3">

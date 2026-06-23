@@ -4,6 +4,7 @@ export type WikiEntry = {
   title: string;
   category: string;
   people: string[];
+  quoteSpeaker: string | null;
   story: string;
   whyFunny: string;
   usage: string;
@@ -13,10 +14,11 @@ export type WikiEntry = {
 };
 
 type SubmissionRow = {
-  id: string;
+  id: string | number;
   title: string;
   category: string;
   people: string | null;
+  quote_speaker?: string | null;
   story: string;
   why_funny: string;
   usage: string | null;
@@ -54,13 +56,18 @@ export function getPersonHref(person: string) {
   return `/people/${encodeURIComponent(person.toLowerCase())}`;
 }
 
+export function samePerson(left: string | null | undefined, right: string) {
+  return left?.trim().toLowerCase() === right.trim().toLowerCase();
+}
+
 export function mapSubmissionToWikiEntry(entry: SubmissionRow): WikiEntry {
   return {
-    id: entry.id,
+    id: String(entry.id),
     slug: createSlug(entry.title),
     title: entry.title,
     category: entry.category,
     people: splitPeople(entry.people),
+    quoteSpeaker: entry.quote_speaker?.trim() || null,
     story: entry.story,
     whyFunny: entry.why_funny,
     usage: entry.usage ?? "",
