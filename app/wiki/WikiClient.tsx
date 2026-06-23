@@ -226,7 +226,7 @@ export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
                     {entry.reactionCount > 0 &&
                       entry.topReactions.length === 0 && (
                         <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-zinc-300">
-                          {entry.reactionCount} Reaktionen
+                          🔥 Fire · {entry.reactionCount}
                         </span>
                       )}
                   </div>

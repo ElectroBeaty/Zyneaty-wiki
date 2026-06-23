@@ -4,7 +4,7 @@ create table if not exists public.wiki_reactions (
   id uuid primary key default gen_random_uuid(),
   submission_id text not null,
   user_id text not null,
-  reaction text not null check (reaction in ('legendary', 'cursed', 'classic', 'wild')),
+  reaction text not null check (reaction in ('fire')),
   created_at timestamptz not null default now()
 );
 

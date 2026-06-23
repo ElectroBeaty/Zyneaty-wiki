@@ -187,7 +187,11 @@ function ReactionPanel({
       id="reactions"
       className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6"
     >
-      <h2 className="text-2xl font-bold">Reaktionen</h2>
+      <h2 className="text-2xl font-bold">Fire</h2>
+
+      <p className="mt-2 text-sm text-zinc-400">
+        Markier den Eintrag, wenn er Fire ist.
+      </p>
 
       <div className="mt-4 flex flex-wrap gap-3">
         {reactionOptions.map((option) => {
@@ -207,8 +211,8 @@ function ReactionPanel({
                 type="submit"
                 className={`rounded-full border px-4 py-2 text-sm font-semibold transition ${
                   state.active
-                    ? "border-white bg-white text-black"
-                    : "border-white/10 bg-white/5 text-zinc-300 hover:border-white/30 hover:bg-white/10"
+                    ? "border-orange-200 bg-orange-200 text-black shadow-lg shadow-orange-500/20"
+                    : "border-orange-300/20 bg-orange-400/10 text-orange-100 hover:border-orange-200/50 hover:bg-orange-400/20"
                 }`}
               >
                 {option.label} · {state.count}
@@ -256,7 +260,7 @@ function CommentsPanel({
       {commentStatus === "failed" && (
         <div className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm font-semibold text-red-300">
           Kommentar-Aktion konnte nicht abgeschlossen werden. Prüfe bitte, ob die
-          Supabase-Migration für Kommentare und Reaktionen eingespielt ist.
+          Supabase-Migration für Kommentare und Fire eingespielt ist.
         </div>
       )}
 
@@ -473,7 +477,7 @@ export default async function WikiEntryPage({
           </>
         ) : (
           <section className="mt-5 rounded-3xl border border-white/10 bg-white/[0.03] p-6 text-zinc-400">
-            Reaktionen und Kommentare sind vorbereitet, aber die Supabase-Tabellen
+            Fire und Kommentare sind vorbereitet, aber die Supabase-Tabellen
             oder Leserechte fehlen noch. Spiele die Migrationen für{" "}
             <code className="rounded bg-black/30 px-1 py-0.5">
               wiki_comments

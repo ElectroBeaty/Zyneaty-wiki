@@ -1,9 +1,4 @@
-export const reactionOptions = [
-  { key: "legendary", label: "Legendär" },
-  { key: "cursed", label: "Cursed" },
-  { key: "classic", label: "Klassiker" },
-  { key: "wild", label: "Zu wild" },
-] as const;
+export const reactionOptions = [{ key: "fire", label: "🔥 Fire" }] as const;
 
 export type ReactionKey = (typeof reactionOptions)[number]["key"];
 
