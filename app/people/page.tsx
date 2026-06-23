@@ -3,15 +3,44 @@ import { getDiscordAvatar } from "@/lib/discord";
 import { getPersonHref, splitPeople } from "@/lib/wiki";
 import { supabase } from "@/lib/supabase";
 
-export default async function PeoplePage() {
-  const { data: submissions, error: submissionsError } = await supabase
+type PeopleSubmission = {
+  people: string | null;
+  quote_speaker: string | null;
+  category: string;
+  media_url: string | null;
+};
+
+async function getApprovedPeopleSubmissions(): Promise<PeopleSubmission[]> {
+  const withSpeaker = await supabase
     .from("submissions")
     .select("people,quote_speaker,category,media_url")
     .eq("approved", true);
 
-  if (submissionsError) {
-    throw new Error(submissionsError.message);
+  if (!withSpeaker.error) {
+    return withSpeaker.data ?? [];
   }
+
+  if (!withSpeaker.error.message.includes("quote_speaker")) {
+    throw new Error(withSpeaker.error.message);
+  }
+
+  const withoutSpeaker = await supabase
+    .from("submissions")
+    .select("people,category,media_url")
+    .eq("approved", true);
+
+  if (withoutSpeaker.error) {
+    throw new Error(withoutSpeaker.error.message);
+  }
+
+  return (withoutSpeaker.data ?? []).map((entry) => ({
+    ...entry,
+    quote_speaker: null,
+  }));
+}
+
+export default async function PeoplePage() {
+  const submissions = await getApprovedPeopleSubmissions();
 
   const { data: profiles, error: profilesError } = await supabase
     .from("people_profiles")
@@ -68,24 +97,25 @@ export default async function PeoplePage() {
     }
   }
 
-  for (const entry of submissions ?? []) {
+  for (const entry of submissions) {
     const participants = splitPeople(entry.people);
+    const quoteSpeaker = entry.quote_speaker;
 
     if (
-      entry.quote_speaker &&
+      quoteSpeaker &&
       !participants.some(
-        (person) => person.toLowerCase() === entry.quote_speaker.toLowerCase()
+        (person) => person.toLowerCase() === quoteSpeaker.toLowerCase()
       )
     ) {
-      participants.push(entry.quote_speaker);
+      participants.push(quoteSpeaker);
     }
 
     for (const person of participants) {
       ensurePerson(person, entry);
     }
 
-    if (entry.category === "Zitat" && entry.quote_speaker) {
-      const key = entry.quote_speaker.toLowerCase();
+    if (entry.category === "Zitat" && quoteSpeaker) {
+      const key = quoteSpeaker.toLowerCase();
       const existing = peopleMap.get(key);
 
       if (existing) {

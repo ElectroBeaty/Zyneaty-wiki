@@ -20,6 +20,75 @@ type WikiEntry = {
   }>;
 };
 
+function getMediaLabel(mediaType: string | null) {
+  if (mediaType === "image") return "Bild";
+  if (mediaType === "video") return "Video";
+  if (mediaType === "audio") return "Audio";
+  return "Medium";
+}
+
+function MediaPreview({ entry }: { entry: WikiEntry }) {
+  if (!entry.mediaUrl || !entry.mediaType) return null;
+
+  if (entry.mediaType === "image") {
+    return (
+      <img
+        src={entry.mediaUrl}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover opacity-55 transition duration-300 group-hover:scale-105 group-hover:opacity-70"
+      />
+    );
+  }
+
+  if (entry.mediaType === "video") {
+    return (
+      <video
+        src={entry.mediaUrl}
+        muted
+        playsInline
+        preload="metadata"
+        className="absolute inset-0 h-full w-full object-cover opacity-45 transition duration-300 group-hover:scale-105 group-hover:opacity-60"
+      />
+    );
+  }
+
+  return (
+    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,#ffffff20,transparent_32%),linear-gradient(135deg,#161616,#050505)] opacity-95">
+      <div className="absolute right-6 top-6 flex h-20 items-end gap-1.5 opacity-50">
+        {[32, 52, 38, 68, 44, 58, 28].map((height, index) => (
+          <span
+            key={`${height}-${index}`}
+            className="w-2 rounded-full bg-white"
+            style={{ height }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MediaPill({ mediaType }: { mediaType: string | null }) {
+  if (mediaType === "audio") {
+    return (
+      <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold text-zinc-300 backdrop-blur">
+        <span className="h-2 w-2 rounded-full bg-white" />
+        Audio vorhanden
+      </div>
+    );
+  }
+
+  if (mediaType === "video") {
+    return (
+      <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/10 px-3 py-1 text-xs font-semibold text-zinc-300 backdrop-blur">
+        <span className="h-0 w-0 border-y-[5px] border-l-[8px] border-y-transparent border-l-white" />
+        Video vorhanden
+      </div>
+    );
+  }
+
+  return null;
+}
+
 export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
   const router = useRouter();
   const [activeCategory, setActiveCategory] = useState("Alle");
@@ -62,7 +131,7 @@ export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
           type="text"
           placeholder="Suche nach Insidern..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(event) => setSearch(event.target.value)}
           className="min-w-0 flex-1 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white outline-none transition placeholder:text-zinc-500 focus:border-white/30"
         />
 
@@ -101,82 +170,71 @@ export default function WikiClient({ entries }: { entries: WikiEntry[] }) {
           <Link
             key={entry.slug}
             href={`/wiki/${entry.slug}`}
-            className="group relative flex min-h-72 overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
+            className="group relative flex min-h-[300px] overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
           >
-            {entry.mediaUrl && entry.mediaType === "image" && (
-              <img
-                src={entry.mediaUrl}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover opacity-50 transition duration-300 group-hover:scale-105 group-hover:opacity-65"
-              />
-            )}
-
-            {entry.mediaUrl && entry.mediaType === "video" && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/45 text-sm font-semibold uppercase tracking-[0.2em] text-zinc-400 transition group-hover:bg-black/35">
-                Video
-              </div>
-            )}
-
-            {entry.mediaUrl && entry.mediaType === "audio" && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/45 text-sm font-semibold uppercase tracking-[0.2em] text-zinc-400 transition group-hover:bg-black/35">
-                Audio
-              </div>
-            )}
+            <MediaPreview entry={entry} />
 
             <div
               className={`absolute inset-0 ${
                 entry.mediaUrl
-                  ? "bg-gradient-to-t from-black via-black/75 to-black/10"
+                  ? "bg-gradient-to-t from-black via-black/75 to-black/15"
                   : "bg-gradient-to-br from-white/[0.06] via-transparent to-transparent"
               }`}
             />
 
-            <div className="relative z-10 mt-auto p-6">
+            <div className="relative z-10 flex min-h-[300px] w-full flex-col justify-between p-6">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm text-zinc-500">
                   {entry.category}
                 </span>
 
                 {entry.mediaUrl && (
-                  <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-400">
-                    Medium
+                  <span className="rounded-full border border-white/10 bg-white/10 px-2 py-1 text-xs font-semibold text-zinc-300 backdrop-blur">
+                    {getMediaLabel(entry.mediaType)}
                   </span>
                 )}
 
                 {entry.commentCount > 0 && (
-                  <span className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-400">
+                  <span className="rounded-full border border-white/10 bg-white/10 px-2 py-1 text-xs text-zinc-300 backdrop-blur">
                     {entry.commentCount} Kommentare
                   </span>
                 )}
               </div>
 
-              <h2 className="mt-3 text-2xl font-bold group-hover:text-zinc-200">
-                {entry.title}
-              </h2>
+              <div>
+                <MediaPill mediaType={entry.mediaType} />
 
-              <p className="mt-3 text-zinc-300">{entry.summary}</p>
+                <h2 className="text-2xl font-bold group-hover:text-zinc-200">
+                  {entry.title}
+                </h2>
 
-              {(entry.reactionCount > 0 || entry.commentCount > 0) && (
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {entry.topReactions.map((reaction) => (
-                    <span
-                      key={reaction.label}
-                      className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-zinc-300"
-                    >
-                      {reaction.label} · {reaction.count}
-                    </span>
-                  ))}
+                <p className="mt-3 max-w-2xl text-zinc-300">
+                  {entry.summary}
+                </p>
 
-                  {entry.reactionCount > 0 && entry.topReactions.length === 0 && (
-                    <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-zinc-300">
-                      {entry.reactionCount} Reaktionen
-                    </span>
-                  )}
+                {(entry.reactionCount > 0 || entry.commentCount > 0) && (
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    {entry.topReactions.map((reaction) => (
+                      <span
+                        key={reaction.label}
+                        className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-zinc-300"
+                      >
+                        {reaction.label} · {reaction.count}
+                      </span>
+                    ))}
+
+                    {entry.reactionCount > 0 &&
+                      entry.topReactions.length === 0 && (
+                        <span className="rounded-full border border-white/10 bg-black/20 px-3 py-1 text-xs font-semibold text-zinc-300">
+                          {entry.reactionCount} Reaktionen
+                        </span>
+                      )}
+                  </div>
+                )}
+
+                <div className="mt-6 text-sm font-semibold text-zinc-300">
+                  Weiterlesen →
                 </div>
-              )}
-
-              <div className="mt-6 text-sm font-semibold text-zinc-300">
-                Weiterlesen →
               </div>
             </div>
           </Link>

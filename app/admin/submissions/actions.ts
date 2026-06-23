@@ -31,12 +31,23 @@ export async function deleteSubmission(id: string) {
 export async function approveSubmission(id: string) {
   await requireAdmin();
 
-  const { data: submission, error } = await supabase
+  const result = await supabase
     .from("submissions")
     .update({ approved: true })
     .eq("id", id)
     .select("title,category,people,quote_speaker,story,media_url")
     .single();
+
+  const { data: submission, error } = result.error?.message.includes(
+    "quote_speaker"
+  )
+    ? await supabase
+        .from("submissions")
+        .update({ approved: true })
+        .eq("id", id)
+        .select("title,category,people,story,media_url")
+        .single()
+    : result;
 
   if (error) {
     throw new Error(error.message);

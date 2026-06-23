@@ -126,6 +126,20 @@ export async function updateWikiEntry(id: string, formData: FormData) {
     .update(updateData)
     .eq("id", id);
 
+  if (error?.message.includes("quote_speaker")) {
+    const fallbackData = { ...updateData, quote_speaker: undefined };
+    const retry = await supabase
+      .from("submissions")
+      .update(fallbackData)
+      .eq("id", id);
+
+    if (retry.error) {
+      throw new Error(retry.error.message);
+    }
+
+    redirect("/wiki");
+  }
+
   if (error) {
     throw new Error(error.message);
   }

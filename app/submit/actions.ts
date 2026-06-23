@@ -101,7 +101,7 @@ export async function createSubmission(formData: FormData) {
         ? await uploadMedia(mediaFile)
         : { mediaUrl: null, mediaType: null };
 
-  const { error } = await supabase.from("submissions").insert({
+  const insertData = {
     title,
     category,
     people: normalizePeople(String(formData.get("people") ?? "")),
@@ -116,7 +116,20 @@ export async function createSubmission(formData: FormData) {
     approved: false,
     media_url: mediaUrl,
     media_type: mediaType,
-  });
+  };
+
+  const { error } = await supabase.from("submissions").insert(insertData);
+
+  if (error?.message.includes("quote_speaker")) {
+    const fallbackData = { ...insertData, quote_speaker: undefined };
+    const retry = await supabase.from("submissions").insert(fallbackData);
+
+    if (retry.error) {
+      throw new Error(retry.error.message);
+    }
+
+    redirect("/submit?success=1");
+  }
 
   if (error) {
     throw new Error(error.message);
