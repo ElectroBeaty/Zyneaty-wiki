@@ -41,6 +41,10 @@ const verifiedMedia: Record<string, VerifiedMedia> = {
 
 export const maxMediaSize = 50 * 1024 * 1024;
 
+export function getMediaDescriptor(contentType: string) {
+  return verifiedMedia[contentType] ?? null;
+}
+
 export async function verifyMediaFile(file: File) {
   const expected = verifiedMedia[file.type];
 

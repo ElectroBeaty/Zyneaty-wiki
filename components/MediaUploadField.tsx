@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import { createSignedMediaUpload } from "@/app/actions/media-upload";
 import { verifyMediaFile, type MediaType } from "@/lib/media-validation";
 
 const supabase = createClient(
@@ -34,33 +35,27 @@ export default function MediaUploadField({
     setMediaType("");
 
     try {
-      const { contentType, extension, mediaType } = await verifyMediaFile(file);
-      const fileName = `${Date.now()}-${Math.random()
-        .toString(36)
-        .slice(2)}.${extension}`;
-      const filePath = `submissions/${fileName}`;
+      const { contentType } = await verifyMediaFile(file);
+      const signedUpload = await createSignedMediaUpload(contentType);
 
       const { error } = await supabase.storage
         .from("wiki-media")
-        .upload(filePath, file, {
+        .uploadToSignedUrl(signedUpload.path, signedUpload.token, file, {
           contentType,
-          upsert: false,
         });
 
       if (error) {
         throw new Error(error.message);
       }
 
-      const { data } = supabase.storage.from("wiki-media").getPublicUrl(filePath);
-
       if (onUploaded) {
         setMessage("Datei ist hochgeladen und wird im Eintrag gespeichert...");
-        await onUploaded(data.publicUrl, mediaType);
+        await onUploaded(signedUpload.publicUrl, signedUpload.mediaType);
         router.refresh();
       }
 
-      setMediaUrl(data.publicUrl);
-      setMediaType(mediaType);
+      setMediaUrl(signedUpload.publicUrl);
+      setMediaType(signedUpload.mediaType);
       setState("ready");
       setMessage(
         onUploaded
