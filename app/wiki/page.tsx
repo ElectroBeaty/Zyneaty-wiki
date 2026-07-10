@@ -1,5 +1,4 @@
 import Link from "next/link";
-import TopBar from "@/components/TopBar";
 import { reactionOptions, type ReactionKey } from "@/lib/reactions";
 import { supabase } from "@/lib/supabase";
 import {
@@ -125,8 +124,6 @@ export default async function WikiPage() {
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),radial-gradient(circle_at_bottom_left,rgba(251,146,60,0.1),transparent_24%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
-      <TopBar />
-
       <section className="mx-auto max-w-6xl px-6 pt-10 pb-14">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>

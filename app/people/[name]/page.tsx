@@ -1,6 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import TopBar from "@/components/TopBar";
 import WikiEntryCard from "@/components/WikiEntryCard";
 import { getDiscordAvatar } from "@/lib/discord";
 import { escapePostgrestLikePattern } from "@/lib/query-pattern";
@@ -67,8 +66,6 @@ export default async function PersonPage({
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),radial-gradient(circle_at_bottom_left,rgba(251,146,60,0.1),transparent_24%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
-      <TopBar />
-
       <section className="mx-auto max-w-6xl px-6 pt-10 pb-16">
         <Link href="/people" className="text-sm text-zinc-400 hover:text-white">
           &lt;- Zurück zu Personen

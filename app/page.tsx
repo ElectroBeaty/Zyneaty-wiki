@@ -59,7 +59,7 @@ export default async function Home() {
     <main className="min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,#ffffff18,transparent_28%),radial-gradient(circle_at_bottom_right,rgba(251,146,60,0.12),transparent_26%),linear-gradient(135deg,#050505,#18181b,#050505)] text-white">
       <TopBar />
 
-      <section className="relative mx-auto flex min-h-[calc(78vh-90px)] max-w-6xl items-center px-6 py-16">
+      <section className="relative isolate mx-auto flex min-h-[calc(78vh-90px)] max-w-6xl items-center overflow-hidden px-6 py-16 lg:min-h-[640px]">
         <div className="relative z-10 max-w-4xl">
           <p className="mb-5 text-sm uppercase tracking-[0.4em] text-orange-100/60">
             Private Server Lore
@@ -117,14 +117,14 @@ export default async function Home() {
           )}
         </div>
 
-        <div className="pointer-events-none absolute right-[-80px] top-1/2 hidden -translate-y-1/2 lg:block">
-          <div className="relative h-[620px] w-[620px] overflow-hidden rounded-full">
+        <div className="pointer-events-none absolute right-[-24px] top-1/2 z-0 hidden -translate-y-1/2 lg:block">
+          <div className="relative h-[clamp(420px,42vw,560px)] w-[clamp(420px,42vw,560px)] overflow-hidden rounded-full">
             <Image
               src="/koi-hero.png"
               alt="Yin Yang Koi"
               fill
               priority
-              className="object-cover opacity-55 grayscale"
+              className="object-cover opacity-45 grayscale"
             />
 
             <div className="absolute inset-0 bg-[radial-gradient(circle,transparent_45%,#111113_78%)]" />
