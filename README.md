@@ -27,6 +27,19 @@ https://zyneaty-wiki.vercel.app
 The canonical Vercel project is `zyneaty-wiki`. Do not use old preview or
 duplicate project URLs for Discord announcements or OAuth setup.
 
+Use `.env.example` as the checklist for Vercel Environment Variables. Keep
+the real values only in Vercel or in a local `.env.local` file, never in git.
+
+After changing Vercel or Supabase settings, check the production health route:
+
+```text
+https://zyneaty-wiki.vercel.app/api/health
+```
+
+It should return `"ok": true`. If it returns `"missing"` for an environment
+variable or a Supabase table error, the app itself is reachable but the backend
+setup still needs attention.
+
 The social wiki features use two additional Supabase tables:
 
 ```sql
@@ -41,12 +54,20 @@ supabase/migrations/202606230004_fire_reaction.sql
 Run `202606230003_wiki_runtime_setup.sql` in Supabase SQL Editor if comments, reactions, quote speakers, or separated quote editing are missing in production.
 Run `202606230004_fire_reaction.sql` afterwards if the old multi-reaction setup was already applied.
 
-Optional environment variables:
+Important environment variables:
 
 ```bash
+AUTH_DISCORD_ID=
+AUTH_DISCORD_SECRET=
+DISCORD_GUILD_ID=
+ADMIN_DISCORD_ID=
+AUTH_SECRET=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
+DISCORD_BOT_TOKEN=
 DISCORD_WIKI_WEBHOOK_URL=
-NEXT_PUBLIC_SITE_URL=
+NEXT_PUBLIC_SITE_URL=https://zyneaty-wiki.vercel.app
 ```
 
 `SUPABASE_SERVICE_ROLE_KEY` is recommended for server-side comment, reaction, and admin writes while keeping public RLS read policies tight.
