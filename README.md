@@ -18,6 +18,15 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 ## Zyneaty Wiki Setup
 
+Production site:
+
+```text
+https://zyneaty-wiki.vercel.app
+```
+
+The canonical Vercel project is `zyneaty-wiki`. Do not use old preview or
+duplicate project URLs for Discord announcements or OAuth setup.
+
 The social wiki features use two additional Supabase tables:
 
 ```sql
