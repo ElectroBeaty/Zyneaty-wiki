@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { signIn } from "next-auth/react";
 
 type DiscordLoginButtonProps = {
   children: ReactNode;
@@ -20,9 +19,43 @@ export default function DiscordLoginButton({
     setIsLoading(true);
 
     try {
-      await signIn("discord", {
-        callbackUrl: "/wiki",
+      const csrfResponse = await fetch("/api/auth/csrf");
+
+      if (!csrfResponse.ok) {
+        throw new Error("CSRF token request failed.");
+      }
+
+      const { csrfToken } = (await csrfResponse.json()) as {
+        csrfToken?: string;
+      };
+
+      if (!csrfToken) {
+        throw new Error("CSRF token missing.");
+      }
+
+      const signInResponse = await fetch("/api/auth/signin/discord", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({
+          csrfToken,
+          callbackUrl: `${window.location.origin}/wiki`,
+          json: "true",
+        }),
       });
+
+      if (!signInResponse.ok) {
+        throw new Error("Discord sign-in request failed.");
+      }
+
+      const { url } = (await signInResponse.json()) as { url?: string };
+
+      if (!url) {
+        throw new Error("Discord sign-in URL missing.");
+      }
+
+      window.location.assign(url);
     } finally {
       setIsLoading(false);
     }
