@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { isAdminDiscordId } from "@/lib/admin";
+import DiscordLoginButton from "@/components/DiscordLoginButton";
 
 export default async function TopBar() {
   const session = await getServerSession(authOptions);
@@ -69,12 +70,12 @@ export default async function TopBar() {
               </Link>
             </>
           ) : (
-            <Link
-              href="/api/auth/signin/discord"
+            <DiscordLoginButton
               className="rounded-full bg-white px-5 py-2 font-semibold text-black transition hover:scale-105 hover:bg-zinc-200"
+              loadingLabel="Weiter zu Discord..."
             >
               Login
-            </Link>
+            </DiscordLoginButton>
           )}
         </nav>
       </div>

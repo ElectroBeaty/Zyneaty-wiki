@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import TopBar from "@/components/TopBar";
+import DiscordLoginButton from "@/components/DiscordLoginButton";
 import { supabase } from "@/lib/supabase";
 import { mapSubmissionToWikiEntry } from "@/lib/wiki";
 
@@ -72,12 +73,12 @@ export default async function Home() {
                 </Link>
               </>
             ) : (
-              <Link
-                href="/api/auth/signin/discord"
+              <DiscordLoginButton
                 className="rounded-full bg-white px-7 py-4 font-semibold text-black transition hover:scale-105 hover:bg-zinc-200"
+                loadingLabel="Weiter zu Discord..."
               >
                 Mit Discord anmelden
-              </Link>
+              </DiscordLoginButton>
             )}
           </div>
 
