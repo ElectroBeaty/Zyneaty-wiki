@@ -9,7 +9,7 @@ export default async function TopBar() {
   const session = await getServerSession(authOptions);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-black/60 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-zinc-950/75 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4 text-white">
         <Link href="/" className="flex items-center gap-3 text-xl font-black">
           <Image
@@ -17,12 +17,12 @@ export default async function TopBar() {
             alt="Zyneaty Logo"
             width={44}
             height={44}
-            className="rounded-full"
+            className="rounded-full border border-white/10 shadow-lg shadow-black/30"
           />
-          <span>Zyneaty Wiki</span>
+          <span className="tracking-tight">Zyneaty Wiki</span>
         </Link>
 
-        <nav className="flex flex-wrap items-center gap-5 text-sm font-semibold">
+        <nav className="flex flex-wrap items-center gap-4 text-sm font-semibold">
           {session?.user ? (
             <>
               <Link href="/wiki" className="text-zinc-300 hover:text-white">
@@ -64,7 +64,7 @@ export default async function TopBar() {
 
               <Link
                 href="/logout"
-                className="rounded-full border border-white/20 px-5 py-2 text-white transition hover:border-white hover:bg-white/10"
+                className="rounded-full border border-white/15 px-5 py-2 text-white transition hover:border-white/35 hover:bg-white/10"
               >
                 Abmelden
               </Link>

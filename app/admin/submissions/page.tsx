@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
+import TopBar from "@/components/TopBar";
 import { isAdminDiscordId } from "@/lib/admin";
 import { supabase } from "@/lib/supabase";
 import { approveSubmission, deleteSubmission } from "./actions";
@@ -65,6 +66,7 @@ function MediaPreview({
         <a
           href={mediaUrl}
           target="_blank"
+          rel="noreferrer"
           className="text-sm text-zinc-400 underline transition hover:text-white"
         >
           In neuem Tab öffnen
@@ -143,10 +145,14 @@ export default async function SubmissionsPage() {
       text: "Uploads insgesamt",
     },
   ];
+  const productionUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://zyneaty-wiki.vercel.app";
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
-      <section className="mx-auto max-w-5xl px-6 pt-8 pb-16">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),radial-gradient(circle_at_bottom_left,rgba(251,146,60,0.1),transparent_24%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
+      <TopBar />
+
+      <section className="mx-auto max-w-5xl px-6 pt-10 pb-16">
         <Link href="/wiki" className="text-sm text-zinc-400 hover:text-white">
           ← Zurück zum Wiki
         </Link>
@@ -160,11 +166,49 @@ export default async function SubmissionsPage() {
           Überblick über die Zyneaty Wiki.
         </p>
 
+        <section className="mt-8 rounded-[1.75rem] border border-orange-200/15 bg-orange-300/10 p-6">
+          <div className="flex flex-wrap items-start justify-between gap-6">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-orange-100/50">
+                Betrieb
+              </p>
+              <h2 className="mt-2 text-2xl font-black">
+                Produktionsstatus prüfen
+              </h2>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-300">
+                Wenn Login, Kommentare oder Supabase wieder komisch wirken,
+                ist der Health-Check der schnellste erste Blick auf die
+                wichtigsten Variablen und Tabellen.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <a
+                href="/api/health"
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-zinc-200"
+              >
+                Health öffnen
+              </a>
+
+              <a
+                href={productionUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-white/35 hover:bg-white/10"
+              >
+                Website öffnen
+              </a>
+            </div>
+          </div>
+        </section>
+
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
             <div
               key={stat.label}
-              className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/20"
+              className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/20"
             >
               <div className="text-4xl font-black">{stat.value}</div>
               <div className="mt-2 text-lg font-bold">{stat.label}</div>

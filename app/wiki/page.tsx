@@ -1,4 +1,5 @@
 import Link from "next/link";
+import TopBar from "@/components/TopBar";
 import { reactionOptions, type ReactionKey } from "@/lib/reactions";
 import { supabase } from "@/lib/supabase";
 import {
@@ -123,24 +124,38 @@ export default async function WikiPage() {
   const mediaCount = entries.filter((entry) => entry.mediaUrl).length;
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
-      <section className="mx-auto max-w-6xl px-6 pt-6 pb-14">
-        <div>
-          <h1 className="mt-4 text-5xl font-black tracking-tight">Wiki</h1>
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),radial-gradient(circle_at_bottom_left,rgba(251,146,60,0.1),transparent_24%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
+      <TopBar />
 
-          <p className="mt-4 max-w-2xl text-lg text-zinc-300">
-            Alle Insider, Running Gags und Server-Legenden an einem Ort.
-          </p>
+      <section className="mx-auto max-w-6xl px-6 pt-10 pb-14">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p className="text-sm uppercase tracking-[0.35em] text-orange-100/50">
+              Archiv
+            </p>
+            <h1 className="mt-4 text-5xl font-black tracking-tight">Wiki</h1>
+
+            <p className="mt-4 max-w-2xl text-lg text-zinc-300">
+              Alle Insider, Running Gags und Server-Legenden an einem Ort.
+            </p>
+          </div>
+
+          <Link
+            href="/submit"
+            className="rounded-full border border-orange-200/20 bg-orange-300/10 px-5 py-3 text-sm font-semibold text-orange-100 transition hover:border-orange-100/40 hover:bg-orange-300/15"
+          >
+            Eintrag einreichen
+          </Link>
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-4">
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
             <div className="text-4xl font-black">{entries.length}</div>
             <div className="mt-2 text-lg font-bold">Einträge</div>
             <p className="mt-1 text-sm text-zinc-400">gesammelte Insider</p>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20">
             <div className="text-4xl font-black">{quoteCount}</div>
             <div className="mt-2 text-lg font-bold">Zitate</div>
             <p className="mt-1 text-sm text-zinc-400">legendäre Aussagen</p>
@@ -148,21 +163,21 @@ export default async function WikiPage() {
 
           <Link
             href="/media"
-            className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
+            className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
           >
             <div className="text-4xl font-black">{mediaCount}</div>
             <div className="mt-2 text-lg font-bold">Medien</div>
-            <p className="mt-1 text-sm text-zinc-400">Galerie ansehen →</p>
+            <p className="mt-1 text-sm text-zinc-400">Galerie ansehen -&gt;</p>
           </Link>
 
           <Link
             href="/people"
-            className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
+            className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
           >
             <div className="text-4xl font-black">{uniquePeople.size}</div>
             <div className="mt-2 text-lg font-bold">Personen</div>
             <p className="mt-1 text-sm text-zinc-400">
-              Beteiligte Legenden →
+              Beteiligte Legenden -&gt;
             </p>
           </Link>
         </div>

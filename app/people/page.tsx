@@ -1,4 +1,6 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import TopBar from "@/components/TopBar";
 import { getDiscordAvatar } from "@/lib/discord";
 import { getPersonHref, splitPeople } from "@/lib/wiki";
 import { supabase } from "@/lib/supabase";
@@ -138,25 +140,61 @@ export default async function PeoplePage() {
     }))
   );
 
+  const spokenQuoteTotal = people.reduce(
+    (total, person) => total + person.spokenQuoteCount,
+    0
+  );
+  const mediaPeopleTotal = people.filter((person) => person.mediaCount > 0).length;
+
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
-      <section className="mx-auto max-w-6xl px-6 pt-8 pb-16">
-        <Link href="/wiki" className="text-sm text-zinc-400 hover:text-white">
-          ← Zurück zum Wiki
-        </Link>
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),radial-gradient(circle_at_bottom_left,rgba(251,146,60,0.1),transparent_24%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
+      <TopBar />
 
-        <div className="mt-8 rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 shadow-2xl shadow-black/30">
-          <p className="text-sm uppercase tracking-[0.35em] text-zinc-400">
-            Community
-          </p>
+      <section className="mx-auto max-w-6xl px-6 pt-10 pb-16">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <p className="text-sm uppercase tracking-[0.35em] text-orange-100/50">
+              Community
+            </p>
 
-          <h1 className="mt-5 text-5xl font-black tracking-tight">
-            Personen
-          </h1>
+            <h1 className="mt-4 text-5xl font-black tracking-tight">
+              Personen
+            </h1>
 
-          <p className="mt-4 max-w-2xl text-lg text-zinc-300">
-            Profile, Beteiligungen und kleine Spuren in der Wiki-Lore.
-          </p>
+            <p className="mt-4 max-w-2xl text-lg text-zinc-300">
+              Profile, Beteiligungen und kleine Spuren in der Wiki-Lore.
+            </p>
+          </div>
+
+          <Link
+            href="/wiki"
+            className="rounded-full border border-white/10 px-5 py-3 text-sm font-semibold text-zinc-200 transition hover:border-white/30 hover:bg-white/10"
+          >
+            Zurück zum Wiki
+          </Link>
+        </div>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+            <div className="text-4xl font-black">{people.length}</div>
+            <div className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              Profile
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+            <div className="text-4xl font-black">{spokenQuoteTotal}</div>
+            <div className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              Gesagte Zitate
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+            <div className="text-4xl font-black">{mediaPeopleTotal}</div>
+            <div className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              Mit Medien
+            </div>
+          </div>
         </div>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -164,14 +202,18 @@ export default async function PeoplePage() {
             <Link
               key={person.name}
               href={getPersonHref(person.name)}
-              className="group rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
+              className="group relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-zinc-950/70 p-6 shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-orange-100/30 hover:bg-zinc-900/80"
             >
-              <div className="flex items-center gap-4">
+              <div className="absolute right-5 top-5 rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs font-black text-zinc-400">
+                #{index + 1}
+              </div>
+
+              <div className="flex items-center gap-4 pr-14">
                 {person.avatarUrl ? (
                   <img
                     src={person.avatarUrl}
                     alt=""
-                    className="h-16 w-16 rounded-full border border-white/10 object-cover"
+                    className="h-16 w-16 rounded-full border border-white/10 object-cover shadow-xl shadow-black/30"
                   />
                 ) : (
                   <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/5 text-2xl font-black">
@@ -180,14 +222,12 @@ export default async function PeoplePage() {
                 )}
 
                 <div className="min-w-0">
-                  <div className="text-sm text-zinc-500">#{index + 1}</div>
-
-                  <h2 className="truncate text-2xl font-black group-hover:text-zinc-200">
+                  <h2 className="truncate text-2xl font-black group-hover:text-orange-50">
                     {person.name}
                   </h2>
 
                   {person.discordId && (
-                    <p className="mt-1 text-xs text-zinc-500">
+                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-orange-100/45">
                       Discord verknüpft
                     </p>
                   )}
@@ -195,46 +235,32 @@ export default async function PeoplePage() {
               </div>
 
               {person.knownFor && (
-                <p className="mt-5 text-sm text-zinc-300">
+                <p className="mt-5 leading-7 text-zinc-300">
                   Bekannt für: {person.knownFor}
                 </p>
               )}
 
-              <div className="mt-5 grid grid-cols-4 gap-2 text-center">
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                  <div className="font-black">{person.count}</div>
-                  <div className="mt-1 text-xs text-zinc-500">Einträge</div>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                  <div className="font-black">{person.spokenQuoteCount}</div>
-                  <div className="mt-1 text-xs text-zinc-500">
-                    Gesagt
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                  <div className="font-black">{person.quoteCount}</div>
-                  <div className="mt-1 text-xs text-zinc-500">
-                    Bezüge
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
-                  <div className="font-black">{person.mediaCount}</div>
-                  <div className="mt-1 text-xs text-zinc-500">Medien</div>
-                </div>
+              <div className="mt-6 flex flex-wrap gap-2">
+                <span className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs font-semibold text-zinc-300">
+                  {person.count} Einträge
+                </span>
+                <span className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs font-semibold text-zinc-300">
+                  {person.spokenQuoteCount} gesagt
+                </span>
+                <span className="rounded-full border border-white/10 bg-black/25 px-3 py-1 text-xs font-semibold text-zinc-300">
+                  {person.mediaCount} Medien
+                </span>
               </div>
 
               <div className="mt-6 text-sm font-semibold text-zinc-300">
-                Profil ansehen →
+                Profil ansehen -&gt;
               </div>
             </Link>
           ))}
         </div>
 
         {people.length === 0 && (
-          <div className="mt-10 rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-zinc-400">
+          <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-zinc-400">
             Noch keine Personen vorhanden.
           </div>
         )}

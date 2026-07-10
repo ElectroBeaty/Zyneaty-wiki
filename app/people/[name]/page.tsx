@@ -1,4 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import TopBar from "@/components/TopBar";
+import WikiEntryCard from "@/components/WikiEntryCard";
 import { getDiscordAvatar } from "@/lib/discord";
 import { escapePostgrestLikePattern } from "@/lib/query-pattern";
 import {
@@ -6,40 +9,8 @@ import {
   getPrimaryText,
   mapSubmissionToWikiEntry,
   samePerson,
-  type WikiEntry,
 } from "@/lib/wiki";
 import { supabase } from "@/lib/supabase";
-
-function EntryCard({ entry }: { entry: WikiEntry }) {
-  return (
-    <Link
-      href={`/wiki/${entry.slug}`}
-      className="group rounded-3xl border border-white/10 bg-white/[0.04] p-6 shadow-2xl shadow-black/20 transition hover:-translate-y-1 hover:border-white/30 hover:bg-white/[0.08]"
-    >
-      <div className="flex flex-wrap items-center gap-2 text-sm text-zinc-500">
-        <span>{entry.category}</span>
-        {entry.mediaUrl && (
-          <>
-            <span>·</span>
-            <span>Medium</span>
-          </>
-        )}
-      </div>
-
-      <h2 className="mt-3 text-2xl font-bold group-hover:text-zinc-200">
-        {entry.title}
-      </h2>
-
-      <p className="mt-3 text-zinc-400">
-        {createSummary(getPrimaryText(entry), 100)}
-      </p>
-
-      <div className="mt-6 text-sm font-semibold text-zinc-300">
-        Weiterlesen →
-      </div>
-    </Link>
-  );
-}
 
 export default async function PersonPage({
   params,
@@ -95,84 +66,100 @@ export default async function PersonPage({
   const knownFor = profile?.known_for ?? null;
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
-      <section className="mx-auto max-w-6xl px-6 pt-8 pb-16">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),radial-gradient(circle_at_bottom_left,rgba(251,146,60,0.1),transparent_24%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
+      <TopBar />
+
+      <section className="mx-auto max-w-6xl px-6 pt-10 pb-16">
         <Link href="/people" className="text-sm text-zinc-400 hover:text-white">
-          ← Zurück zu Personen
+          &lt;- Zurück zu Personen
         </Link>
 
-        <div className="mt-8 rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 shadow-2xl shadow-black/30">
-          <div className="flex flex-wrap items-center gap-6">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt=""
-                className="h-28 w-28 rounded-full border border-white/10 object-cover shadow-2xl shadow-black/30"
-              />
-            ) : (
-              <div className="flex h-28 w-28 items-center justify-center rounded-full border border-white/10 bg-white/5 text-5xl font-black">
-                {prettyName.slice(0, 1).toUpperCase()}
-              </div>
-            )}
+        <header className="mt-8 flex flex-wrap items-center gap-6">
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt=""
+              className="h-28 w-28 rounded-full border border-white/10 object-cover shadow-2xl shadow-black/30"
+            />
+          ) : (
+            <div className="flex h-28 w-28 items-center justify-center rounded-full border border-white/10 bg-white/5 text-5xl font-black">
+              {prettyName.slice(0, 1).toUpperCase()}
+            </div>
+          )}
 
-            <div className="min-w-0">
-              <h1 className="text-5xl font-black tracking-tight">
-                {prettyName}
-              </h1>
+          <div className="min-w-0">
+            <p className="text-sm uppercase tracking-[0.35em] text-orange-100/50">
+              Profil
+            </p>
 
-              <p className="mt-4 max-w-2xl text-lg text-zinc-300">
-                {profile?.bio ??
-                  `Alle Wiki-Einträge, bei denen ${prettyName} beteiligt ist.`}
+            <h1 className="mt-3 text-5xl font-black tracking-tight">
+              {prettyName}
+            </h1>
+
+            <p className="mt-4 max-w-2xl text-lg text-zinc-300">
+              {profile?.bio ??
+                `Alle Wiki-Einträge, bei denen ${prettyName} beteiligt ist.`}
+            </p>
+
+            {knownFor && (
+              <p className="mt-3 text-sm text-zinc-400">
+                Bekannt für: {knownFor}
               </p>
+            )}
+          </div>
+        </header>
 
-              {knownFor && (
-                <p className="mt-3 text-sm text-zinc-400">
-                  Bekannt für: {knownFor}
-                </p>
-              )}
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+            <div className="text-4xl font-black">{relatedEntries.length}</div>
+            <div className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              Einträge
             </div>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <div className="text-3xl font-black">
-                {relatedEntries.length}
-              </div>
-              <div className="mt-1 text-sm text-zinc-400">Einträge</div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+            <div className="text-4xl font-black">
+              {spokenQuoteEntries.length}
             </div>
-
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <div className="text-3xl font-black">
-                {spokenQuoteEntries.length}
-              </div>
-              <div className="mt-1 text-sm text-zinc-400">Gesagte Zitate</div>
+            <div className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              Gesagte Zitate
             </div>
+          </div>
 
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <div className="text-3xl font-black">
-                {quoteMentionEntries.length}
-              </div>
-              <div className="mt-1 text-sm text-zinc-400">Zitat-Bezüge</div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+            <div className="text-4xl font-black">
+              {quoteMentionEntries.length}
             </div>
-
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-              <div className="text-3xl font-black">{mediaEntries.length}</div>
-              <div className="mt-1 text-sm text-zinc-400">Medien</div>
+            <div className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              Zitat-Bezüge
             </div>
+          </div>
 
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+            <div className="text-4xl font-black">{mediaEntries.length}</div>
+            <div className="mt-2 text-sm font-semibold uppercase tracking-[0.18em] text-zinc-500">
+              Medien
+            </div>
           </div>
         </div>
 
         {spokenQuoteEntries.length > 0 && (
-          <section className="mt-10 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
-            <h2 className="text-2xl font-bold">Gesagte Zitate</h2>
+          <section className="mt-10 rounded-[1.75rem] border border-orange-200/15 bg-orange-300/10 p-6">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <p className="text-sm uppercase tracking-[0.3em] text-orange-100/50">
+                  Originalton
+                </p>
+                <h2 className="mt-2 text-2xl font-black">Gesagte Zitate</h2>
+              </div>
+            </div>
 
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               {spokenQuoteEntries.slice(0, 4).map((entry) => (
                 <Link
                   key={entry.id}
                   href={`/wiki/${entry.slug}`}
-                  className="rounded-2xl border border-white/10 bg-black/20 p-5 transition hover:bg-white/10"
+                  className="rounded-2xl border border-white/10 bg-black/25 p-5 transition hover:border-orange-100/30 hover:bg-black/35"
                 >
                   <blockquote className="text-lg font-semibold leading-7 text-zinc-100">
                     “{getPrimaryText(entry)}”
@@ -186,14 +173,34 @@ export default async function PersonPage({
           </section>
         )}
 
-        <div className="mt-10 grid gap-5 md:grid-cols-2">
-          {relatedEntries.map((entry) => (
-            <EntryCard key={entry.id} entry={entry} />
-          ))}
+        <div className="mt-10">
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-sm uppercase tracking-[0.3em] text-orange-100/50">
+                Beteiligungen
+              </p>
+              <h2 className="mt-2 text-3xl font-black tracking-tight">
+                Einträge mit {prettyName}
+              </h2>
+            </div>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            {relatedEntries.map((entry) => (
+              <WikiEntryCard
+                key={entry.id}
+                compact
+                entry={{
+                  ...entry,
+                  summary: createSummary(getPrimaryText(entry), 100),
+                }}
+              />
+            ))}
+          </div>
         </div>
 
         {relatedEntries.length === 0 && (
-          <div className="mt-10 rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-zinc-400">
+          <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.04] p-6 text-zinc-400">
             Noch keine Einträge gefunden.
           </div>
         )}

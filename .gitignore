@@ -25,6 +25,8 @@
 *.pem
 *.db
 dev.db
+.superpowers/
+.next-dev-check/
 
 # debug
 npm-debug.log*
