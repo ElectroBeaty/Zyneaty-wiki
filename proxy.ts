@@ -4,6 +4,14 @@ import { getToken } from "next-auth/jwt";
 import { isAdminDiscordId } from "@/lib/admin";
 
 export async function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith("/api/auth/signin")) {
+    if (request.method === "GET") {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
+    return NextResponse.next();
+  }
+
   const token = await getToken({
     req: request,
     secret: process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET,
@@ -33,6 +41,7 @@ export const config = {
     "/admin/:path*",
     "/people/:path*",
     "/media/:path*",
+    "/api/auth/signin/:path*",
   ],
 };
 
