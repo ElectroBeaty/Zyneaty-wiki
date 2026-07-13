@@ -647,8 +647,6 @@ export default function DeckLabClient({
   );
   const [rawList, setRawList] = useState(initialDecks[0]?.rawList ?? starterList);
   const [notes, setNotes] = useState(initialDecks[0]?.notes ?? "");
-  const [moxfieldText, setMoxfieldText] = useState("");
-  const [moxfieldMessage, setMoxfieldMessage] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<DeckLabAnalysis | null>(
     initialDecks[0]?.analysis ?? null
   );
@@ -664,7 +662,6 @@ export default function DeckLabClient({
     setNotes(deck.notes ?? "");
     setAnalysis(deck.analysis);
     setMessage(null);
-    setMoxfieldMessage(null);
   }
 
   function startNewDeck() {
@@ -674,10 +671,8 @@ export default function DeckLabClient({
     setCommanderName("");
     setRawList(starterList);
     setNotes("");
-    setMoxfieldText("");
     setAnalysis(null);
     setMessage(null);
-    setMoxfieldMessage(null);
   }
 
   function runAnalysis() {
@@ -690,39 +685,6 @@ export default function DeckLabClient({
         setMessage("Analyse fertig.");
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Analyse fehlgeschlagen.");
-      }
-    });
-  }
-
-  function importMoxfieldText() {
-    const importedText = moxfieldText.trim();
-
-    if (!importedText) {
-      setMoxfieldMessage("Fuege zuerst den Moxfield-Text-Export ein.");
-      return;
-    }
-
-    setMessage(null);
-    setMoxfieldMessage("Analysiere Moxfield-Export...");
-    startTransition(async () => {
-      try {
-        const result = await analyzeDeckList(
-          importedText,
-          format,
-          commanderName
-        );
-
-        setSelectedDeckId(null);
-        setRawList(importedText);
-        setAnalysis(result);
-        setCommanderName(result.commanderName ?? commanderName);
-        setMoxfieldMessage(
-          "Moxfield-Export uebernommen und analysiert. Speichern nicht vergessen."
-        );
-      } catch (error) {
-        setMoxfieldMessage(
-          error instanceof Error ? error.message : "Import fehlgeschlagen."
-        );
       }
     });
   }
@@ -832,52 +794,6 @@ export default function DeckLabClient({
 
       <section className="space-y-6">
         <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-black">Moxfield Import</h2>
-              <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-400">
-                Direktlinks werden von Moxfield blockiert. Der Text-Export ist
-                stabil und wird danach normal ueber Scryfall analysiert.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={importMoxfieldText}
-              disabled={isPending}
-              className="rounded-full border border-violet-200/30 bg-violet-200/15 px-5 py-3 text-sm font-bold text-violet-50 transition hover:bg-violet-200/25 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isPending ? "Analysiert..." : "Export uebernehmen"}
-            </button>
-          </div>
-
-          <label className="mt-4 block">
-            <span className="text-sm font-bold text-zinc-300">
-              Moxfield-Text-Export
-            </span>
-            <textarea
-              value={moxfieldText}
-              onChange={(event) => setMoxfieldText(event.target.value)}
-              rows={6}
-              placeholder={`Commander
-1 Atraxa, Praetors' Voice
-
-Deck
-1 Sol Ring
-1 Arcane Signet`}
-              className="mt-2 w-full resize-y rounded-2xl border border-white/10 bg-zinc-900 px-4 py-3 font-mono text-sm leading-6 text-white outline-none transition focus:border-orange-200/50"
-              spellCheck={false}
-            />
-          </label>
-
-          {moxfieldMessage && (
-            <p className="mt-3 rounded-2xl border border-white/10 bg-black/15 px-4 py-3 text-sm leading-6 text-zinc-300">
-              {moxfieldMessage}
-            </p>
-          )}
-        </div>
-
-        <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
           <div className="grid gap-4 lg:grid-cols-[1fr_1fr_180px]">
             <label className="block">
               <span className="text-sm font-bold text-zinc-300">Deckname</span>
@@ -912,14 +828,26 @@ Deck
           </div>
 
           <label className="mt-4 block">
-            <span className="text-sm font-bold text-zinc-300">Deckliste</span>
+            <span className="text-sm font-bold text-zinc-300">
+              Deckliste oder Moxfield-Text-Export
+            </span>
             <textarea
               value={rawList}
               onChange={(event) => setRawList(event.target.value)}
               rows={16}
+              placeholder={`Commander
+1 Atraxa, Praetors' Voice
+
+Deck
+1 Sol Ring
+1 Arcane Signet`}
               className="mt-2 w-full resize-y rounded-2xl border border-white/10 bg-zinc-900 px-4 py-3 font-mono text-sm leading-6 text-white outline-none transition focus:border-orange-200/50"
               spellCheck={false}
             />
+            <span className="mt-2 block text-xs leading-5 text-zinc-500">
+              Moxfield-Direktlinks werden von Cloudflare blockiert. Kopiere in
+              Moxfield den Text-Export hier hinein und starte die Analyse.
+            </span>
           </label>
 
           <label className="mt-4 block">
