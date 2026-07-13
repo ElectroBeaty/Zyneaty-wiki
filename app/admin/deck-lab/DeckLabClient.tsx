@@ -58,10 +58,9 @@ type DeckLabDeck = {
   updatedAt: string;
 };
 
-const starterList = `Commander
-1 Muldrotha, the Gravetide
+const starterCommander = "Muldrotha, the Gravetide";
 
-Deck
+const starterList = `Deck
 1 Sol Ring
 1 Arcane Signet
 1 Sakura-Tribe Elder
@@ -115,6 +114,8 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
   }
 
   const maxCurve = Math.max(...analysis.stats.manaCurve.map((item) => item.count), 1);
+  const commanderCard =
+    analysis.cards.find((card) => card.section === "commander") ?? null;
 
   return (
     <section className="space-y-6">
@@ -150,6 +151,44 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
             ))}
           </ul>
         </div>
+      )}
+
+      {commanderCard && (
+        <section className="rounded-3xl border border-emerald-300/20 bg-emerald-300/10 p-5">
+          <div className="grid gap-5 md:grid-cols-[160px_1fr]">
+            {commanderCard.imageUrl && (
+              <a
+                href={commanderCard.scryfallUrl ?? undefined}
+                target="_blank"
+                rel="noreferrer"
+                className="block w-fit"
+              >
+                <Image
+                  src={commanderCard.imageUrl}
+                  alt=""
+                  width={160}
+                  height={224}
+                  className="rounded-xl border border-white/10 object-cover shadow-2xl shadow-black/30"
+                />
+              </a>
+            )}
+
+            <div>
+              <p className="text-xs uppercase tracking-[0.28em] text-emerald-100/60">
+                Commander
+              </p>
+              <h3 className="mt-2 text-2xl font-black">
+                {commanderCard.name}
+              </h3>
+              <p className="mt-2 text-sm text-emerald-50/75">
+                {commanderCard.typeLine}
+              </p>
+              <p className="mt-4 max-h-44 overflow-auto whitespace-pre-wrap text-sm leading-6 text-zinc-200">
+                {commanderCard.oracleText || "Kein Oracle-Text gefunden."}
+              </p>
+            </div>
+          </div>
+        </section>
       )}
 
       <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
@@ -209,6 +248,58 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
           </p>
         </div>
       )}
+
+      <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h3 className="text-lg font-black">Bilduebersicht</h3>
+            <p className="mt-1 text-sm text-zinc-500">
+              Zum visuellen Gegencheck, welche Karte gemeint ist.
+            </p>
+          </div>
+          <span className="text-sm text-zinc-500">
+            {analysis.cards.length} Karten
+          </span>
+        </div>
+
+        <div className="mt-5 grid max-h-[760px] grid-cols-2 gap-4 overflow-auto pr-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+          {analysis.cards.map((card) => (
+            <a
+              key={`image-${card.section}-${card.id}`}
+              href={card.scryfallUrl ?? undefined}
+              target="_blank"
+              rel="noreferrer"
+              className={`group rounded-2xl border p-3 transition hover:bg-white/[0.07] ${
+                card.section === "commander"
+                  ? "border-emerald-300/30 bg-emerald-300/10"
+                  : "border-white/10 bg-black/15"
+              }`}
+            >
+              <div className="aspect-[5/7] overflow-hidden rounded-xl bg-zinc-900">
+                {card.imageUrl ? (
+                  <Image
+                    src={card.imageUrl}
+                    alt=""
+                    width={220}
+                    height={308}
+                    className="h-full w-full object-cover transition group-hover:scale-[1.02]"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center px-3 text-center text-xs text-zinc-500">
+                    Kein Bild
+                  </div>
+                )}
+              </div>
+              <div className="mt-3 text-sm font-bold text-white">
+                {card.quantity}x {card.name}
+              </div>
+              <div className="mt-1 text-xs text-zinc-500">
+                {card.section === "commander" ? "Commander" : card.typeLine}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
 
       <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
@@ -308,6 +399,9 @@ export default function DeckLabClient({
   );
   const [name, setName] = useState(initialDecks[0]?.name ?? "Mein Commander Deck");
   const [format, setFormat] = useState(initialDecks[0]?.format ?? "commander");
+  const [commanderName, setCommanderName] = useState(
+    initialDecks[0]?.commanderName ?? starterCommander
+  );
   const [rawList, setRawList] = useState(initialDecks[0]?.rawList ?? starterList);
   const [notes, setNotes] = useState(initialDecks[0]?.notes ?? "");
   const [analysis, setAnalysis] = useState<DeckLabAnalysis | null>(
@@ -320,6 +414,7 @@ export default function DeckLabClient({
     setSelectedDeckId(deck.id);
     setName(deck.name);
     setFormat(deck.format);
+    setCommanderName(deck.commanderName ?? "");
     setRawList(deck.rawList);
     setNotes(deck.notes ?? "");
     setAnalysis(deck.analysis);
@@ -330,6 +425,7 @@ export default function DeckLabClient({
     setSelectedDeckId(null);
     setName("Neues Commander Deck");
     setFormat("commander");
+    setCommanderName("");
     setRawList(starterList);
     setNotes("");
     setAnalysis(null);
@@ -340,8 +436,9 @@ export default function DeckLabClient({
     setMessage(null);
     startTransition(async () => {
       try {
-        const result = await analyzeDeckList(rawList, format);
+        const result = await analyzeDeckList(rawList, format, commanderName);
         setAnalysis(result);
+        setCommanderName(result.commanderName ?? commanderName);
         setMessage("Analyse fertig.");
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Analyse fehlgeschlagen.");
@@ -357,11 +454,13 @@ export default function DeckLabClient({
           id: selectedDeckId ?? undefined,
           name,
           format,
+          commanderName,
           rawList,
           notes,
         });
 
         setSelectedDeckId(savedDeck.id);
+        setCommanderName(savedDeck.commanderName ?? commanderName);
         setAnalysis(savedDeck.analysis);
         setDecks((currentDecks) => {
           const withoutSaved = currentDecks.filter((deck) => deck.id !== savedDeck.id);
@@ -452,12 +551,22 @@ export default function DeckLabClient({
 
       <section className="space-y-6">
         <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-          <div className="grid gap-4 md:grid-cols-[1fr_180px]">
+          <div className="grid gap-4 lg:grid-cols-[1fr_1fr_180px]">
             <label className="block">
               <span className="text-sm font-bold text-zinc-300">Deckname</span>
               <input
                 value={name}
                 onChange={(event) => setName(event.target.value)}
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-zinc-900 px-4 py-3 text-white outline-none transition focus:border-orange-200/50"
+              />
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-bold text-zinc-300">Commander</span>
+              <input
+                value={commanderName}
+                onChange={(event) => setCommanderName(event.target.value)}
+                placeholder="z. B. Muldrotha, the Gravetide"
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-zinc-900 px-4 py-3 text-white outline-none transition focus:border-orange-200/50"
               />
             </label>

@@ -246,6 +246,38 @@ function parseDeckList(rawList: string) {
   return lines;
 }
 
+function applyCommanderField(lines: ParsedDeckLine[], commanderName?: string) {
+  const normalizedCommanderName = commanderName?.trim();
+
+  if (!normalizedCommanderName) return lines;
+
+  const commanderKey = normalizedCommanderName.toLowerCase();
+  let foundCommander = false;
+
+  const updatedLines = lines.map((line) => {
+    if (line.name.toLowerCase() !== commanderKey) return line;
+
+    foundCommander = true;
+
+    return {
+      ...line,
+      quantity: 1,
+      section: "commander" as DeckSection,
+    };
+  });
+
+  if (foundCommander) return updatedLines;
+
+  return [
+    {
+      quantity: 1,
+      name: normalizedCommanderName,
+      section: "commander" as DeckSection,
+    },
+    ...updatedLines,
+  ];
+}
+
 function getCardOracleText(card: ScryfallCard) {
   if (card.oracle_text) return card.oracle_text;
 
@@ -508,9 +540,10 @@ async function fetchScryfallCards(names: string[]) {
 
 export async function analyzeDeckList(
   rawList: string,
-  format = "commander"
+  format = "commander",
+  commanderName?: string
 ): Promise<DeckLabAnalysis> {
-  const parsedLines = parseDeckList(rawList);
+  const parsedLines = applyCommanderField(parseDeckList(rawList), commanderName);
 
   if (parsedLines.length === 0) {
     return {
@@ -574,16 +607,16 @@ export async function analyzeDeckList(
       return a.manaValue - b.manaValue || a.name.localeCompare(b.name);
     });
 
-  const commanderName =
+  const resolvedCommanderName =
     cards.find((card) => card.section === "commander")?.name ?? null;
   const stats = createStats(cards);
 
   return {
     cards,
     missing,
-    warnings: createWarnings(format, cards, missing, stats, commanderName),
+    warnings: createWarnings(format, cards, missing, stats, resolvedCommanderName),
     stats,
-    commanderName,
+    commanderName: resolvedCommanderName,
   };
 }
 
