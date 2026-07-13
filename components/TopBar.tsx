@@ -53,9 +53,9 @@ export default async function TopBar() {
 
                   <Link
                     href="/admin/deck-lab"
-                    className="text-zinc-300 hover:text-white"
+                    className="rounded-full border border-orange-200/25 bg-orange-300/10 px-4 py-2 text-orange-100 transition hover:border-orange-100/45 hover:bg-orange-300/15 hover:text-white"
                   >
-                    Deck Lab
+                    MTG Lab
                   </Link>
                 </>
               )}
