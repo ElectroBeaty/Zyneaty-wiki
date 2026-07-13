@@ -7,6 +7,7 @@ import { authOptions } from "@/auth";
 import { analyzeDeckList as analyzeDeckListInternal } from "@/lib/deck-lab";
 import {
   deleteDeckLabDeck,
+  importMoxfieldDeck as importMoxfieldDeckInternal,
   listDeckLabDecks,
   saveDeckLabDeck,
 } from "@/lib/deck-lab";
@@ -37,6 +38,12 @@ export async function analyzeDeckList(
   await requireDeckLabAdmin();
 
   return analyzeDeckListInternal(rawList, format, commanderName);
+}
+
+export async function importMoxfieldDeck(sourceUrl: string) {
+  await requireDeckLabAdmin();
+
+  return importMoxfieldDeckInternal(sourceUrl);
 }
 
 export async function saveDeck(input: {

@@ -1,14 +1,24 @@
 "use client";
 
 import Image from "next/image";
+import type { FocusEvent, MouseEvent } from "react";
 import { useMemo, useState, useTransition } from "react";
-import { analyzeDeckList, deleteDeck, saveDeck } from "./actions";
+import {
+  analyzeDeckList,
+  deleteDeck,
+  importMoxfieldDeck,
+  saveDeck,
+} from "./actions";
 
 type DeckLabCard = {
   id: string;
   name: string;
   quantity: number;
   section: "main" | "commander" | "sideboard";
+  importedName?: string;
+  setCode?: string | null;
+  collectorNumber?: string | null;
+  matchNote?: string | null;
   manaCost: string;
   manaValue: number;
   colors: string[];
@@ -23,6 +33,22 @@ type DeckLabCard = {
   scryfallUrl: string | null;
   roles: string[];
   isLand: boolean;
+};
+
+type DeckLabCorrection = {
+  input: string;
+  matched: string;
+  note: string;
+};
+
+type DeckLabRecommendation = {
+  title: string;
+  reason: string;
+  source: "curated" | "scryfall";
+  cards: Array<{
+    name: string;
+    reason: string;
+  }>;
 };
 
 type DeckLabStats = {
@@ -41,6 +67,8 @@ type DeckLabStats = {
 type DeckLabAnalysis = {
   cards: DeckLabCard[];
   missing: string[];
+  corrections: DeckLabCorrection[];
+  recommendations: DeckLabRecommendation[];
   warnings: string[];
   stats: DeckLabStats;
   commanderName: string | null;
@@ -86,6 +114,50 @@ function getRecordEntries(record: Record<string, number>) {
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 }
 
+function getPrintLabel(card: DeckLabCard) {
+  const setCode = card.setCode?.toUpperCase();
+
+  if (setCode && card.collectorNumber) {
+    return `${setCode} #${card.collectorNumber}`;
+  }
+
+  if (setCode) return setCode;
+
+  return card.setName || "Druck unbekannt";
+}
+
+function getSectionLabel(card: DeckLabCard) {
+  if (card.section === "commander") return "Commander";
+  if (card.section === "sideboard") return "Sideboard";
+
+  return card.typeLine;
+}
+
+function getPreviewPositionFromMouse(event: MouseEvent<HTMLElement>) {
+  const width = 268;
+  const height = 428;
+  const left = Math.min(event.clientX + 18, window.innerWidth - width - 16);
+  const top = Math.min(event.clientY + 18, window.innerHeight - height - 16);
+
+  return {
+    left: Math.max(16, left),
+    top: Math.max(16, top),
+  };
+}
+
+function getPreviewPositionFromFocus(event: FocusEvent<HTMLElement>) {
+  const rect = event.currentTarget.getBoundingClientRect();
+  const width = 268;
+  const height = 428;
+  const left = Math.min(rect.right + 16, window.innerWidth - width - 16);
+  const top = Math.min(rect.top, window.innerHeight - height - 16);
+
+  return {
+    left: Math.max(16, left),
+    top: Math.max(16, top),
+  };
+}
+
 function Metric({
   label,
   value,
@@ -104,7 +176,45 @@ function Metric({
   );
 }
 
+function CardPreview({
+  card,
+  position,
+}: {
+  card: DeckLabCard | null;
+  position: { left: number; top: number };
+}) {
+  if (!card?.imageUrl) return null;
+
+  return (
+    <div
+      className="pointer-events-none fixed z-50 hidden w-[268px] rounded-2xl border border-white/15 bg-zinc-950/95 p-3 shadow-2xl shadow-black/60 backdrop-blur md:block"
+      style={{ left: position.left, top: position.top }}
+    >
+      <Image
+        src={card.imageUrl}
+        alt=""
+        width={244}
+        height={341}
+        className="w-full rounded-xl border border-white/10 object-cover"
+      />
+      <div className="mt-3 text-sm font-black text-white">{card.name}</div>
+      <div className="mt-1 flex items-center justify-between gap-3 text-xs text-zinc-400">
+        <span>{getPrintLabel(card)}</span>
+        <span>{card.rarity || "unknown"}</span>
+      </div>
+      {card.matchNote && (
+        <div className="mt-2 rounded-xl border border-amber-200/15 bg-amber-200/10 px-3 py-2 text-xs leading-5 text-amber-50/85">
+          {card.matchNote}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
+  const [previewCard, setPreviewCard] = useState<DeckLabCard | null>(null);
+  const [previewPosition, setPreviewPosition] = useState({ left: 16, top: 16 });
+
   if (!analysis) {
     return (
       <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-zinc-400">
@@ -116,6 +226,19 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
   const maxCurve = Math.max(...analysis.stats.manaCurve.map((item) => item.count), 1);
   const commanderCard =
     analysis.cards.find((card) => card.section === "commander") ?? null;
+
+  function showPreview(card: DeckLabCard, event: MouseEvent<HTMLElement>) {
+    setPreviewCard(card);
+    setPreviewPosition(getPreviewPositionFromMouse(event));
+  }
+
+  function showPreviewFromFocus(
+    card: DeckLabCard,
+    event: FocusEvent<HTMLElement>
+  ) {
+    setPreviewCard(card);
+    setPreviewPosition(getPreviewPositionFromFocus(event));
+  }
 
   return (
     <section className="space-y-6">
@@ -151,6 +274,83 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
             ))}
           </ul>
         </div>
+      )}
+
+      {analysis.corrections?.length > 0 && (
+        <div className="rounded-3xl border border-sky-300/20 bg-sky-300/10 p-5">
+          <h3 className="text-lg font-black text-sky-100">Fallbacks</h3>
+          <div className="mt-3 grid gap-2">
+            {analysis.corrections.map((correction) => (
+              <div
+                key={`${correction.input}-${correction.matched}`}
+                className="rounded-2xl border border-white/10 bg-black/15 px-4 py-3 text-sm text-sky-50/85"
+              >
+                <span className="font-bold text-white">{correction.input}</span>
+                <span className="text-sky-100/50">{" -> "}</span>
+                <span>{correction.matched}</span>
+                <span className="mt-1 block text-xs text-sky-100/60">
+                  {correction.note}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {analysis.recommendations?.length > 0 && (
+        <section className="rounded-3xl border border-violet-300/20 bg-violet-300/10 p-5">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-black text-violet-100">
+                Empfehlungen
+              </h3>
+              <p className="mt-1 text-sm text-violet-50/65">
+                Live aus Scryfall gefiltert, passend zur Farbidentitaet und ohne
+                Karten, die schon im Deck sind. Preise werden ignoriert.
+              </p>
+            </div>
+            <span className="rounded-full bg-black/20 px-3 py-1 text-xs text-violet-50/70">
+              {analysis.recommendations.length} Bereiche
+            </span>
+          </div>
+
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            {analysis.recommendations.map((recommendation) => (
+              <div
+                key={recommendation.title}
+                className="rounded-2xl border border-white/10 bg-black/15 p-4"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h4 className="font-black text-white">
+                      {recommendation.title}
+                    </h4>
+                    <p className="mt-1 text-sm leading-6 text-violet-50/70">
+                      {recommendation.reason}
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-white/10 px-2 py-1 text-xs text-violet-50/60">
+                    {recommendation.source === "scryfall" ? "Scryfall" : "Fallback"}
+                  </span>
+                </div>
+
+                <div className="mt-4 space-y-2">
+                  {recommendation.cards.map((card) => (
+                    <div
+                      key={`${recommendation.title}-${card.name}`}
+                      className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2"
+                    >
+                      <div className="font-bold text-white">{card.name}</div>
+                      <p className="mt-1 text-xs leading-5 text-zinc-400">
+                        {card.reason}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
       {commanderCard && (
@@ -243,9 +443,16 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
       {analysis.missing.length > 0 && (
         <div className="rounded-3xl border border-red-300/20 bg-red-300/10 p-5">
           <h3 className="text-lg font-black text-red-100">Nicht gefunden</h3>
-          <p className="mt-2 text-sm text-red-50/80">
-            {analysis.missing.join(", ")}
-          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {analysis.missing.map((name) => (
+              <span
+                key={name}
+                className="rounded-full border border-red-100/10 bg-black/20 px-3 py-1 text-sm text-red-50/85"
+              >
+                {name}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 
@@ -294,7 +501,7 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
                 {card.quantity}x {card.name}
               </div>
               <div className="mt-1 text-xs text-zinc-500">
-                {card.section === "commander" ? "Commander" : card.typeLine}
+                {getPrintLabel(card)} - {getSectionLabel(card)}
               </div>
             </a>
           ))}
@@ -318,10 +525,11 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
 
         <div className="mt-5 overflow-hidden rounded-2xl border border-white/10">
           <div className="max-h-[680px] overflow-auto">
-            <table className="w-full min-w-[760px] border-collapse text-left text-sm">
+            <table className="w-full min-w-[980px] border-collapse text-left text-sm">
               <thead className="sticky top-0 bg-zinc-950 text-xs uppercase text-zinc-500">
                 <tr>
                   <th className="px-4 py-3">Karte</th>
+                  <th className="px-4 py-3">Druck</th>
                   <th className="px-4 py-3">MV</th>
                   <th className="px-4 py-3">Typ</th>
                   <th className="px-4 py-3">Rollen</th>
@@ -330,27 +538,61 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
               </thead>
               <tbody className="divide-y divide-white/10">
                 {analysis.cards.map((card) => (
-                  <tr key={`${card.section}-${card.id}`} className="align-top">
+                  <tr
+                    key={`${card.section}-${card.id}`}
+                    tabIndex={0}
+                    onMouseEnter={(event) => showPreview(card, event)}
+                    onMouseMove={(event) =>
+                      setPreviewPosition(getPreviewPositionFromMouse(event))
+                    }
+                    onMouseLeave={() => setPreviewCard(null)}
+                    onFocus={(event) => showPreviewFromFocus(card, event)}
+                    onBlur={() => setPreviewCard(null)}
+                    className="align-top outline-none transition hover:bg-white/[0.04] focus-visible:bg-white/[0.04]"
+                  >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        {card.imageUrl && (
+                        {card.imageUrl ? (
                           <Image
                             src={card.imageUrl}
                             alt=""
                             width={44}
                             height={64}
-                            className="rounded-md object-cover"
+                            className="h-16 w-11 rounded-md border border-white/10 object-cover"
                           />
+                        ) : (
+                          <div className="flex h-16 w-11 items-center justify-center rounded-md border border-white/10 bg-zinc-900 text-[10px] text-zinc-500">
+                            kein Bild
+                          </div>
                         )}
                         <div>
                           <div className="font-bold text-white">
                             {card.quantity}x {card.name}
                           </div>
                           <div className="mt-1 text-xs text-zinc-500">
-                            {card.section === "commander" ? "Commander" : card.setName}
+                            {getSectionLabel(card)}
                           </div>
+                          {card.importedName &&
+                            card.importedName !== card.name && (
+                              <div className="mt-1 text-xs text-amber-100/75">
+                                Import: {card.importedName}
+                              </div>
+                            )}
                         </div>
                       </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="font-bold text-zinc-200">
+                        {getPrintLabel(card)}
+                      </div>
+                      <div className="mt-1 max-w-44 text-xs text-zinc-500">
+                        {card.setName || "Scryfall-Standarddruck"}
+                      </div>
+                      {card.matchNote && (
+                        <div className="mt-2 rounded-full bg-amber-200/10 px-2 py-1 text-xs text-amber-100">
+                          Fallback
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-zinc-300">{card.manaValue}</td>
                     <td className="max-w-64 px-4 py-3 text-zinc-300">
@@ -378,6 +620,8 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
           </div>
         </div>
       </section>
+
+      <CardPreview card={previewCard} position={previewPosition} />
     </section>
   );
 }
@@ -404,6 +648,7 @@ export default function DeckLabClient({
   );
   const [rawList, setRawList] = useState(initialDecks[0]?.rawList ?? starterList);
   const [notes, setNotes] = useState(initialDecks[0]?.notes ?? "");
+  const [moxfieldUrl, setMoxfieldUrl] = useState("");
   const [analysis, setAnalysis] = useState<DeckLabAnalysis | null>(
     initialDecks[0]?.analysis ?? null
   );
@@ -442,6 +687,33 @@ export default function DeckLabClient({
         setMessage("Analyse fertig.");
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Analyse fehlgeschlagen.");
+      }
+    });
+  }
+
+  function importFromMoxfield() {
+    const sourceUrl = moxfieldUrl.trim();
+
+    if (!sourceUrl) {
+      setMessage("Fuege zuerst einen Moxfield-Link ein.");
+      return;
+    }
+
+    setMessage(null);
+    startTransition(async () => {
+      try {
+        const importedDeck = await importMoxfieldDeck(sourceUrl);
+
+        setSelectedDeckId(null);
+        setName(importedDeck.name);
+        setFormat(importedDeck.format);
+        setCommanderName(importedDeck.commanderName ?? "");
+        setRawList(importedDeck.rawList);
+        setNotes(importedDeck.notes ?? "");
+        setAnalysis(importedDeck.analysis);
+        setMessage("Moxfield-Deck importiert und analysiert. Speichern nicht vergessen.");
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "Import fehlgeschlagen.");
       }
     });
   }
@@ -550,6 +822,31 @@ export default function DeckLabClient({
       </aside>
 
       <section className="space-y-6">
+        <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+          <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
+            <label className="block">
+              <span className="text-sm font-bold text-zinc-300">
+                Moxfield-Link
+              </span>
+              <input
+                value={moxfieldUrl}
+                onChange={(event) => setMoxfieldUrl(event.target.value)}
+                placeholder="https://www.moxfield.com/decks/..."
+                className="mt-2 w-full rounded-2xl border border-white/10 bg-zinc-900 px-4 py-3 text-white outline-none transition focus:border-orange-200/50"
+              />
+            </label>
+
+            <button
+              type="button"
+              onClick={importFromMoxfield}
+              disabled={isPending}
+              className="self-end rounded-full border border-violet-200/30 bg-violet-200/15 px-5 py-3 text-sm font-bold text-violet-50 transition hover:bg-violet-200/25 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Importieren
+            </button>
+          </div>
+        </div>
+
         <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
           <div className="grid gap-4 lg:grid-cols-[1fr_1fr_180px]">
             <label className="block">
