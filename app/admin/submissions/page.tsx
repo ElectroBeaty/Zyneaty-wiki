@@ -183,6 +183,13 @@ export default async function SubmissionsPage() {
             </div>
 
             <div className="flex flex-wrap gap-3">
+              <Link
+                href="/admin/deck-lab"
+                className="rounded-full bg-orange-300 px-4 py-2 text-sm font-semibold text-black transition hover:bg-orange-200"
+              >
+                Deck Lab
+              </Link>
+
               <a
                 href="/api/health"
                 target="_blank"
