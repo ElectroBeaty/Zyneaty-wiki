@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { FocusEvent, MouseEvent } from "react";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import {
   analyzeDeckList,
   deleteDeck,
@@ -240,6 +240,8 @@ function CardPreview({
 function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
   const [previewCard, setPreviewCard] = useState<PreviewCard | null>(null);
   const [previewPosition, setPreviewPosition] = useState({ left: 16, top: 16 });
+  const [activeRole, setActiveRole] = useState<string | null>(null);
+  const imageOverviewRef = useRef<HTMLElement | null>(null);
 
   if (!analysis) {
     return (
@@ -252,6 +254,18 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
   const maxCurve = Math.max(...analysis.stats.manaCurve.map((item) => item.count), 1);
   const commanderCard =
     analysis.cards.find((card) => card.section === "commander") ?? null;
+  const roleEntries = getRecordEntries(analysis.stats.roleCounts);
+  const selectedRole =
+    activeRole && roleEntries.some(([role]) => role === activeRole)
+      ? activeRole
+      : null;
+  const imageCards = selectedRole
+    ? analysis.cards.filter((card) => card.roles.includes(selectedRole))
+    : analysis.cards;
+  const imageCardCount = imageCards.reduce(
+    (total, card) => total + card.quantity,
+    0
+  );
 
   function showPreview(card: PreviewCard, event: MouseEvent<HTMLElement>) {
     setPreviewCard(card);
@@ -264,6 +278,14 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
   ) {
     setPreviewCard(card);
     setPreviewPosition(getPreviewPositionFromFocus(event));
+  }
+
+  function selectRoleFilter(role: string | null) {
+    setActiveRole(role);
+    imageOverviewRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   }
 
   return (
@@ -480,17 +502,50 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
         </section>
 
         <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-          <h3 className="text-lg font-black">Rollen</h3>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-black">Rollen</h3>
+              <p className="mt-1 text-sm text-zinc-500">
+                Anklicken filtert unten die Bilduebersicht.
+              </p>
+            </div>
+            {selectedRole && (
+              <span className="rounded-full bg-orange-300/15 px-3 py-1 text-xs font-bold text-orange-100">
+                Filter: {selectedRole}
+              </span>
+            )}
+          </div>
           <div className="mt-4 flex flex-wrap gap-2">
-            {getRecordEntries(analysis.stats.roleCounts).map(([role, count]) => (
-              <span
+            {roleEntries.length > 0 && (
+              <button
+                type="button"
+                onClick={() => selectRoleFilter(null)}
+                aria-pressed={!selectedRole}
+                className={`rounded-full border px-3 py-1 text-sm transition ${
+                  !selectedRole
+                    ? "border-orange-200/45 bg-orange-200/15 text-orange-50"
+                    : "border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10"
+                }`}
+              >
+                Alle: {analysis.stats.totalCards}
+              </button>
+            )}
+            {roleEntries.map(([role, count]) => (
+              <button
                 key={role}
-                className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-zinc-300"
+                type="button"
+                onClick={() => selectRoleFilter(selectedRole === role ? null : role)}
+                aria-pressed={selectedRole === role}
+                className={`rounded-full border px-3 py-1 text-sm transition ${
+                  selectedRole === role
+                    ? "border-orange-200/45 bg-orange-200/15 text-orange-50"
+                    : "border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10"
+                }`}
               >
                 {role}: {count}
-              </span>
+              </button>
             ))}
-            {getRecordEntries(analysis.stats.roleCounts).length === 0 && (
+            {roleEntries.length === 0 && (
               <p className="text-sm text-zinc-500">Noch keine Rollen erkannt.</p>
             )}
           </div>
@@ -525,21 +580,39 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
         </div>
       )}
 
-      <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+      <section
+        ref={imageOverviewRef}
+        className="scroll-mt-24 rounded-3xl border border-white/10 bg-white/[0.04] p-5"
+      >
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h3 className="text-lg font-black">Bilduebersicht</h3>
+            <h3 className="text-lg font-black">
+              {selectedRole ? `${selectedRole}-Karten` : "Bilduebersicht"}
+            </h3>
             <p className="mt-1 text-sm text-zinc-500">
-              Zum visuellen Gegencheck, welche Karte gemeint ist.
+              {selectedRole
+                ? `Diese Karten erkennt die Analyse aktuell als ${selectedRole}.`
+                : "Zum visuellen Gegencheck, welche Karte gemeint ist."}
             </p>
           </div>
-          <span className="text-sm text-zinc-500">
-            {analysis.cards.length} Karten
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            {selectedRole && (
+              <button
+                type="button"
+                onClick={() => setActiveRole(null)}
+                className="rounded-full border border-white/10 px-3 py-1 text-sm font-semibold text-zinc-300 transition hover:bg-white/10"
+              >
+                Alle anzeigen
+              </button>
+            )}
+            <span className="text-sm text-zinc-500">
+              {imageCardCount} Karten
+            </span>
+          </div>
         </div>
 
         <div className="mt-5 grid max-h-[760px] grid-cols-2 gap-4 overflow-auto pr-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {analysis.cards.map((card) => (
+          {imageCards.map((card) => (
             <a
               key={`image-${card.section}-${card.id}`}
               href={card.scryfallUrl ?? undefined}
@@ -580,6 +653,11 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
               <div className="mt-1 text-xs text-zinc-500">
                 {getPrintLabel(card)} - {getSectionLabel(card)}
               </div>
+              {selectedRole && (
+                <div className="mt-2 rounded-full bg-orange-300/10 px-2 py-1 text-center text-[11px] font-bold text-orange-100/80">
+                  {selectedRole}
+                </div>
+              )}
             </a>
           ))}
         </div>

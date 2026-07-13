@@ -418,6 +418,25 @@ function inferRoles(card: ScryfallCard) {
   const typeLine = card.type_line?.toLowerCase() ?? "";
   const text = getCardOracleText(card).toLowerCase();
   const roles = new Set<string>();
+  const hasLifelink = text.includes("lifelink");
+  const hasLifePayoff =
+    text.includes("whenever you gain life") ||
+    text.includes("whenever you gain one or more life") ||
+    text.includes("if you gained life") ||
+    text.includes("you gained life") ||
+    text.includes("for each life you gained");
+  const hasOpponentMill =
+    text.includes("each opponent mills") ||
+    text.includes("target opponent mills") ||
+    text.includes("opponent mills");
+  const hasMillPayoff =
+    (
+      text.includes("cards are put") ||
+      text.includes("card is put") ||
+      text.includes("one or more cards are put")
+    ) &&
+    text.includes("graveyard") &&
+    text.includes("library");
 
   if (typeLine.includes("land")) roles.add("Land");
   if (typeLine.includes("creature")) roles.add("Creature");
@@ -460,10 +479,12 @@ function inferRoles(card: ScryfallCard) {
     text.includes("gain life") ||
     text.includes("gains life") ||
     text.includes("you gain") ||
-    text.includes("lifelink")
+    hasLifelink
   ) {
     roles.add("Lifegain");
   }
+  if (hasLifelink) roles.add("Lifelink");
+  if (hasLifePayoff) roles.add("Life Payoff");
   if (
     text.includes("mill") ||
     text.includes("mills") ||
@@ -471,6 +492,8 @@ function inferRoles(card: ScryfallCard) {
   ) {
     roles.add("Mill");
   }
+  if (hasOpponentMill) roles.add("Opponent Mill");
+  if (hasMillPayoff) roles.add("Mill Payoff");
   if (
     text.includes("whenever") ||
     text.includes("at the beginning") ||
