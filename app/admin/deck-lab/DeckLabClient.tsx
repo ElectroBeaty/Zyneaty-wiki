@@ -649,6 +649,7 @@ export default function DeckLabClient({
   const [rawList, setRawList] = useState(initialDecks[0]?.rawList ?? starterList);
   const [notes, setNotes] = useState(initialDecks[0]?.notes ?? "");
   const [moxfieldUrl, setMoxfieldUrl] = useState("");
+  const [moxfieldMessage, setMoxfieldMessage] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<DeckLabAnalysis | null>(
     initialDecks[0]?.analysis ?? null
   );
@@ -675,6 +676,7 @@ export default function DeckLabClient({
     setNotes("");
     setAnalysis(null);
     setMessage(null);
+    setMoxfieldMessage(null);
   }
 
   function runAnalysis() {
@@ -695,26 +697,32 @@ export default function DeckLabClient({
     const sourceUrl = moxfieldUrl.trim();
 
     if (!sourceUrl) {
-      setMessage("Fuege zuerst einen Moxfield-Link ein.");
+      setMoxfieldMessage("Fuege zuerst einen Moxfield-Link ein.");
       return;
     }
 
     setMessage(null);
+    setMoxfieldMessage("Importiere Moxfield-Deck...");
     startTransition(async () => {
-      try {
-        const importedDeck = await importMoxfieldDeck(sourceUrl);
+      const result = await importMoxfieldDeck(sourceUrl);
 
-        setSelectedDeckId(null);
-        setName(importedDeck.name);
-        setFormat(importedDeck.format);
-        setCommanderName(importedDeck.commanderName ?? "");
-        setRawList(importedDeck.rawList);
-        setNotes(importedDeck.notes ?? "");
-        setAnalysis(importedDeck.analysis);
-        setMessage("Moxfield-Deck importiert und analysiert. Speichern nicht vergessen.");
-      } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Import fehlgeschlagen.");
+      if (!result.ok) {
+        setMoxfieldMessage(result.error);
+        return;
       }
+
+      const importedDeck = result.deck;
+
+      setSelectedDeckId(null);
+      setName(importedDeck.name);
+      setFormat(importedDeck.format);
+      setCommanderName(importedDeck.commanderName ?? "");
+      setRawList(importedDeck.rawList);
+      setNotes(importedDeck.notes ?? "");
+      setAnalysis(importedDeck.analysis);
+      setMoxfieldMessage(
+        "Moxfield-Deck importiert und analysiert. Speichern nicht vergessen."
+      );
     });
   }
 
@@ -842,9 +850,15 @@ export default function DeckLabClient({
               disabled={isPending}
               className="self-end rounded-full border border-violet-200/30 bg-violet-200/15 px-5 py-3 text-sm font-bold text-violet-50 transition hover:bg-violet-200/25 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Importieren
+              {isPending ? "Importiert..." : "Importieren"}
             </button>
           </div>
+
+          {moxfieldMessage && (
+            <p className="mt-3 rounded-2xl border border-white/10 bg-black/15 px-4 py-3 text-sm leading-6 text-zinc-300">
+              {moxfieldMessage}
+            </p>
+          )}
         </div>
 
         <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">

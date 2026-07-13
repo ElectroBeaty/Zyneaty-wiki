@@ -1532,6 +1532,8 @@ function createMoxfieldRawList(deck: Record<string, unknown>) {
 }
 
 async function fetchMoxfieldDeck(deckId: string) {
+  const failedStatuses: number[] = [];
+
   for (const base of MOXFIELD_DECK_API_BASES) {
     const response = await fetch(`${base}/${deckId}`, {
       cache: "no-store",
@@ -1544,13 +1546,26 @@ async function fetchMoxfieldDeck(deckId: string) {
 
     if (response.status === 404) continue;
 
+    if (response.status === 403) {
+      throw new Error(
+        "Moxfield blockiert den direkten Server-Import gerade mit Cloudflare 403. Exportiere das Deck in Moxfield als Text und fuege die Liste unten in die Deckliste ein; Analyse und Empfehlungen funktionieren danach normal."
+      );
+    }
+
     if (!response.ok) {
-      throw new Error("Moxfield konnte gerade nicht abgefragt werden.");
+      failedStatuses.push(response.status);
+      continue;
     }
 
     const payload = (await response.json()) as unknown;
 
     if (isRecord(payload)) return payload;
+  }
+
+  if (failedStatuses.length > 0) {
+    throw new Error(
+      `Moxfield konnte gerade nicht abgefragt werden. Antwortstatus: ${failedStatuses.join(", ")}.`
+    );
   }
 
   throw new Error(

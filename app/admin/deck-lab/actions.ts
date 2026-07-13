@@ -43,7 +43,22 @@ export async function analyzeDeckList(
 export async function importMoxfieldDeck(sourceUrl: string) {
   await requireDeckLabAdmin();
 
-  return importMoxfieldDeckInternal(sourceUrl);
+  try {
+    const deck = await importMoxfieldDeckInternal(sourceUrl);
+
+    return {
+      ok: true as const,
+      deck,
+    };
+  } catch (error) {
+    console.error("[deck-lab] Moxfield import failed", error);
+
+    return {
+      ok: false as const,
+      error:
+        error instanceof Error ? error.message : "Moxfield-Import fehlgeschlagen.",
+    };
+  }
 }
 
 export async function saveDeck(input: {
