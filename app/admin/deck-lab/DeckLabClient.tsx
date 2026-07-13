@@ -47,6 +47,15 @@ type DeckLabRecommendation = {
   cards: Array<{
     name: string;
     reason: string;
+    imageUrl?: string | null;
+    scryfallUrl?: string | null;
+    typeLine?: string;
+    oracleText?: string;
+    setCode?: string | null;
+    collectorNumber?: string | null;
+    rarity?: string | null;
+    setName?: string | null;
+    manaValue?: number;
   }>;
 };
 
@@ -100,6 +109,16 @@ const starterList = `Deck
 1 Island
 1 Swamp`;
 
+type PreviewCard = {
+  name: string;
+  imageUrl?: string | null;
+  setCode?: string | null;
+  collectorNumber?: string | null;
+  matchNote?: string | null;
+  rarity?: string | null;
+  setName?: string | null;
+};
+
 function formatDate(value: string) {
   return new Date(value).toLocaleString("de-DE", {
     dateStyle: "medium",
@@ -113,7 +132,7 @@ function getRecordEntries(record: Record<string, number>) {
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
 }
 
-function getPrintLabel(card: DeckLabCard) {
+function getPrintLabel(card: PreviewCard) {
   const setCode = card.setCode?.toUpperCase();
 
   if (setCode && card.collectorNumber) {
@@ -179,7 +198,7 @@ function CardPreview({
   card,
   position,
 }: {
-  card: DeckLabCard | null;
+  card: PreviewCard | null;
   position: { left: number; top: number };
 }) {
   if (!card?.imageUrl) return null;
@@ -211,7 +230,7 @@ function CardPreview({
 }
 
 function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
-  const [previewCard, setPreviewCard] = useState<DeckLabCard | null>(null);
+  const [previewCard, setPreviewCard] = useState<PreviewCard | null>(null);
   const [previewPosition, setPreviewPosition] = useState({ left: 16, top: 16 });
 
   if (!analysis) {
@@ -226,13 +245,13 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
   const commanderCard =
     analysis.cards.find((card) => card.section === "commander") ?? null;
 
-  function showPreview(card: DeckLabCard, event: MouseEvent<HTMLElement>) {
+  function showPreview(card: PreviewCard, event: MouseEvent<HTMLElement>) {
     setPreviewCard(card);
     setPreviewPosition(getPreviewPositionFromMouse(event));
   }
 
   function showPreviewFromFocus(
-    card: DeckLabCard,
+    card: PreviewCard,
     event: FocusEvent<HTMLElement>
   ) {
     setPreviewCard(card);
@@ -304,8 +323,9 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
                 Empfehlungen
               </h3>
               <p className="mt-1 text-sm text-violet-50/65">
-                Live aus Scryfall gefiltert, passend zur Farbidentitaet und ohne
-                Karten, die schon im Deck sind. Preise werden ignoriert.
+                Best-of-Kandidaten mit aktuellen Scryfall-Daten, passend zur
+                Farbidentitaet und ohne Karten, die schon im Deck sind. Preise
+                werden ignoriert.
               </p>
             </div>
             <span className="rounded-full bg-black/20 px-3 py-1 text-xs text-violet-50/70">
@@ -329,21 +349,63 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
                     </p>
                   </div>
                   <span className="rounded-full border border-white/10 px-2 py-1 text-xs text-violet-50/60">
-                    {recommendation.source === "scryfall" ? "Scryfall" : "Fallback"}
+                    {recommendation.source === "scryfall" ? "Scryfall" : "Best-of"}
                   </span>
                 </div>
 
-                <div className="mt-4 space-y-2">
+                <div className="mt-4 max-h-[560px] space-y-2 overflow-auto pr-1">
                   {recommendation.cards.map((card) => (
-                    <div
+                    <a
                       key={`${recommendation.title}-${card.name}`}
-                      className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2"
+                      href={card.scryfallUrl ?? undefined}
+                      target={card.scryfallUrl ? "_blank" : undefined}
+                      rel={card.scryfallUrl ? "noreferrer" : undefined}
+                      tabIndex={0}
+                      onMouseEnter={(event) => showPreview(card, event)}
+                      onMouseMove={(event) =>
+                        setPreviewPosition(getPreviewPositionFromMouse(event))
+                      }
+                      onMouseLeave={() => setPreviewCard(null)}
+                      onFocus={(event) => showPreviewFromFocus(card, event)}
+                      onBlur={() => setPreviewCard(null)}
+                      className="group flex min-h-24 gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-2 text-left outline-none transition hover:border-violet-200/30 hover:bg-white/[0.07] focus-visible:border-violet-200/40 focus-visible:bg-white/[0.07]"
                     >
-                      <div className="font-bold text-white">{card.name}</div>
-                      <p className="mt-1 text-xs leading-5 text-zinc-400">
-                        {card.reason}
-                      </p>
-                    </div>
+                      <div className="h-20 w-14 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-zinc-900">
+                        {card.imageUrl ? (
+                          <Image
+                            src={card.imageUrl}
+                            alt=""
+                            width={56}
+                            height={80}
+                            className="h-full w-full object-cover transition group-hover:scale-[1.03]"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center px-1 text-center text-[10px] text-zinc-500">
+                            kein Bild
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1 py-1">
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <div className="font-bold leading-5 text-white">
+                            {card.name}
+                          </div>
+                          {Number.isFinite(card.manaValue) && (
+                            <span className="rounded-full bg-black/20 px-2 py-0.5 text-[11px] text-violet-50/65">
+                              MV {card.manaValue}
+                            </span>
+                          )}
+                        </div>
+                        {card.typeLine && (
+                          <div className="mt-1 truncate text-xs text-zinc-500">
+                            {card.typeLine}
+                          </div>
+                        )}
+                        <p className="mt-2 text-xs leading-5 text-zinc-400">
+                          {card.reason}
+                        </p>
+                      </div>
+                    </a>
                   ))}
                 </div>
               </div>
@@ -735,62 +797,70 @@ export default function DeckLabClient({
   }
 
   return (
-    <div className="grid gap-8 xl:grid-cols-[320px_1fr]">
-      <aside className="space-y-4">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-          <div className="flex items-center justify-between gap-3">
+    <div className="space-y-6">
+      <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
             <h2 className="text-xl font-black">Deine Decks</h2>
+            <p className="mt-1 text-sm text-zinc-500">
+              {decks.length > 0
+                ? "Schnell zwischen gespeicherten Decks wechseln."
+                : "Noch nichts gespeichert. Analyse und Speichern sind bereit."}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {selectedDeck && (
+              <button
+                type="button"
+                onClick={deleteCurrentDeck}
+                disabled={isPending}
+                className="rounded-full border border-red-400/25 px-4 py-2 text-sm font-semibold text-red-200 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Loeschen
+              </button>
+            )}
             <button
               type="button"
               onClick={startNewDeck}
-              className="rounded-full border border-white/15 px-3 py-1 text-sm font-semibold text-zinc-200 transition hover:bg-white/10"
+              className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:bg-white/10"
             >
               Neu
             </button>
           </div>
-
-          <div className="mt-4 space-y-2">
-            {decks.length === 0 && (
-              <p className="rounded-2xl border border-dashed border-white/10 p-4 text-sm leading-6 text-zinc-500">
-                Noch keine gespeicherten Decks.
-              </p>
-            )}
-
-            {decks.map((deck) => (
-              <button
-                key={deck.id}
-                type="button"
-                onClick={() => loadDeck(deck)}
-                className={`w-full rounded-2xl border p-4 text-left transition ${
-                  deck.id === selectedDeckId
-                    ? "border-orange-200/40 bg-orange-200/10"
-                    : "border-white/10 bg-black/15 hover:bg-white/5"
-                }`}
-              >
-                <span className="block font-bold text-white">{deck.name}</span>
-                <span className="mt-1 block text-xs text-zinc-500">
-                  {deck.commanderName ?? deck.format} - {formatDate(deck.updatedAt)}
-                </span>
-              </button>
-            ))}
-          </div>
         </div>
 
-        {selectedDeck && (
-          <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-            <p className="text-sm text-zinc-500">Ausgewaehlt</p>
-            <p className="mt-1 font-bold">{selectedDeck.name}</p>
+        <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
+          {decks.length === 0 && (
+            <p className="min-w-full rounded-2xl border border-dashed border-white/10 bg-black/10 p-4 text-sm leading-6 text-zinc-500">
+              Gespeicherte Decks erscheinen hier als kompakte Auswahlleiste.
+            </p>
+          )}
+
+          {decks.map((deck) => (
             <button
+              key={deck.id}
               type="button"
-              onClick={deleteCurrentDeck}
-              disabled={isPending}
-              className="mt-4 rounded-full border border-red-400/25 px-4 py-2 text-sm font-semibold text-red-200 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-60"
+              onClick={() => loadDeck(deck)}
+              className={`min-w-[240px] rounded-2xl border p-4 text-left transition ${
+                deck.id === selectedDeckId
+                  ? "border-orange-200/40 bg-orange-200/10"
+                  : "border-white/10 bg-black/15 hover:bg-white/5"
+              }`}
             >
-              Loeschen
+              <span className="block truncate font-bold text-white">
+                {deck.name}
+              </span>
+              <span className="mt-1 block truncate text-xs text-zinc-500">
+                {deck.commanderName ?? deck.format}
+              </span>
+              <span className="mt-2 block text-xs text-zinc-600">
+                {formatDate(deck.updatedAt)}
+              </span>
             </button>
-          </div>
-        )}
-      </aside>
+          ))}
+        </div>
+      </section>
 
       <section className="space-y-6">
         <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
