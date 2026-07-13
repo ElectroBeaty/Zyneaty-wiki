@@ -154,9 +154,7 @@ export default async function SubmissionsPage() {
           Zurueck zum Admin Hub
         </Link>
 
-        <h1 className="mt-8 text-5xl font-black tracking-tight">
-          Admin Dashboard
-        </h1>
+        <h1 className="mt-8 text-5xl font-black tracking-tight">Submissions</h1>
 
         <p className="mt-4 text-zinc-300">
           Hier prüfst du Vorschläge, gibst Einträge frei und behältst den
@@ -179,13 +177,6 @@ export default async function SubmissionsPage() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <Link
-                href="/admin/deck-lab"
-                className="rounded-full border border-orange-200/20 px-4 py-2 text-sm font-semibold text-orange-100 transition hover:bg-orange-300/10"
-              >
-                Deck Lab
-              </Link>
-
               <a
                 href="/api/health"
                 target="_blank"
