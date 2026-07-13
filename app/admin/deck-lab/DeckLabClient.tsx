@@ -6,7 +6,6 @@ import { useMemo, useState, useTransition } from "react";
 import {
   analyzeDeckList,
   deleteDeck,
-  importMoxfieldDeck,
   saveDeck,
 } from "./actions";
 
@@ -648,7 +647,7 @@ export default function DeckLabClient({
   );
   const [rawList, setRawList] = useState(initialDecks[0]?.rawList ?? starterList);
   const [notes, setNotes] = useState(initialDecks[0]?.notes ?? "");
-  const [moxfieldUrl, setMoxfieldUrl] = useState("");
+  const [moxfieldText, setMoxfieldText] = useState("");
   const [moxfieldMessage, setMoxfieldMessage] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<DeckLabAnalysis | null>(
     initialDecks[0]?.analysis ?? null
@@ -665,6 +664,7 @@ export default function DeckLabClient({
     setNotes(deck.notes ?? "");
     setAnalysis(deck.analysis);
     setMessage(null);
+    setMoxfieldMessage(null);
   }
 
   function startNewDeck() {
@@ -674,6 +674,7 @@ export default function DeckLabClient({
     setCommanderName("");
     setRawList(starterList);
     setNotes("");
+    setMoxfieldText("");
     setAnalysis(null);
     setMessage(null);
     setMoxfieldMessage(null);
@@ -693,36 +694,36 @@ export default function DeckLabClient({
     });
   }
 
-  function importFromMoxfield() {
-    const sourceUrl = moxfieldUrl.trim();
+  function importMoxfieldText() {
+    const importedText = moxfieldText.trim();
 
-    if (!sourceUrl) {
-      setMoxfieldMessage("Fuege zuerst einen Moxfield-Link ein.");
+    if (!importedText) {
+      setMoxfieldMessage("Fuege zuerst den Moxfield-Text-Export ein.");
       return;
     }
 
     setMessage(null);
-    setMoxfieldMessage("Importiere Moxfield-Deck...");
+    setMoxfieldMessage("Analysiere Moxfield-Export...");
     startTransition(async () => {
-      const result = await importMoxfieldDeck(sourceUrl);
+      try {
+        const result = await analyzeDeckList(
+          importedText,
+          format,
+          commanderName
+        );
 
-      if (!result.ok) {
-        setMoxfieldMessage(result.error);
-        return;
+        setSelectedDeckId(null);
+        setRawList(importedText);
+        setAnalysis(result);
+        setCommanderName(result.commanderName ?? commanderName);
+        setMoxfieldMessage(
+          "Moxfield-Export uebernommen und analysiert. Speichern nicht vergessen."
+        );
+      } catch (error) {
+        setMoxfieldMessage(
+          error instanceof Error ? error.message : "Import fehlgeschlagen."
+        );
       }
-
-      const importedDeck = result.deck;
-
-      setSelectedDeckId(null);
-      setName(importedDeck.name);
-      setFormat(importedDeck.format);
-      setCommanderName(importedDeck.commanderName ?? "");
-      setRawList(importedDeck.rawList);
-      setNotes(importedDeck.notes ?? "");
-      setAnalysis(importedDeck.analysis);
-      setMoxfieldMessage(
-        "Moxfield-Deck importiert und analysiert. Speichern nicht vergessen."
-      );
     });
   }
 
@@ -831,28 +832,43 @@ export default function DeckLabClient({
 
       <section className="space-y-6">
         <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-          <div className="grid gap-3 lg:grid-cols-[1fr_auto]">
-            <label className="block">
-              <span className="text-sm font-bold text-zinc-300">
-                Moxfield-Link
-              </span>
-              <input
-                value={moxfieldUrl}
-                onChange={(event) => setMoxfieldUrl(event.target.value)}
-                placeholder="https://www.moxfield.com/decks/..."
-                className="mt-2 w-full rounded-2xl border border-white/10 bg-zinc-900 px-4 py-3 text-white outline-none transition focus:border-orange-200/50"
-              />
-            </label>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-black">Moxfield Import</h2>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-400">
+                Direktlinks werden von Moxfield blockiert. Der Text-Export ist
+                stabil und wird danach normal ueber Scryfall analysiert.
+              </p>
+            </div>
 
             <button
               type="button"
-              onClick={importFromMoxfield}
+              onClick={importMoxfieldText}
               disabled={isPending}
-              className="self-end rounded-full border border-violet-200/30 bg-violet-200/15 px-5 py-3 text-sm font-bold text-violet-50 transition hover:bg-violet-200/25 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-full border border-violet-200/30 bg-violet-200/15 px-5 py-3 text-sm font-bold text-violet-50 transition hover:bg-violet-200/25 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isPending ? "Importiert..." : "Importieren"}
+              {isPending ? "Analysiert..." : "Export uebernehmen"}
             </button>
           </div>
+
+          <label className="mt-4 block">
+            <span className="text-sm font-bold text-zinc-300">
+              Moxfield-Text-Export
+            </span>
+            <textarea
+              value={moxfieldText}
+              onChange={(event) => setMoxfieldText(event.target.value)}
+              rows={6}
+              placeholder={`Commander
+1 Atraxa, Praetors' Voice
+
+Deck
+1 Sol Ring
+1 Arcane Signet`}
+              className="mt-2 w-full resize-y rounded-2xl border border-white/10 bg-zinc-900 px-4 py-3 font-mono text-sm leading-6 text-white outline-none transition focus:border-orange-200/50"
+              spellCheck={false}
+            />
+          </label>
 
           {moxfieldMessage && (
             <p className="mt-3 rounded-2xl border border-white/10 bg-black/15 px-4 py-3 text-sm leading-6 text-zinc-300">
