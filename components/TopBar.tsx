@@ -7,6 +7,7 @@ import DiscordLoginButton from "@/components/DiscordLoginButton";
 
 export default async function TopBar() {
   const session = await getServerSession(authOptions);
+  const isAdmin = isAdminDiscordId(session?.user?.id);
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-zinc-950/75 backdrop-blur-xl">
@@ -41,10 +42,10 @@ export default async function TopBar() {
                 Einreichen
               </Link>
 
-              {isAdminDiscordId(session.user.id) && (
+              {isAdmin && (
                 <Link
-                  href="/admin/submissions"
-                  className="text-zinc-300 hover:text-white"
+                  href="/admin"
+                  className="rounded-full border border-orange-200/25 bg-orange-300/10 px-4 py-2 text-orange-100 transition hover:border-orange-100/45 hover:bg-orange-300/15 hover:text-white"
                 >
                   Admin
                 </Link>

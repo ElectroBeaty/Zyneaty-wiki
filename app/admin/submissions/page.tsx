@@ -145,16 +145,13 @@ export default async function SubmissionsPage() {
       text: "Uploads insgesamt",
     },
   ];
-  const productionUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://zyneaty-wiki.vercel.app";
-
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),radial-gradient(circle_at_bottom_left,rgba(251,146,60,0.1),transparent_24%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
       <TopBar />
 
       <section className="mx-auto max-w-5xl px-6 pt-10 pb-16">
-        <Link href="/wiki" className="text-sm text-zinc-400 hover:text-white">
-          ← Zurück zum Wiki
+        <Link href="/admin" className="text-sm text-zinc-400 hover:text-white">
+          Zurueck zum Admin Hub
         </Link>
 
         <h1 className="mt-8 text-5xl font-black tracking-tight">
@@ -166,39 +163,36 @@ export default async function SubmissionsPage() {
           Überblick über die Zyneaty Wiki.
         </p>
 
-        <section className="mt-8 rounded-[1.75rem] border border-orange-200/15 bg-orange-300/10 p-6">
-          <div className="flex flex-wrap items-start justify-between gap-6">
+        <section className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <p className="text-sm uppercase tracking-[0.3em] text-orange-100/50">
+              <p className="text-xs uppercase tracking-[0.28em] text-zinc-500">
                 Betrieb
               </p>
-              <h2 className="mt-2 text-2xl font-black">
+              <h2 className="mt-1 text-lg font-black">
                 Produktionsstatus prüfen
               </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-zinc-300">
-                Wenn Login, Kommentare oder Supabase wieder komisch wirken,
-                ist der Health-Check der schnellste erste Blick auf die
-                wichtigsten Variablen und Tabellen.
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-zinc-400">
+                Kleiner Health-Check für Login, Supabase und die wichtigsten
+                Tabellen.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-3">
+              <Link
+                href="/admin/deck-lab"
+                className="rounded-full border border-orange-200/20 px-4 py-2 text-sm font-semibold text-orange-100 transition hover:bg-orange-300/10"
+              >
+                Deck Lab
+              </Link>
+
               <a
                 href="/api/health"
                 target="_blank"
                 rel="noreferrer"
-                className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-black transition hover:bg-zinc-200"
-              >
-                Health öffnen
-              </a>
-
-              <a
-                href={productionUrl}
-                target="_blank"
-                rel="noreferrer"
                 className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:border-white/35 hover:bg-white/10"
               >
-                Website öffnen
+                Health öffnen
               </a>
             </div>
           </div>
@@ -452,3 +446,4 @@ export default async function SubmissionsPage() {
     </main>
   );
 }
+

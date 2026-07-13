@@ -29,6 +29,7 @@ dev.db
 .next-dev-check/
 
 # debug
+.codex-next-dev*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

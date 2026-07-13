@@ -25,6 +25,14 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cards.scryfall.io",
+      },
+    ],
+  },
   async headers() {
     return [
       {
