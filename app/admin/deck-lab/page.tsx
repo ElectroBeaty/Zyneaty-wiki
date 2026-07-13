@@ -25,8 +25,8 @@ export default async function DeckLabPage() {
 
       <section className="mx-auto max-w-7xl px-6 pt-10 pb-16">
         <div className="flex flex-wrap items-center gap-3 text-sm text-zinc-400">
-          <Link href="/admin/submissions" className="hover:text-white">
-            Admin Dashboard
+          <Link href="/admin" className="hover:text-white">
+            Admin Hub
           </Link>
           <span>/</span>
           <span className="text-zinc-200">Deck Lab</span>

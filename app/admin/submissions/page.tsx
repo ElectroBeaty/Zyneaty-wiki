@@ -150,8 +150,8 @@ export default async function SubmissionsPage() {
       <TopBar />
 
       <section className="mx-auto max-w-5xl px-6 pt-10 pb-16">
-        <Link href="/wiki" className="text-sm text-zinc-400 hover:text-white">
-          ← Zurück zum Wiki
+        <Link href="/admin" className="text-sm text-zinc-400 hover:text-white">
+          Zurueck zum Admin Hub
         </Link>
 
         <h1 className="mt-8 text-5xl font-black tracking-tight">
@@ -446,3 +446,4 @@ export default async function SubmissionsPage() {
     </main>
   );
 }
+

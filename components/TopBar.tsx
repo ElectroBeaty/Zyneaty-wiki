@@ -43,21 +43,12 @@ export default async function TopBar() {
               </Link>
 
               {isAdmin && (
-                <>
-                  <Link
-                    href="/admin/submissions"
-                    className="text-zinc-300 hover:text-white"
-                  >
-                    Admin
-                  </Link>
-
-                  <Link
-                    href="/admin/deck-lab"
-                    className="rounded-full border border-orange-200/25 bg-orange-300/10 px-4 py-2 text-orange-100 transition hover:border-orange-100/45 hover:bg-orange-300/15 hover:text-white"
-                  >
-                    MTG Lab
-                  </Link>
-                </>
+                <Link
+                  href="/admin"
+                  className="rounded-full border border-orange-200/25 bg-orange-300/10 px-4 py-2 text-orange-100 transition hover:border-orange-100/45 hover:bg-orange-300/15 hover:text-white"
+                >
+                  Admin
+                </Link>
               )}
 
               <div className="hidden items-center gap-2 text-zinc-400 md:flex">
