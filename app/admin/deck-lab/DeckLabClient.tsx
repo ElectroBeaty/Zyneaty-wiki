@@ -109,6 +109,9 @@ const starterList = `Deck
 1 Island
 1 Swamp`;
 
+const cardPreviewWidth = 340;
+const cardPreviewHeight = 532;
+
 type PreviewCard = {
   name: string;
   imageUrl?: string | null;
@@ -152,10 +155,14 @@ function getSectionLabel(card: DeckLabCard) {
 }
 
 function getPreviewPositionFromMouse(event: MouseEvent<HTMLElement>) {
-  const width = 268;
-  const height = 428;
-  const left = Math.min(event.clientX + 18, window.innerWidth - width - 16);
-  const top = Math.min(event.clientY + 18, window.innerHeight - height - 16);
+  const left = Math.min(
+    event.clientX + 18,
+    window.innerWidth - cardPreviewWidth - 16
+  );
+  const top = Math.min(
+    event.clientY + 18,
+    window.innerHeight - cardPreviewHeight - 16
+  );
 
   return {
     left: Math.max(16, left),
@@ -165,10 +172,11 @@ function getPreviewPositionFromMouse(event: MouseEvent<HTMLElement>) {
 
 function getPreviewPositionFromFocus(event: FocusEvent<HTMLElement>) {
   const rect = event.currentTarget.getBoundingClientRect();
-  const width = 268;
-  const height = 428;
-  const left = Math.min(rect.right + 16, window.innerWidth - width - 16);
-  const top = Math.min(rect.top, window.innerHeight - height - 16);
+  const left = Math.min(
+    rect.right + 16,
+    window.innerWidth - cardPreviewWidth - 16
+  );
+  const top = Math.min(rect.top, window.innerHeight - cardPreviewHeight - 16);
 
   return {
     left: Math.max(16, left),
@@ -205,14 +213,14 @@ function CardPreview({
 
   return (
     <div
-      className="pointer-events-none fixed z-50 hidden w-[268px] rounded-2xl border border-white/15 bg-zinc-950/95 p-3 shadow-2xl shadow-black/60 backdrop-blur md:block"
+      className="pointer-events-none fixed z-50 hidden w-[340px] rounded-2xl border border-white/15 bg-zinc-950/95 p-3 shadow-2xl shadow-black/60 backdrop-blur md:block"
       style={{ left: position.left, top: position.top }}
     >
       <Image
         src={card.imageUrl}
         alt=""
-        width={244}
-        height={341}
+        width={316}
+        height={442}
         className="w-full rounded-xl border border-white/10 object-cover"
       />
       <div className="mt-3 text-sm font-black text-white">{card.name}</div>
@@ -535,8 +543,16 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
             <a
               key={`image-${card.section}-${card.id}`}
               href={card.scryfallUrl ?? undefined}
-              target="_blank"
-              rel="noreferrer"
+              target={card.scryfallUrl ? "_blank" : undefined}
+              rel={card.scryfallUrl ? "noreferrer" : undefined}
+              tabIndex={0}
+              onMouseEnter={(event) => showPreview(card, event)}
+              onMouseMove={(event) =>
+                setPreviewPosition(getPreviewPositionFromMouse(event))
+              }
+              onMouseLeave={() => setPreviewCard(null)}
+              onFocus={(event) => showPreviewFromFocus(card, event)}
+              onBlur={() => setPreviewCard(null)}
               className={`group rounded-2xl border p-3 transition hover:bg-white/[0.07] ${
                 card.section === "commander"
                   ? "border-emerald-300/30 bg-emerald-300/10"

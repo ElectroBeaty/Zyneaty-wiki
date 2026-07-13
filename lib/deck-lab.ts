@@ -457,6 +457,21 @@ function inferRoles(card: ScryfallCard) {
     roles.add("Boardwipe");
   }
   if (
+    text.includes("gain life") ||
+    text.includes("gains life") ||
+    text.includes("you gain") ||
+    text.includes("lifelink")
+  ) {
+    roles.add("Lifegain");
+  }
+  if (
+    text.includes("mill") ||
+    text.includes("mills") ||
+    text.includes("milled")
+  ) {
+    roles.add("Mill");
+  }
+  if (
     text.includes("whenever") ||
     text.includes("at the beginning") ||
     text.includes("you may cast") ||
@@ -1144,6 +1159,74 @@ const PREMIUM_SPELL_RECOMMENDATIONS: RecommendationCandidate[] = [
   ...SPELL_RECOMMENDATIONS,
 ];
 
+const PREMIUM_LIFEGAIN_RECOMMENDATIONS: RecommendationCandidate[] = [
+  { name: "Aetherflux Reservoir", colors: [], reason: "Macht viele Lifegain-Trigger zu einer echten Wincondition." },
+  { name: "Well of Lost Dreams", colors: [], reason: "Verwandelt Lifegain direkt in Kartenvorteil." },
+  { name: "Alhammarret's Archive", colors: [], reason: "Verdoppelt Lifegain und macht Draw-Effekte deutlich staerker." },
+  { name: "The One Ring", colors: [], reason: "Starker Draw, der Lifegain-Decks Zeit zum Stabilisieren gibt." },
+  { name: "Soul Warden", colors: ["W"], reason: "Frueher, dauerhafter Lifegain-Trigger in Creature-Pods." },
+  { name: "Soul's Attendant", colors: ["W"], reason: "Zweiter Einmana-Soul-Sister-Effekt fuer konstante Trigger." },
+  { name: "Authority of the Consuls", colors: ["W"], reason: "Bremst gegnerische Kreaturen und erzeugt wiederholten Lifegain." },
+  { name: "Blind Obedience", colors: ["W"], reason: "Verlangsamt Artefakte/Kreaturen und gewinnt ueber Extort Leben." },
+  { name: "Heliod, Sun-Crowned", colors: ["W"], reason: "Macht Lifegain zu Countern und ermoeglicht Combo-Lines." },
+  { name: "Walking Ballista", colors: [], reason: "Kombo-Piece mit Heliod und auch ohne Combo flexibel." },
+  { name: "Voice of the Blessed", colors: ["W"], reason: "Wird durch Lifegain schnell zur evasiven Bedrohung." },
+  { name: "Cleric Class", colors: ["W"], reason: "Verstaerkt Lifegain und skaliert spaeter in Recursion." },
+  { name: "Resplendent Angel", colors: ["W"], reason: "Belohnt grosse Lifegain-Zuege mit evasiven Token." },
+  { name: "Rhox Faithmender", colors: ["W"], reason: "Verdoppelt Lifegain und macht Race-Situationen schwer fuer Gegner." },
+  { name: "Vito, Thorn of the Dusk Rose", colors: ["B"], reason: "Verwandelt Lifegain in direkten Drain gegen Gegner." },
+  { name: "Sanguine Bond", colors: ["B"], reason: "Macht jeden Lifegain-Trigger zu Schaden am Tisch." },
+  { name: "Exquisite Blood", colors: ["B"], reason: "Premium-Combo-Piece mit Sanguine-Bond-Effekten." },
+  { name: "Bloodchief Ascension", colors: ["B"], reason: "Verbindet gegnerische Graveyards, Mill und Drain besonders stark." },
+  { name: "Marauding Blight-Priest", colors: ["B"], reason: "Guenschtiger zweiter Vito-aehnlicher Payoff." },
+  { name: "Bolas's Citadel", colors: ["B"], reason: "Lifegain puffert die Life-Kosten und macht explosive Turns moeglich." },
+  { name: "Dina, Soul Steeper", colors: ["B", "G"], reason: "Drain-Payoff und Sac-Outlet fuer Lifegain-Decks." },
+  { name: "Karlov of the Ghost Council", colors: ["W", "B"], reason: "Wird durch Lifegain riesig und exiliert Problemkreaturen." },
+  { name: "Elas il-Kor, Sadistic Pilgrim", colors: ["W", "B"], reason: "Verbindet Creature-ETBs, Lifegain und Drain." },
+  { name: "Kambal, Consul of Allocation", colors: ["W", "B"], reason: "Bestraft Noncreature-Spells mit Drain und stabilisiert dein Leben." },
+];
+
+const PREMIUM_MILL_RECOMMENDATIONS: RecommendationCandidate[] = [
+  { name: "Altar of the Brood", colors: [], reason: "Guenschtiger permanenter Mill-Trigger fuer jedes eigene Permanent." },
+  { name: "Mindcrank", colors: [], reason: "Verknuepft Life Loss mit Mill und bildet starke Combo-Lines." },
+  { name: "Mesmeric Orb", colors: [], reason: "Sehr effizienter globaler Mill-Motor fuer lange Spiele." },
+  { name: "Terisian Mindbreaker", colors: [], reason: "Millt riesige Mengen und kommt mit Unearth noch einmal." },
+  { name: "Keening Stone", colors: [], reason: "Finisher, wenn gegnerische Graveyards bereits gefuellt sind." },
+  { name: "Bruvac the Grandiloquent", colors: ["U"], reason: "Verdoppelt gegnerischen Mill und macht jeden Mill-Spell gefaehrlich." },
+  { name: "Maddening Cacophony", colors: ["U"], reason: "Skaliert vom fruehen Mill-Spell bis zum spaeten Finisher." },
+  { name: "Fractured Sanity", colors: ["U"], reason: "Effizienter Mill-Spell, der auch gecycled noch alle Gegner trifft." },
+  { name: "Tasha's Hideous Laughter", colors: ["U"], reason: "Exiliert viele Low-MV-Karten und trifft Commander-Decks oft hart." },
+  { name: "Archive Trap", colors: ["U"], reason: "Sehr starker Gratis-Mill gegen Such- und Fetch-Effekte." },
+  { name: "Court of Cunning", colors: ["U"], reason: "Wiederholter gegnerischer Mill mit Monarch-Value." },
+  { name: "Fraying Sanity", colors: ["U"], reason: "Verdoppelt Mill gegen einen ausgewaehlten Gegner." },
+  { name: "Psychic Corrosion", colors: ["U"], reason: "Macht deine Draw-Engines zu Mill-Engines gegen Gegner." },
+  { name: "Sphinx's Tutelage", colors: ["U"], reason: "Belohnt Kartenziehen mit wiederholtem Gegner-Mill." },
+  { name: "Ruin Crab", colors: ["U"], reason: "Sehr effizienter Landfall-Mill fuer Fetchland-Decks." },
+  { name: "Hedron Crab", colors: ["U"], reason: "Zweiter guenstiger Landfall-Mill-Motor." },
+  { name: "Jace, the Perfected Mind", colors: ["U"], reason: "Flexibler Mill- und Draw-Planeswalker." },
+  { name: "Jace, Memory Adept", colors: ["U"], reason: "Wiederholbarer zehn-Karten-Mill pro Aktivierung." },
+  { name: "Consuming Aberration", colors: ["U", "B"], reason: "Wird riesig und millt bei jedem Spell weiter." },
+  { name: "Phenax, God of Deception", colors: ["U", "B"], reason: "Verwandelt dein Board in wiederholbaren Mill." },
+  { name: "Glimpse the Unthinkable", colors: ["U", "B"], reason: "Zwei Mana fuer zehn Karten Mill ist extrem effizient." },
+  { name: "Mind Grind", colors: ["U", "B"], reason: "Skalierbarer Multiplayer-Finisher fuer grosse Mana-Zuege." },
+  { name: "Duskmantle Guildmage", colors: ["U", "B"], reason: "Verbindet Mill mit Life Loss und comboed mit Mindcrank." },
+];
+
+const PREMIUM_LIFEGAIN_MILL_RECOMMENDATIONS: RecommendationCandidate[] = [
+  { name: "Bloodchief Ascension", colors: ["B"], reason: "Der staerkste Glue zwischen gegnerischem Mill, Life Loss und deinem Lifegain." },
+  { name: "Mindcrank", colors: [], reason: "Verbindet Life Loss und Mill und geht mit Bloodchief Ascension unendlich." },
+  { name: "Duskmantle Guildmage", colors: ["U", "B"], reason: "Macht Mill zu Life Loss und bildet mit Mindcrank eine klare Winline." },
+  { name: "Syr Konrad, the Grim", colors: ["B"], reason: "Bestraft Kreaturen im Graveyard und profitiert stark von Mill." },
+  { name: "Vito, Thorn of the Dusk Rose", colors: ["B"], reason: "Macht Lifegain zu Drain, der wiederum Mindcrank-Lines anschiebt." },
+  { name: "Sanguine Bond", colors: ["B"], reason: "Zweiter Lifegain-zu-Drain-Payoff fuer Combo- und Grind-Spiele." },
+  { name: "Exquisite Blood", colors: ["B"], reason: "Combo-Piece mit Sanguine Bond oder Vito und stark in Drain-Shells." },
+  { name: "Marauding Blight-Priest", colors: ["B"], reason: "Guenstiger redundancy-Payoff fuer Lifegain-zu-Drain." },
+  { name: "Psychic Corrosion", colors: ["U"], reason: "Wenn dein Deck viel zieht, wird daraus wiederholter Gegner-Mill." },
+  { name: "Fraying Sanity", colors: ["U"], reason: "Verstaerkt einen Mill-Fokus enorm gegen den wichtigsten Gegner." },
+  { name: "Bruvac the Grandiloquent", colors: ["U"], reason: "Verdoppelt gegnerischen Mill und macht jede Mill-Line schneller." },
+  { name: "Altar of the Brood", colors: [], reason: "Billiger Mill-Trigger, der mit permanentlastigen Lifegain-Boards skaliert." },
+];
+
 function getDeckColorIdentity(cards: DeckLabCard[]) {
   const commanderColors =
     cards.find((card) => card.section === "commander")?.colorIdentity ?? [];
@@ -1338,6 +1421,10 @@ function mergeRecommendationCards(
   return mergedCards;
 }
 
+function includesAny(value: string, phrases: string[]) {
+  return phrases.some((phrase) => value.includes(phrase));
+}
+
 function collectRecommendationNeeds(
   cards: DeckLabCard[],
   stats: DeckLabStats,
@@ -1353,6 +1440,56 @@ function collectRecommendationNeeds(
     .filter(Boolean)
     .join(" ")
     .toLowerCase();
+  const deckThemeText = cards
+    .map((card) => [card.name, card.typeLine, card.oracleText].join(" "))
+    .join(" ")
+    .toLowerCase();
+  const strategyText = `${commanderText} ${deckThemeText}`;
+  const hasLifegainTheme = includesAny(strategyText, [
+    "gain life",
+    "gains life",
+    "you gain",
+    "life total",
+    "lifelink",
+  ]);
+  const hasMillTheme = includesAny(strategyText, [
+    "mill",
+    "mills",
+    "milled",
+  ]);
+
+  if (hasLifegainTheme && hasMillTheme) {
+    needs.push({
+      title: `${commanderName ?? "Deck"}: Lifegain + Mill verbinden`,
+      reason:
+        "Dein Plan zeigt Lifegain und gegnerischen Mill; diese Karten machen daraus echte Winlines statt nur Value.",
+      query: '(oracle:"opponent" oracle:"graveyard" or oracle:"mill" oracle:"life")',
+      fallback: PREMIUM_LIFEGAIN_MILL_RECOMMENDATIONS,
+      limit: 10,
+    });
+  }
+
+  if (hasLifegainTheme) {
+    needs.push({
+      title: `${commanderName ?? "Deck"}: Lifegain-Payoffs`,
+      reason:
+        "Das Deck will Lifegain nicht nur als Polster, sondern als Kartenvorteil, Boarddruck oder Wincondition nutzen.",
+      query: '(oracle:"whenever you gain life" or oracle:"you gain life" or oracle:"you gained life" or oracle:"if you gained life")',
+      fallback: PREMIUM_LIFEGAIN_RECOMMENDATIONS,
+      limit: 12,
+    });
+  }
+
+  if (hasMillTheme) {
+    needs.push({
+      title: `${commanderName ?? "Deck"}: Gegner millen`,
+      reason:
+        "Der Deckplan millt Gegner; diese Karten verdichten den Mill-Plan oder machen gegnerische Graveyards verwertbar.",
+      query: '(oracle:"target opponent mills" or oracle:"each opponent mills" or oracle:"opponent mills" or oracle:"opponents mill" or oracle:"opponent would mill")',
+      fallback: PREMIUM_MILL_RECOMMENDATIONS,
+      limit: 12,
+    });
+  }
 
   if ((stats.roleCounts.Ramp ?? 0) < 10) {
     needs.push({
@@ -1460,7 +1597,7 @@ function collectRecommendationNeeds(
     });
   }
 
-  return needs.slice(0, 7);
+  return needs.slice(0, 10);
 }
 
 async function createRecommendations(
