@@ -29,16 +29,21 @@ export async function getDeckLabDecks() {
   return listDeckLabDecks(ownerDiscordId);
 }
 
-export async function analyzeDeckList(rawList: string, format: string) {
+export async function analyzeDeckList(
+  rawList: string,
+  format: string,
+  commanderName?: string
+) {
   await requireDeckLabAdmin();
 
-  return analyzeDeckListInternal(rawList, format);
+  return analyzeDeckListInternal(rawList, format, commanderName);
 }
 
 export async function saveDeck(input: {
   id?: string;
   name: string;
   format: string;
+  commanderName?: string;
   rawList: string;
   notes?: string;
 }) {
@@ -54,7 +59,11 @@ export async function saveDeck(input: {
     throw new Error("Bitte fuege eine Deckliste ein.");
   }
 
-  const analysis = await analyzeDeckListInternal(rawList, input.format);
+  const analysis = await analyzeDeckListInternal(
+    rawList,
+    input.format,
+    input.commanderName
+  );
   const deck = await saveDeckLabDeck({
     id: input.id,
     ownerDiscordId,
