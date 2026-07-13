@@ -33,11 +33,12 @@ export async function getDeckLabDecks() {
 export async function analyzeDeckList(
   rawList: string,
   format: string,
-  commanderName?: string
+  commanderName?: string,
+  notes?: string
 ) {
   await requireDeckLabAdmin();
 
-  return analyzeDeckListInternal(rawList, format, commanderName);
+  return analyzeDeckListInternal(rawList, format, commanderName, notes);
 }
 
 export async function importMoxfieldDeck(sourceUrl: string) {
@@ -84,7 +85,8 @@ export async function saveDeck(input: {
   const analysis = await analyzeDeckListInternal(
     rawList,
     input.format,
-    input.commanderName
+    input.commanderName,
+    input.notes
   );
   const deck = await saveDeckLabDeck({
     id: input.id,

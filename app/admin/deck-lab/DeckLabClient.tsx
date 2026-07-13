@@ -757,7 +757,12 @@ export default function DeckLabClient({
     setMessage(null);
     startTransition(async () => {
       try {
-        const result = await analyzeDeckList(rawList, format, commanderName);
+        const result = await analyzeDeckList(
+          rawList,
+          format,
+          commanderName,
+          notes
+        );
         setAnalysis(result);
         setCommanderName(result.commanderName ?? commanderName);
         setMessage("Analyse fertig.");
@@ -937,13 +942,20 @@ Deck
           </label>
 
           <label className="mt-4 block">
-            <span className="text-sm font-bold text-zinc-300">Notizen</span>
+            <span className="text-sm font-bold text-zinc-300">
+              Deckplan / Notizen
+            </span>
             <textarea
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
               rows={3}
+              placeholder="z. B. Lifegain + Gegner millen, keine Budget-Grenze, mehr Combo-Payoffs"
               className="mt-2 w-full resize-y rounded-2xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm leading-6 text-white outline-none transition focus:border-orange-200/50"
             />
+            <span className="mt-2 block text-xs leading-5 text-zinc-500">
+              Optional: Wird zusammen mit den Commander-Karten fuer bessere
+              Strategie-Empfehlungen ausgewertet.
+            </span>
           </label>
 
           <div className="mt-5 flex flex-wrap items-center gap-3">

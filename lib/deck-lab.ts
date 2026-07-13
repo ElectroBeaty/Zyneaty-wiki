@@ -1428,23 +1428,25 @@ function includesAny(value: string, phrases: string[]) {
 function collectRecommendationNeeds(
   cards: DeckLabCard[],
   stats: DeckLabStats,
-  commanderName: string | null
+  commanderName: string | null,
+  strategyNotes?: string
 ) {
   const needs: RecommendationNeed[] = [];
-  const commander = cards.find((card) => card.section === "commander");
-  const commanderText = [
-    commander?.name,
-    commander?.typeLine,
-    commander?.oracleText,
-  ]
-    .filter(Boolean)
+  const commanderCards = cards.filter((card) => card.section === "commander");
+  const commanderLabel =
+    commanderCards.map((card) => card.name).join(" + ") ||
+    commanderName ||
+    "Commander";
+  const commanderText = commanderCards
+    .map((card) => [card.name, card.typeLine, card.oracleText].join(" "))
     .join(" ")
     .toLowerCase();
   const deckThemeText = cards
     .map((card) => [card.name, card.typeLine, card.oracleText].join(" "))
     .join(" ")
     .toLowerCase();
-  const strategyText = `${commanderText} ${deckThemeText}`;
+  const notesText = strategyNotes?.trim().toLowerCase() ?? "";
+  const strategyText = `${commanderText} ${deckThemeText} ${notesText}`;
   const hasLifegainTheme = includesAny(strategyText, [
     "gain life",
     "gains life",
@@ -1460,7 +1462,7 @@ function collectRecommendationNeeds(
 
   if (hasLifegainTheme && hasMillTheme) {
     needs.push({
-      title: `${commanderName ?? "Deck"}: Lifegain + Mill verbinden`,
+      title: `${commanderLabel}: Lifegain + Mill verbinden`,
       reason:
         "Dein Plan zeigt Lifegain und gegnerischen Mill; diese Karten machen daraus echte Winlines statt nur Value.",
       query: '(oracle:"opponent" oracle:"graveyard" or oracle:"mill" oracle:"life")',
@@ -1471,7 +1473,7 @@ function collectRecommendationNeeds(
 
   if (hasLifegainTheme) {
     needs.push({
-      title: `${commanderName ?? "Deck"}: Lifegain-Payoffs`,
+      title: `${commanderLabel}: Lifegain-Payoffs`,
       reason:
         "Das Deck will Lifegain nicht nur als Polster, sondern als Kartenvorteil, Boarddruck oder Wincondition nutzen.",
       query: '(oracle:"whenever you gain life" or oracle:"you gain life" or oracle:"you gained life" or oracle:"if you gained life")',
@@ -1482,7 +1484,7 @@ function collectRecommendationNeeds(
 
   if (hasMillTheme) {
     needs.push({
-      title: `${commanderName ?? "Deck"}: Gegner millen`,
+      title: `${commanderLabel}: Gegner millen`,
       reason:
         "Der Deckplan millt Gegner; diese Karten verdichten den Mill-Plan oder machen gegnerische Graveyards verwertbar.",
       query: '(oracle:"target opponent mills" or oracle:"each opponent mills" or oracle:"opponent mills" or oracle:"opponents mill" or oracle:"opponent would mill")',
@@ -1547,12 +1549,12 @@ function collectRecommendationNeeds(
   }
 
   if (
-    commanderText.includes("graveyard") ||
-    commanderText.includes("from your graveyard") ||
-    commanderText.includes("return target card")
+    strategyText.includes("graveyard") ||
+    strategyText.includes("from your graveyard") ||
+    strategyText.includes("return target card")
   ) {
     needs.push({
-      title: `${commanderName ?? "Commander"}: Graveyard-Synergie`,
+      title: `${commanderLabel}: Graveyard-Synergie`,
       reason:
         "Der Commander deutet auf Friedhofsplaene hin; diese Karten fuellen oder nutzen den Graveyard.",
       query: '(oracle:"graveyard" or oracle:"mill" or oracle:"return target card")',
@@ -1561,9 +1563,9 @@ function collectRecommendationNeeds(
     });
   }
 
-  if (commanderText.includes("token")) {
+  if (strategyText.includes("token")) {
     needs.push({
-      title: `${commanderName ?? "Commander"}: Token-Synergie`,
+      title: `${commanderLabel}: Token-Synergie`,
       reason:
         "Token-Decks profitieren stark von Verdopplern, Payoffs und Card-Draw aus kleinen Bodies.",
       query: '(oracle:"token" or oracle:"tokens")',
@@ -1572,9 +1574,9 @@ function collectRecommendationNeeds(
     });
   }
 
-  if (commanderText.includes("counter") || commanderText.includes("+1/+1")) {
+  if (strategyText.includes("counter") || strategyText.includes("+1/+1")) {
     needs.push({
-      title: `${commanderName ?? "Commander"}: Counter-Synergie`,
+      title: `${commanderLabel}: Counter-Synergie`,
       reason: "Der Commander spricht fuer Marken- oder Counter-Plaene.",
       query: '(oracle:"+1/+1 counter" or oracle:"proliferate")',
       fallback: PREMIUM_COUNTER_RECOMMENDATIONS,
@@ -1583,12 +1585,12 @@ function collectRecommendationNeeds(
   }
 
   if (
-    commanderText.includes("instant") ||
-    commanderText.includes("sorcery") ||
-    commanderText.includes("copy")
+    strategyText.includes("instant") ||
+    strategyText.includes("sorcery") ||
+    strategyText.includes("copy")
   ) {
     needs.push({
-      title: `${commanderName ?? "Commander"}: Spells-Synergie`,
+      title: `${commanderLabel}: Spells-Synergie`,
       reason:
         "Wenn der Plan ueber Instants und Sorceries laeuft, helfen diese Payoffs.",
       query: '(oracle:"instant" or oracle:"sorcery" or oracle:"copy")',
@@ -1603,10 +1605,16 @@ function collectRecommendationNeeds(
 async function createRecommendations(
   cards: DeckLabCard[],
   stats: DeckLabStats,
-  commanderName: string | null
+  commanderName: string | null,
+  strategyNotes?: string
 ) {
   const deckColors = getDeckColorIdentity(cards);
-  const needs = collectRecommendationNeeds(cards, stats, commanderName);
+  const needs = collectRecommendationNeeds(
+    cards,
+    stats,
+    commanderName,
+    strategyNotes
+  );
   const recommendations: DeckLabRecommendation[] = [];
 
   for (const need of needs) {
@@ -2063,7 +2071,8 @@ export async function importMoxfieldDeck(
 export async function analyzeDeckList(
   rawList: string,
   format = "commander",
-  commanderName?: string
+  commanderName?: string,
+  strategyNotes?: string
 ): Promise<DeckLabAnalysis> {
   const parsedLines = applyCommanderField(parseDeckList(rawList), commanderName);
 
@@ -2146,7 +2155,8 @@ export async function analyzeDeckList(
   const recommendations = await createRecommendations(
     cards,
     stats,
-    resolvedCommanderName
+    resolvedCommanderName,
+    strategyNotes
   );
 
   return {
