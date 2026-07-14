@@ -30,6 +30,65 @@ const SEARCH_RECOMMENDATION_EXCLUSIONS = new Set(
     "Terramorphic Expanse",
   ].map((name) => name.toLowerCase())
 );
+const CUT_PROTECTED_CARDS = new Set(
+  [
+    "Arcane Signet",
+    "Command Tower",
+    "Cyclonic Rift",
+    "Demonic Tutor",
+    "Dockside Extortionist",
+    "Enlightened Tutor",
+    "Fierce Guardianship",
+    "Mana Crypt",
+    "Mana Drain",
+    "Mana Vault",
+    "Mystic Remora",
+    "Path to Exile",
+    "Rhystic Study",
+    "Sol Ring",
+    "Swan Song",
+    "Swords to Plowshares",
+    "The One Ring",
+    "Vampiric Tutor",
+  ].map((name) => name.toLowerCase())
+);
+const CUT_UPGRADE_CANDIDATES = new Set(
+  [
+    "Commander's Sphere",
+    "Evolving Wilds",
+    "Hedron Archive",
+    "Manalith",
+    "Mind Stone",
+    "Rogue's Passage",
+    "Solemn Simulacrum",
+    "Temple of the False God",
+    "Terramorphic Expanse",
+    "Traveler's Amulet",
+    "Wayfarer's Bauble",
+  ].map((name) => name.toLowerCase())
+);
+const CUT_CORE_ROLES = new Set([
+  "Ramp",
+  "Draw",
+  "Interaction",
+  "Boardwipe",
+]);
+const CUT_THEME_ROLES = new Set([
+  "Lifegain",
+  "Lifelink",
+  "Life Payoff",
+  "Mill",
+  "Opponent Mill",
+  "Mill Payoff",
+  "Self Mill",
+  "Graveyard",
+  "Recursion",
+  "Token",
+  "Token Payoff",
+  "Counters",
+  "Spell Payoff",
+]);
+const CUT_STRUCTURAL_ROLES = new Set(["Creature", "Land", "Spell"]);
 
 type DeckSection = "main" | "commander" | "sideboard";
 
@@ -129,6 +188,25 @@ export type DeckLabRecommendation = {
   cards: DeckLabRecommendationCard[];
 };
 
+export type DeckLabCutSuggestion = {
+  name: string;
+  quantity: number;
+  reason: string;
+  priority: "hoch" | "mittel" | "niedrig";
+  score: number;
+  imageUrl: string | null;
+  scryfallUrl: string | null;
+  typeLine: string;
+  oracleText: string;
+  roles: string[];
+  manaValue: number;
+  setCode: string | null;
+  collectorNumber: string | null;
+  rarity: string;
+  setName: string;
+  matchNote: string | null;
+};
+
 export type DeckLabStats = {
   totalCards: number;
   mainCards: number;
@@ -147,6 +225,7 @@ export type DeckLabAnalysis = {
   missing: string[];
   corrections: DeckLabCorrection[];
   recommendations: DeckLabRecommendation[];
+  cutSuggestions: DeckLabCutSuggestion[];
   warnings: string[];
   stats: DeckLabStats;
   commanderName: string | null;
@@ -211,6 +290,7 @@ function normalizeStoredAnalysis(value: unknown): DeckLabAnalysis {
       missing: [],
       corrections: [],
       recommendations: [],
+      cutSuggestions: [],
       warnings: [],
       stats: getEmptyStats(),
       commanderName: null,
@@ -227,6 +307,9 @@ function normalizeStoredAnalysis(value: unknown): DeckLabAnalysis {
       : [],
     recommendations: Array.isArray(analysis.recommendations)
       ? analysis.recommendations
+      : [],
+    cutSuggestions: Array.isArray(analysis.cutSuggestions)
+      ? analysis.cutSuggestions
       : [],
     warnings: Array.isArray(analysis.warnings) ? analysis.warnings : [],
     stats: analysis.stats ?? getEmptyStats(),
@@ -1879,6 +1962,297 @@ async function createRecommendations(
   return recommendations;
 }
 
+type CutThemeProfile = {
+  activeRoles: Set<string>;
+};
+
+function createCutThemeProfile(
+  cards: DeckLabCard[],
+  strategyNotes?: string
+): CutThemeProfile {
+  const commanderText = cards
+    .filter((card) => card.section === "commander")
+    .map((card) => [card.name, card.typeLine, card.oracleText].join(" "))
+    .join(" ")
+    .toLowerCase();
+  const notesText = strategyNotes?.trim().toLowerCase() ?? "";
+  const activeRoles = new Set<string>();
+
+  function addTheme(active: boolean, roles: string[]) {
+    if (!active) return;
+
+    for (const role of roles) activeRoles.add(role);
+  }
+
+  addTheme(
+    includesAny(commanderText, [
+      "you gain",
+      "whenever you gain life",
+      "life total",
+      "lifelink",
+    ]) ||
+      includesAny(notesText, [
+        "lifegain",
+        "life gain",
+        "life-gain",
+        "lifelink",
+        "soul sister",
+        "drain",
+      ]),
+    ["Lifegain", "Lifelink", "Life Payoff"]
+  );
+  addTheme(
+    includesAny(commanderText, [
+      "each opponent mills",
+      "target opponent mills",
+      "opponent mills",
+      "opponents mill",
+      "opponent would mill",
+    ]) ||
+      includesAny(notesText, [
+        "opponent mill",
+        "opponents mill",
+        "gegner mill",
+        "gegner millen",
+        "deck mill",
+        "mill win",
+      ]),
+    ["Mill", "Opponent Mill", "Mill Payoff"]
+  );
+  addTheme(
+    includesAny(commanderText, [
+      "your graveyard",
+      "from your graveyard",
+      "escape",
+      "delirium",
+      "descend",
+    ]) ||
+      includesAny(notesText, [
+        "graveyard",
+        "friedhof",
+        "reanimator",
+        "recursion",
+        "self mill",
+        "selfmill",
+      ]),
+    ["Graveyard", "Recursion", "Self Mill"]
+  );
+  addTheme(
+    commanderText.includes("tokens you control") ||
+      commanderText.includes("whenever you create") ||
+      (commanderText.includes("create") && commanderText.includes("token")) ||
+      includesAny(notesText, ["token", "tokens", "go wide", "aristocrats"]),
+    ["Token", "Token Payoff"]
+  );
+  addTheme(
+    includesAny(commanderText, [
+      "+1/+1 counter",
+      "proliferate",
+      "counter on",
+    ]) ||
+      includesAny(notesText, [
+        "+1/+1",
+        "counter deck",
+        "counters",
+        "marken",
+        "proliferate",
+      ]),
+    ["Counters"]
+  );
+  addTheme(
+    includesAny(commanderText, [
+      "instant",
+      "sorcery",
+      "magecraft",
+      "copy target",
+      "cast or copy",
+    ]) ||
+      includesAny(notesText, [
+        "spellslinger",
+        "instant",
+        "sorcery",
+        "storm",
+        "magecraft",
+      ]),
+    ["Spell", "Spell Payoff"]
+  );
+
+  return { activeRoles };
+}
+
+function isBasicLandCard(card: DeckLabCard) {
+  return (
+    BASIC_LANDS.has(card.name.toLowerCase()) ||
+    card.typeLine.toLowerCase().includes("basic land")
+  );
+}
+
+function getCoreRoleTarget(role: string) {
+  if (role === "Ramp") return 10;
+  if (role === "Draw") return 10;
+  if (role === "Interaction") return 9;
+  if (role === "Boardwipe") return 2;
+
+  return 0;
+}
+
+function getCutPriority(score: number): DeckLabCutSuggestion["priority"] {
+  if (score >= 45) return "hoch";
+  if (score >= 28) return "mittel";
+
+  return "niedrig";
+}
+
+function createCutSuggestion(
+  card: DeckLabCard,
+  score: number,
+  reasonParts: string[]
+): DeckLabCutSuggestion {
+  return {
+    name: card.name,
+    quantity: card.quantity,
+    reason:
+      reasonParts.slice(0, 3).join(" ") ||
+      "Dieser Slot wirkt im aktuellen Commander-Plan weniger zentral als andere Karten.",
+    priority: getCutPriority(score),
+    score,
+    imageUrl: card.imageUrl,
+    scryfallUrl: card.scryfallUrl,
+    typeLine: card.typeLine,
+    oracleText: card.oracleText,
+    roles: card.roles,
+    manaValue: card.manaValue,
+    setCode: card.setCode,
+    collectorNumber: card.collectorNumber,
+    rarity: card.rarity,
+    setName: card.setName,
+    matchNote: card.matchNote,
+  };
+}
+
+function scoreCutCandidate(
+  card: DeckLabCard,
+  stats: DeckLabStats,
+  profile: CutThemeProfile
+) {
+  if (card.section !== "main") return null;
+  if (isBasicLandCard(card)) return null;
+  if (CUT_PROTECTED_CARDS.has(card.name.toLowerCase())) return null;
+
+  const functionalRoles = card.roles.filter(
+    (role) => !CUT_STRUCTURAL_ROLES.has(role)
+  );
+  const coreRoles = card.roles.filter((role) => CUT_CORE_ROLES.has(role));
+  const hasThemeRole = card.roles.some((role) => profile.activeRoles.has(role));
+  const offThemeRoles = card.roles.filter(
+    (role) => CUT_THEME_ROLES.has(role) && !profile.activeRoles.has(role)
+  );
+  const reasonParts: string[] = [];
+  let score = 0;
+
+  if (functionalRoles.length === 0) {
+    score += card.isLand ? 8 : 26;
+    reasonParts.push("Keine klare erkannte Funktion im Commander-Plan.");
+  }
+
+  if (card.manaValue >= 7) {
+    score += 22;
+    reasonParts.push("Sehr hohe Mana Value fuer einen nicht geschuetzten Slot.");
+  } else if (card.manaValue >= 5 && !hasThemeRole) {
+    score += 12;
+    reasonParts.push("Relativ teuer, ohne klaren Commander-Fokus.");
+  }
+
+  if (
+    card.typeLine.includes("Creature") &&
+    functionalRoles.length === 0 &&
+    card.manaValue >= 3
+  ) {
+    score += 14;
+    reasonParts.push("Wirkt eher wie ein austauschbarer Body als ein Engine-Piece.");
+  }
+
+  if (
+    profile.activeRoles.size > 0 &&
+    offThemeRoles.length > 0 &&
+    !hasThemeRole &&
+    coreRoles.length === 0
+  ) {
+    score += 18;
+    reasonParts.push(
+      `${offThemeRoles.slice(0, 2).join("/")} passt eher zu einem Nebenplan.`
+    );
+  }
+
+  if (CUT_UPGRADE_CANDIDATES.has(card.name.toLowerCase())) {
+    score += card.isLand ? 12 : 18;
+    reasonParts.push("Oft austauschbarer Commander-Slot mit besseren Alternativen.");
+  }
+
+  if (card.quantity > 1) {
+    score += 30;
+    reasonParts.push("Mehrfach vorhanden; in Commander meist nur als Singleton erlaubt.");
+  }
+
+  if (stats.totalCards > 100) {
+    score += 6;
+    reasonParts.push("Das Deck liegt ueber 100 Karten, also braucht es echte Cuts.");
+  }
+
+  if (card.isLand) {
+    if (stats.landCount > 38) {
+      score += 14;
+      reasonParts.push("Bei sehr vielen Laendern kann dieser Land-Slot geprueft werden.");
+    } else if (!CUT_UPGRADE_CANDIDATES.has(card.name.toLowerCase())) {
+      score -= 16;
+    }
+  }
+
+  if (hasThemeRole) {
+    score -= 28;
+  }
+
+  if (card.roles.includes("Engine")) {
+    score -= 10;
+  }
+
+  for (const role of coreRoles) {
+    const target = getCoreRoleTarget(role);
+    const currentCount = stats.roleCounts[role] ?? 0;
+
+    if (currentCount <= target) {
+      score -= 18;
+    } else if (currentCount >= target + 3) {
+      score += 4;
+    }
+  }
+
+  if (score < 14) return null;
+
+  return createCutSuggestion(card, score, reasonParts);
+}
+
+function createCutSuggestions(
+  cards: DeckLabCard[],
+  stats: DeckLabStats,
+  strategyNotes?: string
+) {
+  const profile = createCutThemeProfile(cards, strategyNotes);
+
+  return cards
+    .map((card) => scoreCutCandidate(card, stats, profile))
+    .filter((suggestion): suggestion is DeckLabCutSuggestion =>
+      Boolean(suggestion)
+    )
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        b.manaValue - a.manaValue ||
+        a.name.localeCompare(b.name)
+    )
+    .slice(0, 10);
+}
+
 type ScryfallCollectionIdentifier =
   | { name: string }
   | { set: string; collector_number: string };
@@ -2313,6 +2687,7 @@ export async function analyzeDeckList(
       missing: [],
       corrections: [],
       recommendations: [],
+      cutSuggestions: [],
       warnings: ["Keine Karten erkannt. Nutze Zeilen wie '1 Sol Ring'."],
       stats: getEmptyStats(),
       commanderName: null,
@@ -2389,12 +2764,14 @@ export async function analyzeDeckList(
     resolvedCommanderName,
     strategyNotes
   );
+  const cutSuggestions = createCutSuggestions(cards, stats, strategyNotes);
 
   return {
     cards,
     missing,
     corrections,
     recommendations,
+    cutSuggestions,
     warnings: createWarnings(
       format,
       cards,

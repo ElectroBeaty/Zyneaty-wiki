@@ -59,6 +59,25 @@ type DeckLabRecommendation = {
   }>;
 };
 
+type DeckLabCutSuggestion = {
+  name: string;
+  quantity: number;
+  reason: string;
+  priority: "hoch" | "mittel" | "niedrig";
+  score: number;
+  imageUrl?: string | null;
+  scryfallUrl?: string | null;
+  typeLine?: string;
+  oracleText?: string;
+  roles: string[];
+  manaValue?: number;
+  setCode?: string | null;
+  collectorNumber?: string | null;
+  rarity?: string | null;
+  setName?: string | null;
+  matchNote?: string | null;
+};
+
 type DeckLabStats = {
   totalCards: number;
   mainCards: number;
@@ -77,6 +96,7 @@ type DeckLabAnalysis = {
   missing: string[];
   corrections: DeckLabCorrection[];
   recommendations: DeckLabRecommendation[];
+  cutSuggestions: DeckLabCutSuggestion[];
   warnings: string[];
   stats: DeckLabStats;
   commanderName: string | null;
@@ -152,6 +172,18 @@ function getSectionLabel(card: DeckLabCard) {
   if (card.section === "sideboard") return "Sideboard";
 
   return card.typeLine;
+}
+
+function getCutPriorityClass(priority: DeckLabCutSuggestion["priority"]) {
+  if (priority === "hoch") {
+    return "border-red-200/25 bg-red-300/15 text-red-100";
+  }
+
+  if (priority === "mittel") {
+    return "border-orange-200/25 bg-orange-300/15 text-orange-100";
+  }
+
+  return "border-white/10 bg-white/5 text-zinc-300";
 }
 
 function getPreviewPositionFromMouse(event: MouseEvent<HTMLElement>) {
@@ -343,6 +375,97 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
             ))}
           </div>
         </div>
+      )}
+
+      {analysis.cutSuggestions?.length > 0 && (
+        <section className="rounded-3xl border border-orange-300/20 bg-orange-300/10 p-5">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-black text-orange-100">
+                Moegliche Cuts
+              </h3>
+              <p className="mt-1 text-sm text-orange-50/70">
+                Karten, die im aktuellen Commander-Plan weniger zentral wirken.
+                Keine harte Wahrheit, aber gute erste Slots zum Pruefen.
+              </p>
+            </div>
+            <span className="rounded-full bg-black/20 px-3 py-1 text-xs text-orange-50/75">
+              {analysis.cutSuggestions.length} Kandidaten
+            </span>
+          </div>
+
+          <div className="mt-5 grid gap-3 lg:grid-cols-2">
+            {analysis.cutSuggestions.map((card) => (
+              <a
+                key={`cut-${card.name}-${card.setCode ?? "set"}`}
+                href={card.scryfallUrl ?? undefined}
+                target={card.scryfallUrl ? "_blank" : undefined}
+                rel={card.scryfallUrl ? "noreferrer" : undefined}
+                tabIndex={0}
+                onMouseEnter={(event) => showPreview(card, event)}
+                onMouseMove={(event) =>
+                  setPreviewPosition(getPreviewPositionFromMouse(event))
+                }
+                onMouseLeave={() => setPreviewCard(null)}
+                onFocus={(event) => showPreviewFromFocus(card, event)}
+                onBlur={() => setPreviewCard(null)}
+                className="group flex min-h-28 gap-3 rounded-2xl border border-white/10 bg-black/15 p-3 text-left outline-none transition hover:border-orange-200/35 hover:bg-white/[0.06] focus-visible:border-orange-200/45 focus-visible:bg-white/[0.06]"
+              >
+                <div className="h-24 w-16 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-zinc-900">
+                  {card.imageUrl ? (
+                    <Image
+                      src={card.imageUrl}
+                      alt=""
+                      width={64}
+                      height={96}
+                      className="h-full w-full object-cover transition group-hover:scale-[1.03]"
+                    />
+                  ) : (
+                    <div className="flex h-full items-center justify-center px-1 text-center text-[10px] text-zinc-500">
+                      kein Bild
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <div className="font-black leading-5 text-white">
+                        {card.quantity}x {card.name}
+                      </div>
+                      {card.typeLine && (
+                        <div className="mt-1 text-xs text-zinc-500">
+                          {card.typeLine}
+                        </div>
+                      )}
+                    </div>
+                    <span
+                      className={`rounded-full border px-2 py-0.5 text-[11px] font-bold uppercase ${getCutPriorityClass(
+                        card.priority
+                      )}`}
+                    >
+                      {card.priority}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-xs leading-5 text-orange-50/75">
+                    {card.reason}
+                  </p>
+                  {card.roles.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {card.roles.slice(0, 5).map((role) => (
+                        <span
+                          key={`${card.name}-${role}`}
+                          className="rounded-full bg-white/5 px-2 py-0.5 text-[11px] text-zinc-300"
+                        >
+                          {role}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </a>
+            ))}
+          </div>
+        </section>
       )}
 
       {analysis.recommendations?.length > 0 && (
