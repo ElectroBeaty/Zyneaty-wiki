@@ -79,7 +79,7 @@ export async function saveDeck(input: {
   }
 
   if (!rawList) {
-    throw new Error("Bitte fuege eine Deckliste ein.");
+    throw new Error("Bitte füge eine Deckliste ein.");
   }
 
   const analysis = await analyzeDeckListInternal(

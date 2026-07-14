@@ -41,8 +41,8 @@ export default async function DeckLabPage() {
               Deck Lab
             </h1>
             <p className="mt-4 max-w-3xl text-zinc-300">
-              Dein versteckter Admin-Bereich fuer Magic-Decks: Listen
-              importieren, ueber Scryfall aufloesen, grobe Rollen erkennen und
+              Dein versteckter Admin-Bereich für Magic-Decks: Listen
+              importieren, über Scryfall auflösen, grobe Rollen erkennen und
               privat speichern.
             </p>
           </div>

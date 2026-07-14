@@ -783,7 +783,7 @@ function createWarnings(
 
   if (corrections.length > 0) {
     warnings.push(
-      `${corrections.length} Karte(n) wurden per Fallback aufgeloest. Pruefe kurz, ob der Druck passt.`
+      `${corrections.length} Karte(n) wurden per Fallback aufgelöst. Prüfe kurz, ob der Druck passt.`
     );
   }
 
@@ -817,19 +817,19 @@ function createWarnings(
     }
 
     if (stats.landCount < 34) {
-      warnings.push("Die Manabase wirkt knapp: Unter 34 Laender ist Commander oft holprig.");
+      warnings.push("Die Manabase wirkt knapp: Unter 34 Länder ist Commander oft holprig.");
     }
 
     if (stats.landCount > 40) {
-      warnings.push("Sehr viele Laender: Pruefe, ob genug Action-Spells im Deck bleiben.");
+      warnings.push("Sehr viele Länder: Prüfe, ob genug Action-Spells im Deck bleiben.");
     }
 
     if ((stats.roleCounts.Ramp ?? 0) < 8) {
-      warnings.push("Ramp ist eher niedrig. Viele Commander-Decks moegen etwa 8-12 Ramp-Pieces.");
+      warnings.push("Ramp ist eher niedrig. Viele Commander-Decks mögen etwa 8-12 Ramp-Pieces.");
     }
 
     if ((stats.roleCounts.Draw ?? 0) < 8) {
-      warnings.push("Card Draw ist eher niedrig. Das Deck koennte im Midgame leer laufen.");
+      warnings.push("Card Draw ist eher niedrig. Das Deck könnte im Midgame leer laufen.");
     }
 
     if ((stats.roleCounts.Interaction ?? 0) < 8) {
@@ -838,7 +838,7 @@ function createWarnings(
   }
 
   if (stats.averageManaValue > 3.6) {
-    warnings.push("Die durchschnittliche Mana Value ist recht hoch. Fruehe Plays koennten fehlen.");
+    warnings.push("Die durchschnittliche Mana Value ist recht hoch. Frühe Plays könnten fehlen.");
   }
 
   return warnings;
@@ -862,7 +862,7 @@ const RAMP_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Sol Ring",
     colors: [],
-    reason: "Der effizienteste Commander-Ramp fuer fast jedes Deck.",
+    reason: "Der effizienteste Commander-Ramp für fast jedes Deck.",
   },
   {
     name: "Arcane Signet",
@@ -872,7 +872,7 @@ const RAMP_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Fellwar Stone",
     colors: [],
-    reason: "Guenscher Zweimana-Rock, der oft mehrere Farben macht.",
+    reason: "Günstiger Zweimana-Rock, der oft mehrere Farben macht.",
   },
   {
     name: "Nature's Lore",
@@ -892,17 +892,17 @@ const RAMP_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Talisman of Dominance",
     colors: ["U", "B"],
-    reason: "Zweimana-Ramp fuer Dimir-Farbpaare.",
+    reason: "Zweimana-Ramp für Dimir-Farbpaare.",
   },
   {
     name: "Talisman of Curiosity",
     colors: ["G", "U"],
-    reason: "Zweimana-Ramp fuer Simic-Farbpaare.",
+    reason: "Zweimana-Ramp für Simic-Farbpaare.",
   },
   {
     name: "Talisman of Resilience",
     colors: ["B", "G"],
-    reason: "Zweimana-Ramp fuer Golgari-Farbpaare.",
+    reason: "Zweimana-Ramp für Golgari-Farbpaare.",
   },
 ];
 
@@ -915,7 +915,7 @@ const DRAW_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Tome of Legends",
     colors: [],
-    reason: "Gut, wenn dein Commander regelmaessig angreift oder ins Spiel kommt.",
+    reason: "Gut, wenn dein Commander regelmäßig angreift oder ins Spiel kommt.",
   },
   {
     name: "Rhystic Study",
@@ -940,7 +940,7 @@ const DRAW_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Harmonize",
     colors: ["G"],
-    reason: "Solider Kartenvorteil in Gruen.",
+    reason: "Solider Kartenvorteil in Grün.",
   },
   {
     name: "Welcoming Vampire",
@@ -950,7 +950,7 @@ const DRAW_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Faithless Looting",
     colors: ["R"],
-    reason: "Filtert Haende und fuellt graveyardbasierte Plaene.",
+    reason: "Filtert Hände und füllt graveyardbasierte Pläne.",
   },
 ];
 
@@ -963,7 +963,7 @@ const INTERACTION_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Generous Gift",
     colors: ["W"],
-    reason: "Universelles Removal fuer Weiss.",
+    reason: "Universelles Removal für Weiß.",
   },
   {
     name: "Swords to Plowshares",
@@ -973,12 +973,12 @@ const INTERACTION_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Counterspell",
     colors: ["U"],
-    reason: "Klarer Schutz gegen gegnerische Schluesselspells.",
+    reason: "Klarer Schutz gegen gegnerische Schlüsselspells.",
   },
   {
     name: "Pongify",
     colors: ["U"],
-    reason: "Ein Mana fuer effizientes Creature-Removal.",
+    reason: "Ein Mana für effizientes Creature-Removal.",
   },
   {
     name: "Feed the Swarm",
@@ -988,7 +988,7 @@ const INTERACTION_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Chaos Warp",
     colors: ["R"],
-    reason: "Rotes Universal-Removal fuer schwierige Permanents.",
+    reason: "Rotes Universal-Removal für schwierige Permanents.",
   },
   {
     name: "Abrade",
@@ -1016,17 +1016,17 @@ const BOARDWIPE_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Toxic Deluge",
     colors: ["B"],
-    reason: "Guenscher Wipe, der Indestructible umgeht.",
+    reason: "Günstiger Wipe, der Indestructible umgeht.",
   },
   {
     name: "Cyclonic Rift",
     colors: ["U"],
-    reason: "Kann defensiv retten oder ein Spiel oeffnen.",
+    reason: "Kann defensiv retten oder ein Spiel öffnen.",
   },
   {
     name: "Nevinyrral's Disk",
     colors: [],
-    reason: "Farbloser Reset fuer Decks ohne gute Wipes.",
+    reason: "Farbloser Reset für Decks ohne gute Wipes.",
   },
 ];
 
@@ -1034,7 +1034,7 @@ const LAND_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Command Tower",
     colors: [],
-    reason: "Der sauberste Fixer fuer Commander.",
+    reason: "Der sauberste Fixer für Commander.",
   },
   {
     name: "Path of Ancestry",
@@ -1062,7 +1062,7 @@ const GRAVEYARD_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Eternal Witness",
     colors: ["G"],
-    reason: "Holt wichtige Karten aus dem Friedhof zurueck.",
+    reason: "Holt wichtige Karten aus dem Friedhof zurück.",
   },
   {
     name: "Victimize",
@@ -1077,12 +1077,12 @@ const GRAVEYARD_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Satyr Wayfinder",
     colors: ["G"],
-    reason: "Fuellt den Friedhof und findet Laender.",
+    reason: "Füllt den Friedhof und findet Länder.",
   },
   {
     name: "Stitcher's Supplier",
     colors: ["B"],
-    reason: "Sehr effizienter Selbstmill fuer Graveyard-Pläne.",
+    reason: "Sehr effizienter Selbstmill für Graveyard-Pläne.",
   },
 ];
 
@@ -1095,12 +1095,12 @@ const TOKEN_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Anointed Procession",
     colors: ["W"],
-    reason: "Verdoppelt Token-Produktion in Weiss.",
+    reason: "Verdoppelt Token-Produktion in Weiß.",
   },
   {
     name: "Parallel Lives",
     colors: ["G"],
-    reason: "Verdoppelt Token-Produktion in Gruen.",
+    reason: "Verdoppelt Token-Produktion in Grün.",
   },
   {
     name: "Impact Tremors",
@@ -1113,12 +1113,12 @@ const COUNTER_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Hardened Scales",
     colors: ["G"],
-    reason: "Verstaerkt +1/+1-Counter-Pläne guenstig.",
+    reason: "Verstärkt +1/+1-Counter-Pläne günstig.",
   },
   {
     name: "Evolution Sage",
     colors: ["G"],
-    reason: "Proliferate macht Counter-Boards schnell groesser.",
+    reason: "Proliferate macht Counter-Boards schnell größer.",
   },
   {
     name: "Winding Constrictor",
@@ -1136,120 +1136,120 @@ const SPELL_RECOMMENDATIONS: RecommendationCandidate[] = [
   {
     name: "Storm-Kiln Artist",
     colors: ["R"],
-    reason: "Macht Mana aus Spells und haelt explosive Turns offen.",
+    reason: "Macht Mana aus Spells und hält explosive Turns offen.",
   },
   {
     name: "Young Pyromancer",
     colors: ["R"],
-    reason: "Verwandelt Spells in Board-Praesenz.",
+    reason: "Verwandelt Spells in Board-Präsenz.",
   },
 ];
 
 const PREMIUM_RAMP_RECOMMENDATIONS: RecommendationCandidate[] = [
-  { name: "Sol Ring", colors: [], reason: "Der Benchmark fuer Commander-Ramp." },
-  { name: "Mana Vault", colors: [], reason: "Explosiver Fast-Mana-Slot fuer sehr schnelle Starts." },
-  { name: "Grim Monolith", colors: [], reason: "Starker Burst-Ramp fuer teure Commander und Power-Turns." },
+  { name: "Sol Ring", colors: [], reason: "Der Benchmark für Commander-Ramp." },
+  { name: "Mana Vault", colors: [], reason: "Explosiver Fast-Mana-Slot für sehr schnelle Starts." },
+  { name: "Grim Monolith", colors: [], reason: "Starker Burst-Ramp für teure Commander und Power-Turns." },
   { name: "Chrome Mox", colors: [], reason: "Fast Mana, wenn Tempo wichtiger ist als Kartenvorteil." },
   { name: "Mox Diamond", colors: [], reason: "Fixing und Beschleunigung in einem sehr effizienten Slot." },
   { name: "Arcane Signet", colors: [], reason: "Der sauberste universelle Zweimana-Rock." },
   { name: "Fellwar Stone", colors: [], reason: "In Multiplayer oft ein Zweimana-Rock mit mehreren Farben." },
-  { name: "Birds of Paradise", colors: ["G"], reason: "Einmana-Fixing fuer alle Commander-Farben." },
-  { name: "Delighted Halfling", colors: ["G"], reason: "Schuetzt legendare Spells vor Countern und rampt frueh." },
+  { name: "Birds of Paradise", colors: ["G"], reason: "Einmana-Fixing für alle Commander-Farben." },
+  { name: "Delighted Halfling", colors: ["G"], reason: "Schützt legendare Spells vor Countern und rampt früh." },
   { name: "Bloom Tender", colors: ["G"], reason: "Skaliert extrem mit mehrfarbigen Permanents." },
   { name: "Carpet of Flowers", colors: ["G"], reason: "Sehr stark in blauen Pods und kostet nur ein Mana." },
   { name: "Nature's Lore", colors: ["G"], reason: "Sucht Forest-Duals und kann sie ungetappt bringen." },
-  { name: "Three Visits", colors: ["G"], reason: "Zweite Kopie von Nature's Lore fuer schnelle Fixing-Linien." },
-  { name: "Farseek", colors: ["G"], reason: "Findet viele Shocklands und Triomes fuer sauberes Fixing." },
+  { name: "Three Visits", colors: ["G"], reason: "Zweite Kopie von Nature's Lore für schnelle Fixing-Linien." },
+  { name: "Farseek", colors: ["G"], reason: "Findet viele Shocklands und Triomes für sauberes Fixing." },
   { name: "Skyshroud Claim", colors: ["G"], reason: "Starker Sprung auf sechs Mana mit passenden Forest-Duals." },
   { name: "Smothering Tithe", colors: ["W"], reason: "Multiplayer-Manaengine, die Gegner unter Druck setzt." },
   { name: "Jeska's Will", colors: ["R"], reason: "Explosiver Ritual- und Card-Advantage-Turn mit Commander." },
-  { name: "Talisman of Dominance", colors: ["U", "B"], reason: "Ungetappter Zweimana-Ramp fuer Dimir-Farben." },
-  { name: "Talisman of Progress", colors: ["W", "U"], reason: "Ungetappter Zweimana-Ramp fuer Azorius-Farben." },
-  { name: "Talisman of Indulgence", colors: ["B", "R"], reason: "Ungetappter Zweimana-Ramp fuer Rakdos-Farben." },
-  { name: "Talisman of Impulse", colors: ["R", "G"], reason: "Ungetappter Zweimana-Ramp fuer Gruul-Farben." },
-  { name: "Talisman of Unity", colors: ["G", "W"], reason: "Ungetappter Zweimana-Ramp fuer Selesnya-Farben." },
-  { name: "Talisman of Hierarchy", colors: ["W", "B"], reason: "Ungetappter Zweimana-Ramp fuer Orzhov-Farben." },
-  { name: "Talisman of Creativity", colors: ["U", "R"], reason: "Ungetappter Zweimana-Ramp fuer Izzet-Farben." },
-  { name: "Talisman of Resilience", colors: ["B", "G"], reason: "Ungetappter Zweimana-Ramp fuer Golgari-Farben." },
-  { name: "Talisman of Conviction", colors: ["R", "W"], reason: "Ungetappter Zweimana-Ramp fuer Boros-Farben." },
-  { name: "Talisman of Curiosity", colors: ["G", "U"], reason: "Ungetappter Zweimana-Ramp fuer Simic-Farben." },
+  { name: "Talisman of Dominance", colors: ["U", "B"], reason: "Ungetappter Zweimana-Ramp für Dimir-Farben." },
+  { name: "Talisman of Progress", colors: ["W", "U"], reason: "Ungetappter Zweimana-Ramp für Azorius-Farben." },
+  { name: "Talisman of Indulgence", colors: ["B", "R"], reason: "Ungetappter Zweimana-Ramp für Rakdos-Farben." },
+  { name: "Talisman of Impulse", colors: ["R", "G"], reason: "Ungetappter Zweimana-Ramp für Gruul-Farben." },
+  { name: "Talisman of Unity", colors: ["G", "W"], reason: "Ungetappter Zweimana-Ramp für Selesnya-Farben." },
+  { name: "Talisman of Hierarchy", colors: ["W", "B"], reason: "Ungetappter Zweimana-Ramp für Orzhov-Farben." },
+  { name: "Talisman of Creativity", colors: ["U", "R"], reason: "Ungetappter Zweimana-Ramp für Izzet-Farben." },
+  { name: "Talisman of Resilience", colors: ["B", "G"], reason: "Ungetappter Zweimana-Ramp für Golgari-Farben." },
+  { name: "Talisman of Conviction", colors: ["R", "W"], reason: "Ungetappter Zweimana-Ramp für Boros-Farben." },
+  { name: "Talisman of Curiosity", colors: ["G", "U"], reason: "Ungetappter Zweimana-Ramp für Simic-Farben." },
   ...RAMP_RECOMMENDATIONS,
 ];
 
 const PREMIUM_DRAW_RECOMMENDATIONS: RecommendationCandidate[] = [
   { name: "The One Ring", colors: [], reason: "Massiver Kartenvorteil und ein Schutzturn in einem Slot." },
   { name: "Skullclamp", colors: [], reason: "Brutaler Draw-Motor mit kleinen Kreaturen oder Tokens." },
-  { name: "Sensei's Divining Top", colors: [], reason: "Topdeck-Kontrolle fuer Tutoren, Fetchlands und Setup-Turns." },
-  { name: "Rhystic Study", colors: ["U"], reason: "Eine der staerksten dauerhaften Draw-Engines in Commander." },
+  { name: "Sensei's Divining Top", colors: [], reason: "Topdeck-Kontrolle für Tutoren, Fetchlands und Setup-Turns." },
+  { name: "Rhystic Study", colors: ["U"], reason: "Eine der stärksten dauerhaften Draw-Engines in Commander." },
   { name: "Mystic Remora", colors: ["U"], reason: "Bestraft schnelle Noncreature-Turns und zieht oft mehrere Karten." },
-  { name: "Consecrated Sphinx", colors: ["U"], reason: "Uebernimmt lange Multiplayer-Spiele, wenn sie liegen bleibt." },
+  { name: "Consecrated Sphinx", colors: ["U"], reason: "Übernimmt lange Multiplayer-Spiele, wenn sie liegen bleibt." },
   { name: "Windfall", colors: ["U"], reason: "Refill, Disruption und Graveyard-Fuel in einem effizienten Spell." },
   { name: "Ledger Shredder", colors: ["U"], reason: "Filtert Karten nebenbei und skaliert mit mehreren Spells pro Zug." },
-  { name: "Esper Sentinel", colors: ["W"], reason: "Frueher Tax-Draw, der Gegner direkt verlangsamt." },
+  { name: "Esper Sentinel", colors: ["W"], reason: "Früher Tax-Draw, der Gegner direkt verlangsamt." },
   { name: "Archivist of Oghma", colors: ["W"], reason: "Zieht Karten aus gegnerischen Tutoren und Ramp-Spells." },
   { name: "Trouble in Pairs", colors: ["W"], reason: "Sehr viel Kartenvorteil, wenn Gegner im Multiplayer doppelt handeln." },
   { name: "Smuggler's Share", colors: ["W"], reason: "Belohnt gegnerischen Ramp und Draw mit Karten oder Treasures." },
-  { name: "Necropotence", colors: ["B"], reason: "Einer der staerksten Draw-Effekte, wenn das Deck Life bezahlen kann." },
+  { name: "Necropotence", colors: ["B"], reason: "Einer der stärksten Draw-Effekte, wenn das Deck Life bezahlen kann." },
   { name: "Black Market Connections", colors: ["B"], reason: "Flexibler Vorteil aus Karten, Treasures und Bodies." },
-  { name: "Dark Confidant", colors: ["B"], reason: "Fruehe wiederholbare Kartenquelle fuer niedrige Kurven." },
+  { name: "Dark Confidant", colors: ["B"], reason: "Frühe wiederholbare Kartenquelle für niedrige Kurven." },
   { name: "Night's Whisper", colors: ["B"], reason: "Effizienter Zwei-Mana-Draw ohne Synergiebedingung." },
   { name: "Sylvan Library", colors: ["G"], reason: "Topdeck-Kontrolle und explosiver Kartenzug gegen Lebenspunkte." },
   { name: "The Great Henge", colors: ["G"], reason: "Mana, Lifegain, Counter und Draw in Creature-Decks." },
-  { name: "Guardian Project", colors: ["G"], reason: "Saubere Creature-Draw-Engine fuer Singleton-Decks." },
-  { name: "Beast Whisperer", colors: ["G"], reason: "Zieht aus jeder Kreatur und haelt Creature-Chains am Laufen." },
+  { name: "Guardian Project", colors: ["G"], reason: "Saubere Creature-Draw-Engine für Singleton-Decks." },
+  { name: "Beast Whisperer", colors: ["G"], reason: "Zieht aus jeder Kreatur und hält Creature-Chains am Laufen." },
   { name: "Toski, Bearer of Secrets", colors: ["G"], reason: "Schwer zu entfernen und sehr stark bei breiten Boards." },
-  { name: "Wheel of Fortune", colors: ["R"], reason: "Premium-Refill und Graveyard-Fuel fuer rote Decks." },
+  { name: "Wheel of Fortune", colors: ["R"], reason: "Premium-Refill und Graveyard-Fuel für rote Decks." },
   { name: "Professional Face-Breaker", colors: ["R"], reason: "Macht Combat-Damage zu Treasures und Kartenimpuls." },
   ...DRAW_RECOMMENDATIONS,
 ];
 
 const PREMIUM_INTERACTION_RECOMMENDATIONS: RecommendationCandidate[] = [
-  { name: "Swords to Plowshares", colors: ["W"], reason: "Das effizienteste Creature-Removal fuer einen Mana." },
-  { name: "Path to Exile", colors: ["W"], reason: "Zweiter sehr effizienter Weiss-Removal-Slot." },
+  { name: "Swords to Plowshares", colors: ["W"], reason: "Das effizienteste Creature-Removal für einen Mana." },
+  { name: "Path to Exile", colors: ["W"], reason: "Zweiter sehr effizienter Weiß-Removal-Slot." },
   { name: "Generous Gift", colors: ["W"], reason: "Entfernt fast jedes Permanent, egal welcher Typ." },
-  { name: "Stroke of Midnight", colors: ["W"], reason: "Flexibles Exile-Removal fuer problematische Permanents." },
-  { name: "Teferi's Protection", colors: ["W"], reason: "Schuetzt Board, Life Total und Combo-Turns gleichzeitig." },
+  { name: "Stroke of Midnight", colors: ["W"], reason: "Flexibles Exile-Removal für problematische Permanents." },
+  { name: "Teferi's Protection", colors: ["W"], reason: "Schützt Board, Life Total und Combo-Turns gleichzeitig." },
   { name: "Flawless Maneuver", colors: ["W"], reason: "Kostenloser Board-Schutz, wenn dein Commander liegt." },
   { name: "Fierce Guardianship", colors: ["U"], reason: "Kostenloser Schutz gegen die wichtigsten Noncreature-Spells." },
   { name: "Force of Will", colors: ["U"], reason: "Premium-Stack-Interaktion ohne offenes Mana." },
-  { name: "Force of Negation", colors: ["U"], reason: "Schuetzt vor gegnerischen Noncreature-Combo-Turns." },
+  { name: "Force of Negation", colors: ["U"], reason: "Schützt vor gegnerischen Noncreature-Combo-Turns." },
   { name: "Mana Drain", colors: ["U"], reason: "Counterspell plus massiver Tempo-Swing." },
-  { name: "Swan Song", colors: ["U"], reason: "Ein Mana gegen viele der gefaehrlichsten Spell-Typen." },
+  { name: "Swan Song", colors: ["U"], reason: "Ein Mana gegen viele der gefährlichsten Spell-Typen." },
   { name: "Flusterstorm", colors: ["U"], reason: "Extrem effizient gegen Stack-Fights und Storm-Turns." },
-  { name: "Cyclonic Rift", colors: ["U"], reason: "Einseitiger Reset oder fruehe Notfallantwort." },
+  { name: "Cyclonic Rift", colors: ["U"], reason: "Einseitiger Reset oder frühe Notfallantwort." },
   { name: "Deadly Rollick", colors: ["B"], reason: "Kostenloses Exile-Removal mit Commander im Spiel." },
   { name: "Snuff Out", colors: ["B"], reason: "Kostenlose Tempo-Antwort gegen viele Kreaturen." },
   { name: "Opposition Agent", colors: ["B"], reason: "Bestraft Tutoren und Fetchlands als Flash-Hatebear." },
   { name: "Feed the Swarm", colors: ["B"], reason: "Schwarz bekommt damit auch Enchantments sauber weg." },
   { name: "Deflecting Swat", colors: ["R"], reason: "Kostenlose Schutz- und Blowout-Karte mit Commander." },
   { name: "Chaos Warp", colors: ["R"], reason: "Rotes Universal-Removal gegen fast jedes Permanent." },
-  { name: "Pyroblast", colors: ["R"], reason: "Ein Mana fuer sehr starke Interaktion gegen Blau." },
+  { name: "Pyroblast", colors: ["R"], reason: "Ein Mana für sehr starke Interaktion gegen Blau." },
   { name: "Red Elemental Blast", colors: ["R"], reason: "Zweite Premium-Antwort gegen blaue Spells und Permanents." },
   { name: "Force of Vigor", colors: ["G"], reason: "Kostenlose Antwort auf Artefakte und Enchantments." },
-  { name: "Nature's Claim", colors: ["G"], reason: "Ein Mana fuer sehr effizientes Artifact- oder Enchantment-Removal." },
-  { name: "Veil of Summer", colors: ["G"], reason: "Schuetzt eigene Plays gegen Blau und Schwarz und ersetzt sich." },
-  { name: "Heroic Intervention", colors: ["G"], reason: "Schuetzt dein Board gegen Wipes und Spot Removal." },
-  { name: "Beast Within", colors: ["G"], reason: "Gruenes Universal-Removal fuer jedes Permanent." },
-  { name: "Assassin's Trophy", colors: ["B", "G"], reason: "Sehr breites Removal fuer jedes Permanent." },
-  { name: "Abrupt Decay", colors: ["B", "G"], reason: "Uncounterbares Removal gegen viele fruehe Engines." },
+  { name: "Nature's Claim", colors: ["G"], reason: "Ein Mana für sehr effizientes Artifact- oder Enchantment-Removal." },
+  { name: "Veil of Summer", colors: ["G"], reason: "Schützt eigene Plays gegen Blau und Schwarz und ersetzt sich." },
+  { name: "Heroic Intervention", colors: ["G"], reason: "Schützt dein Board gegen Wipes und Spot Removal." },
+  { name: "Beast Within", colors: ["G"], reason: "Grünes Universal-Removal für jedes Permanent." },
+  { name: "Assassin's Trophy", colors: ["B", "G"], reason: "Sehr breites Removal für jedes Permanent." },
+  { name: "Abrupt Decay", colors: ["B", "G"], reason: "Uncounterbares Removal gegen viele frühe Engines." },
   { name: "Anguished Unmaking", colors: ["W", "B"], reason: "Exiliert fast jedes Nonland-Permanent instant-speed." },
-  { name: "Dovin's Veto", colors: ["W", "U"], reason: "Uncounterbarer Schutz gegen Noncreature-Schluesselspells." },
+  { name: "Dovin's Veto", colors: ["W", "U"], reason: "Uncounterbarer Schutz gegen Noncreature-Schlüsselspells." },
   ...INTERACTION_RECOMMENDATIONS,
 ];
 
 const PREMIUM_BOARDWIPE_RECOMMENDATIONS: RecommendationCandidate[] = [
   { name: "Farewell", colors: ["W"], reason: "Einer der flexibelsten Resets gegen Boards, Graveyards und Artifacts." },
-  { name: "Toxic Deluge", colors: ["B"], reason: "Guenscher Wipe, der Indestructible umgeht." },
-  { name: "Cyclonic Rift", colors: ["U"], reason: "Einseitiger Reset, der Spiele oeffnen kann." },
+  { name: "Toxic Deluge", colors: ["B"], reason: "Günstiger Wipe, der Indestructible umgeht." },
+  { name: "Cyclonic Rift", colors: ["U"], reason: "Einseitiger Reset, der Spiele öffnen kann." },
   { name: "Blasphemous Act", colors: ["R"], reason: "Meist sehr billig und stark gegen volle Boards." },
-  { name: "Supreme Verdict", colors: ["W", "U"], reason: "Uncounterbarer Creature-Wipe fuer Azorius-Farben." },
+  { name: "Supreme Verdict", colors: ["W", "U"], reason: "Uncounterbarer Creature-Wipe für Azorius-Farben." },
   { name: "Damnation", colors: ["B"], reason: "Klarer Vier-Mana-Creature-Reset in Schwarz." },
   { name: "Wrath of God", colors: ["W"], reason: "Effizienter klassischer Creature-Wipe." },
   { name: "Vanquish the Horde", colors: ["W"], reason: "Wird in Multiplayer oft extrem billig." },
-  { name: "Austere Command", colors: ["W"], reason: "Waehlt die Achsen, die das eigene Board am besten verschonen." },
-  { name: "Damn", colors: ["W", "B"], reason: "Spot Removal frueh, Boardwipe spaet." },
+  { name: "Austere Command", colors: ["W"], reason: "Wählt die Achsen, die das eigene Board am besten verschonen." },
+  { name: "Damn", colors: ["W", "B"], reason: "Spot Removal früh, Boardwipe spät." },
   { name: "Fire Covenant", colors: ["B", "R"], reason: "Instant-Speed-Wipe, der sehr gezielt gegnerische Boards zerlegt." },
-  { name: "Living Death", colors: ["B"], reason: "Boardwipe und Reanimation zugleich fuer Graveyard-Decks." },
+  { name: "Living Death", colors: ["B"], reason: "Boardwipe und Reanimation zugleich für Graveyard-Decks." },
   { name: "Merciless Eviction", colors: ["W", "B"], reason: "Exiliert den problematischen Permanent-Typ komplett." },
   { name: "Pernicious Deed", colors: ["B", "G"], reason: "Skalierbarer Reset, besonders stark aus dem Graveyard." },
   ...BOARDWIPE_RECOMMENDATIONS,
@@ -1257,34 +1257,34 @@ const PREMIUM_BOARDWIPE_RECOMMENDATIONS: RecommendationCandidate[] = [
 
 const PREMIUM_LAND_RECOMMENDATIONS: RecommendationCandidate[] = [
   { name: "Command Tower", colors: [], reason: "Der sauberste Commander-Fixer." },
-  { name: "Ancient Tomb", colors: [], reason: "Premium-Tempo fuer fruehe Commander und Power-Plays." },
-  { name: "City of Brass", colors: [], reason: "Ungetapptes Fuenffarben-Fixing ohne Tempoverlust." },
-  { name: "Mana Confluence", colors: [], reason: "Zweites ungetapptes Fuenffarben-Fixing fuer schnelle Decks." },
+  { name: "Ancient Tomb", colors: [], reason: "Premium-Tempo für frühe Commander und Power-Plays." },
+  { name: "City of Brass", colors: [], reason: "Ungetapptes Fünffarben-Fixing ohne Tempoverlust." },
+  { name: "Mana Confluence", colors: [], reason: "Zweites ungetapptes Fünffarben-Fixing für schnelle Decks." },
   { name: "Exotic Orchard", colors: [], reason: "In Multiplayer fast immer sehr gutes Fixing." },
   { name: "Reflecting Pool", colors: [], reason: "Skaliert stark mit vorhandener Manabase." },
-  { name: "Cavern of Souls", colors: [], reason: "Schuetzt den Commander oder zentrale Kreaturentypen vor Countern." },
-  { name: "Gemstone Caverns", colors: [], reason: "Explosiver Startvorteil, wenn du nicht anfaengst." },
-  { name: "Urza's Saga", colors: [], reason: "Land-Slot, Threat und Tutor fuer wichtige Einmana-Artefakte." },
+  { name: "Cavern of Souls", colors: [], reason: "Schützt den Commander oder zentrale Kreaturentypen vor Countern." },
+  { name: "Gemstone Caverns", colors: [], reason: "Explosiver Startvorteil, wenn du nicht anfängst." },
+  { name: "Urza's Saga", colors: [], reason: "Land-Slot, Threat und Tutor für wichtige Einmana-Artefakte." },
   { name: "Boseiju, Who Endures", colors: ["G"], reason: "Uncounterbare Interaction auf einem Land-Slot." },
   { name: "Otawara, Soaring City", colors: ["U"], reason: "Flexibler Bounce, der kaum einen Spell-Slot kostet." },
-  { name: "Takenuma, Abandoned Mire", colors: ["B"], reason: "Recursion fuer Commander und Schluesselkreaturen auf einem Land." },
+  { name: "Takenuma, Abandoned Mire", colors: ["B"], reason: "Recursion für Commander und Schlüsselkreaturen auf einem Land." },
   { name: "Eiganjo, Seat of the Empire", colors: ["W"], reason: "Removal-Modus auf einem fast kostenlosen Land-Slot." },
   { name: "Sokenzan, Crucible of Defiance", colors: ["R"], reason: "Instant-Speed-Bodies aus einem Land-Slot." },
   { name: "Urborg, Tomb of Yawgmoth", colors: [], reason: "Verbessert schwarze Manaquellen und Utility-Lands." },
-  { name: "Yavimaya, Cradle of Growth", colors: [], reason: "Verbessert gruene Manaquellen und Utility-Lands." },
+  { name: "Yavimaya, Cradle of Growth", colors: [], reason: "Verbessert grüne Manaquellen und Utility-Lands." },
   { name: "Field of the Dead", colors: [], reason: "Wincondition aus der Manabase in langen Spielen." },
-  { name: "Prismatic Vista", colors: [], reason: "Premium-Fetchland fuer Basics ohne Farbbindung." },
+  { name: "Prismatic Vista", colors: [], reason: "Premium-Fetchland für Basics ohne Farbbindung." },
   { name: "Fabled Passage", colors: [], reason: "Solides Fixing mit Landfall- und Shuffle-Synergie." },
-  { name: "Polluted Delta", colors: [], reason: "Premium-Fetchland fuer passende Island- oder Swamp-Duals." },
-  { name: "Verdant Catacombs", colors: [], reason: "Premium-Fetchland fuer passende Swamp- oder Forest-Duals." },
-  { name: "Misty Rainforest", colors: [], reason: "Premium-Fetchland fuer passende Forest- oder Island-Duals." },
-  { name: "Flooded Strand", colors: [], reason: "Premium-Fetchland fuer passende Plains- oder Island-Duals." },
-  { name: "Scalding Tarn", colors: [], reason: "Premium-Fetchland fuer passende Island- oder Mountain-Duals." },
-  { name: "Marsh Flats", colors: [], reason: "Premium-Fetchland fuer passende Plains- oder Swamp-Duals." },
-  { name: "Bloodstained Mire", colors: [], reason: "Premium-Fetchland fuer passende Swamp- oder Mountain-Duals." },
-  { name: "Wooded Foothills", colors: [], reason: "Premium-Fetchland fuer passende Mountain- oder Forest-Duals." },
-  { name: "Windswept Heath", colors: [], reason: "Premium-Fetchland fuer passende Forest- oder Plains-Duals." },
-  { name: "Arid Mesa", colors: [], reason: "Premium-Fetchland fuer passende Mountain- oder Plains-Duals." },
+  { name: "Polluted Delta", colors: [], reason: "Premium-Fetchland für passende Island- oder Swamp-Duals." },
+  { name: "Verdant Catacombs", colors: [], reason: "Premium-Fetchland für passende Swamp- oder Forest-Duals." },
+  { name: "Misty Rainforest", colors: [], reason: "Premium-Fetchland für passende Forest- oder Island-Duals." },
+  { name: "Flooded Strand", colors: [], reason: "Premium-Fetchland für passende Plains- oder Island-Duals." },
+  { name: "Scalding Tarn", colors: [], reason: "Premium-Fetchland für passende Island- oder Mountain-Duals." },
+  { name: "Marsh Flats", colors: [], reason: "Premium-Fetchland für passende Plains- oder Swamp-Duals." },
+  { name: "Bloodstained Mire", colors: [], reason: "Premium-Fetchland für passende Swamp- oder Mountain-Duals." },
+  { name: "Wooded Foothills", colors: [], reason: "Premium-Fetchland für passende Mountain- oder Forest-Duals." },
+  { name: "Windswept Heath", colors: [], reason: "Premium-Fetchland für passende Forest- oder Plains-Duals." },
+  { name: "Arid Mesa", colors: [], reason: "Premium-Fetchland für passende Mountain- oder Plains-Duals." },
   { name: "Watery Grave", colors: ["U", "B"], reason: "Ungetapptes Dual mit Fetchland-Synergie." },
   { name: "Overgrown Tomb", colors: ["B", "G"], reason: "Ungetapptes Dual mit Fetchland-Synergie." },
   { name: "Breeding Pool", colors: ["G", "U"], reason: "Ungetapptes Dual mit Fetchland-Synergie." },
@@ -1295,211 +1295,211 @@ const PREMIUM_LAND_RECOMMENDATIONS: RecommendationCandidate[] = [
   { name: "Godless Shrine", colors: ["W", "B"], reason: "Ungetapptes Dual mit Fetchland-Synergie." },
   { name: "Steam Vents", colors: ["U", "R"], reason: "Ungetapptes Dual mit Fetchland-Synergie." },
   { name: "Sacred Foundry", colors: ["R", "W"], reason: "Ungetapptes Dual mit Fetchland-Synergie." },
-  { name: "Zagoth Triome", colors: ["U", "B", "G"], reason: "Fetchbares Dreifarben-Fixing, das spaet cycled." },
-  { name: "Raffine's Tower", colors: ["W", "U", "B"], reason: "Fetchbares Dreifarben-Fixing, das spaet cycled." },
-  { name: "Xander's Lounge", colors: ["U", "B", "R"], reason: "Fetchbares Dreifarben-Fixing, das spaet cycled." },
-  { name: "Ziatora's Proving Ground", colors: ["B", "R", "G"], reason: "Fetchbares Dreifarben-Fixing, das spaet cycled." },
-  { name: "Spara's Headquarters", colors: ["G", "W", "U"], reason: "Fetchbares Dreifarben-Fixing, das spaet cycled." },
+  { name: "Zagoth Triome", colors: ["U", "B", "G"], reason: "Fetchbares Dreifarben-Fixing, das spät cycled." },
+  { name: "Raffine's Tower", colors: ["W", "U", "B"], reason: "Fetchbares Dreifarben-Fixing, das spät cycled." },
+  { name: "Xander's Lounge", colors: ["U", "B", "R"], reason: "Fetchbares Dreifarben-Fixing, das spät cycled." },
+  { name: "Ziatora's Proving Ground", colors: ["B", "R", "G"], reason: "Fetchbares Dreifarben-Fixing, das spät cycled." },
+  { name: "Spara's Headquarters", colors: ["G", "W", "U"], reason: "Fetchbares Dreifarben-Fixing, das spät cycled." },
   ...LAND_RECOMMENDATIONS,
 ];
 
 const PREMIUM_GRAVEYARD_RECOMMENDATIONS: RecommendationCandidate[] = [
   { name: "Entomb", colors: ["B"], reason: "Der effizienteste Tutor direkt in den Graveyard." },
-  { name: "Buried Alive", colors: ["B"], reason: "Fuellt den Graveyard gezielt mit mehreren Kreaturen." },
-  { name: "Reanimate", colors: ["B"], reason: "Ein Mana fuer starke Reanimation aus jedem Graveyard." },
-  { name: "Animate Dead", colors: ["B"], reason: "Guenstige Reanimation, die mit Enchantment-Synergien arbeitet." },
+  { name: "Buried Alive", colors: ["B"], reason: "Füllt den Graveyard gezielt mit mehreren Kreaturen." },
+  { name: "Reanimate", colors: ["B"], reason: "Ein Mana für starke Reanimation aus jedem Graveyard." },
+  { name: "Animate Dead", colors: ["B"], reason: "Günstige Reanimation, die mit Enchantment-Synergien arbeitet." },
   { name: "Necromancy", colors: ["B"], reason: "Flexible Reanimation, auch als Trick im gegnerischen Zug." },
   { name: "Victimize", colors: ["B"], reason: "Macht aus einer Kreatur zwei Reanimation-Ziele." },
   { name: "Living Death", colors: ["B"], reason: "Boardwipe und Mass-Reanimation in einem Effekt." },
-  { name: "Stitcher's Supplier", colors: ["B"], reason: "Extrem effizienter Selbstmill fuer Graveyard-Plaene." },
-  { name: "Life from the Loam", colors: ["G"], reason: "Holt Fetchlands und Utility-Lands wieder und fuellt den Graveyard." },
+  { name: "Stitcher's Supplier", colors: ["B"], reason: "Extrem effizienter Selbstmill für Graveyard-Pläne." },
+  { name: "Life from the Loam", colors: ["G"], reason: "Holt Fetchlands und Utility-Lands wieder und füllt den Graveyard." },
   { name: "Eternal Witness", colors: ["G"], reason: "Universelle Recursion auf einer Kreatur." },
   { name: "Bala Ged Recovery", colors: ["G"], reason: "Recursion oder Land-Slot, je nachdem was der Zug braucht." },
-  { name: "Satyr Wayfinder", colors: ["G"], reason: "Fuellt den Graveyard und findet Land Drops." },
-  { name: "Underworld Breach", colors: ["R"], reason: "Explosive Graveyard-Engine fuer Spell- und Combo-Turns." },
-  { name: "Sevinne's Reclamation", colors: ["W"], reason: "Holt kleine Permanents mehrfach zurueck." },
+  { name: "Satyr Wayfinder", colors: ["G"], reason: "Füllt den Graveyard und findet Land Drops." },
+  { name: "Underworld Breach", colors: ["R"], reason: "Explosive Graveyard-Engine für Spell- und Combo-Turns." },
+  { name: "Sevinne's Reclamation", colors: ["W"], reason: "Holt kleine Permanents mehrfach zurück." },
   ...GRAVEYARD_RECOMMENDATIONS,
 ];
 
 const PREMIUM_TOKEN_RECOMMENDATIONS: RecommendationCandidate[] = [
   { name: "Skullclamp", colors: [], reason: "Verwandelt kleine Tokens in echten Kartenvorteil." },
-  { name: "Ashnod's Altar", colors: [], reason: "Macht Tokens zu Mana und ermoeglicht Combo-Lines." },
-  { name: "Phyrexian Altar", colors: [], reason: "Farbiges Mana aus Tokens fuer explosive Turns." },
-  { name: "Anointed Procession", colors: ["W"], reason: "Verdoppelt Token-Produktion in Weiss." },
+  { name: "Ashnod's Altar", colors: [], reason: "Macht Tokens zu Mana und ermöglicht Combo-Lines." },
+  { name: "Phyrexian Altar", colors: [], reason: "Farbiges Mana aus Tokens für explosive Turns." },
+  { name: "Anointed Procession", colors: ["W"], reason: "Verdoppelt Token-Produktion in Weiß." },
   { name: "Mondrak, Glory Dominus", colors: ["W"], reason: "Token-Verdoppler auf einem schwer zu entfernenden Body." },
-  { name: "Ojer Taq, Deepest Foundation", colors: ["W"], reason: "Verdreifacht Creature-Token und kommt als Land zurueck." },
-  { name: "Parallel Lives", colors: ["G"], reason: "Verdoppelt Token-Produktion in Gruen." },
-  { name: "Doubling Season", colors: ["G"], reason: "Premium-Verdoppler fuer Tokens und Counter." },
+  { name: "Ojer Taq, Deepest Foundation", colors: ["W"], reason: "Verdreifacht Creature-Token und kommt als Land zurück." },
+  { name: "Parallel Lives", colors: ["G"], reason: "Verdoppelt Token-Produktion in Grün." },
+  { name: "Doubling Season", colors: ["G"], reason: "Premium-Verdoppler für Tokens und Counter." },
   { name: "Chatterfang, Squirrel General", colors: ["B", "G"], reason: "Erweitert Token-Produktion und bietet Removal." },
   { name: "Pitiless Plunderer", colors: ["B"], reason: "Macht sterbende Kreaturen zu Treasures und Combo-Ressourcen." },
   { name: "Impact Tremors", colors: ["R"], reason: "Jeder Token wird zu direktem Schaden." },
-  { name: "Purphoros, God of the Forge", colors: ["R"], reason: "Sehr starke Wincondition fuer breite Token-Turns." },
+  { name: "Purphoros, God of the Forge", colors: ["R"], reason: "Sehr starke Wincondition für breite Token-Turns." },
   ...TOKEN_RECOMMENDATIONS,
 ];
 
 const PREMIUM_COUNTER_RECOMMENDATIONS: RecommendationCandidate[] = [
   { name: "The Ozolith", colors: [], reason: "Sichert Counter nach Removal und stapelt sie neu." },
-  { name: "Hardened Scales", colors: ["G"], reason: "Der effizienteste guenstige +1/+1-Counter-Multiplikator." },
-  { name: "Branching Evolution", colors: ["G"], reason: "Verdoppelt +1/+1-Counter fuer breite und hohe Boards." },
-  { name: "Doubling Season", colors: ["G"], reason: "Premium-Verdoppler fuer Counter, Tokens und Planeswalker." },
+  { name: "Hardened Scales", colors: ["G"], reason: "Der effizienteste günstige +1/+1-Counter-Multiplikator." },
+  { name: "Branching Evolution", colors: ["G"], reason: "Verdoppelt +1/+1-Counter für breite und hohe Boards." },
+  { name: "Doubling Season", colors: ["G"], reason: "Premium-Verdoppler für Counter, Tokens und Planeswalker." },
   { name: "Vorinclex, Monstrous Raider", colors: ["G"], reason: "Verdoppelt eigene Counter und halbiert gegnerische Counter." },
   { name: "Kami of Whispered Hopes", colors: ["G"], reason: "Counter-Payoff und Manaquelle in einem Slot." },
-  { name: "Evolution Sage", colors: ["G"], reason: "Proliferate auf Landfall laesst Counter-Boards schnell wachsen." },
-  { name: "Innkeeper's Talent", colors: ["G"], reason: "Counter-Support mit spaeterem Schutz- und Verdopplungsmodus." },
-  { name: "Winding Constrictor", colors: ["B", "G"], reason: "Verdichtet Counter- und Marken-Synergien frueh." },
+  { name: "Evolution Sage", colors: ["G"], reason: "Proliferate auf Landfall lässt Counter-Boards schnell wachsen." },
+  { name: "Innkeeper's Talent", colors: ["G"], reason: "Counter-Support mit späterem Schutz- und Verdopplungsmodus." },
+  { name: "Winding Constrictor", colors: ["B", "G"], reason: "Verdichtet Counter- und Marken-Synergien früh." },
   { name: "Corpsejack Menace", colors: ["B", "G"], reason: "Verdoppelt +1/+1-Counter auf Kreaturen." },
   ...COUNTER_RECOMMENDATIONS,
 ];
 
 const PREMIUM_SPELL_RECOMMENDATIONS: RecommendationCandidate[] = [
-  { name: "Underworld Breach", colors: ["R"], reason: "Ermoeglicht explosive Recursion-Turns mit Instants und Sorceries." },
-  { name: "Jeska's Will", colors: ["R"], reason: "Mana und Kartenimpuls fuer grosse Spell-Turns." },
-  { name: "Birgi, God of Storytelling", colors: ["R"], reason: "Jeder Spell erzeugt Mana fuer lange Ketten." },
+  { name: "Underworld Breach", colors: ["R"], reason: "Ermöglicht explosive Recursion-Turns mit Instants und Sorceries." },
+  { name: "Jeska's Will", colors: ["R"], reason: "Mana und Kartenimpuls für große Spell-Turns." },
+  { name: "Birgi, God of Storytelling", colors: ["R"], reason: "Jeder Spell erzeugt Mana für lange Ketten." },
   { name: "Storm-Kiln Artist", colors: ["R"], reason: "Macht Treasures aus Instants und Sorceries." },
-  { name: "Archmage Emeritus", colors: ["U"], reason: "Zieht Karten aus Magecraft und haelt Spell-Chains am Leben." },
-  { name: "Talrand, Sky Summoner", colors: ["U"], reason: "Verwandelt Spells in fliegende Board-Praesenz." },
+  { name: "Archmage Emeritus", colors: ["U"], reason: "Zieht Karten aus Magecraft und hält Spell-Chains am Leben." },
+  { name: "Talrand, Sky Summoner", colors: ["U"], reason: "Verwandelt Spells in fliegende Board-Präsenz." },
   { name: "Baral, Chief of Compliance", colors: ["U"], reason: "Macht Interaction billiger und looted bei Countern." },
-  { name: "Veyran, Voice of Duality", colors: ["U", "R"], reason: "Verdoppelt Magecraft- und Prowess-aehnliche Trigger." },
+  { name: "Veyran, Voice of Duality", colors: ["U", "R"], reason: "Verdoppelt Magecraft- und Prowess-ähnliche Trigger." },
   { name: "Third Path Iconoclast", colors: ["U", "R"], reason: "Macht aus Noncreature-Spells ein breites Board." },
-  { name: "Young Pyromancer", colors: ["R"], reason: "Guenstiger Token-Payoff fuer Spell-Dichte." },
-  { name: "Thousand-Year Storm", colors: ["U", "R"], reason: "Top-End-Engine fuer grosse Spell-Turns." },
-  { name: "Past in Flames", colors: ["R"], reason: "Graveyard-Refill fuer Instant- und Sorcery-Turns." },
+  { name: "Young Pyromancer", colors: ["R"], reason: "Günstiger Token-Payoff für Spell-Dichte." },
+  { name: "Thousand-Year Storm", colors: ["U", "R"], reason: "Top-End-Engine für große Spell-Turns." },
+  { name: "Past in Flames", colors: ["R"], reason: "Graveyard-Refill für Instant- und Sorcery-Turns." },
   ...SPELL_RECOMMENDATIONS,
 ];
 
 const PREMIUM_LIFEGAIN_RECOMMENDATIONS: RecommendationCandidate[] = [
   { name: "Aetherflux Reservoir", colors: [], reason: "Macht viele Lifegain-Trigger zu einer echten Wincondition." },
   { name: "Well of Lost Dreams", colors: [], reason: "Verwandelt Lifegain direkt in Kartenvorteil." },
-  { name: "Alhammarret's Archive", colors: [], reason: "Verdoppelt Lifegain und macht Draw-Effekte deutlich staerker." },
+  { name: "Alhammarret's Archive", colors: [], reason: "Verdoppelt Lifegain und macht Draw-Effekte deutlich stärker." },
   { name: "The One Ring", colors: [], reason: "Starker Draw, der Lifegain-Decks Zeit zum Stabilisieren gibt." },
-  { name: "Soul Warden", colors: ["W"], reason: "Frueher, dauerhafter Lifegain-Trigger in Creature-Pods." },
-  { name: "Soul's Attendant", colors: ["W"], reason: "Zweiter Einmana-Soul-Sister-Effekt fuer konstante Trigger." },
+  { name: "Soul Warden", colors: ["W"], reason: "Früher, dauerhafter Lifegain-Trigger in Creature-Pods." },
+  { name: "Soul's Attendant", colors: ["W"], reason: "Zweiter Einmana-Soul-Sister-Effekt für konstante Trigger." },
   { name: "Authority of the Consuls", colors: ["W"], reason: "Bremst gegnerische Kreaturen und erzeugt wiederholten Lifegain." },
-  { name: "Blind Obedience", colors: ["W"], reason: "Verlangsamt Artefakte/Kreaturen und gewinnt ueber Extort Leben." },
-  { name: "Heliod, Sun-Crowned", colors: ["W"], reason: "Macht Lifegain zu Countern und ermoeglicht Combo-Lines." },
+  { name: "Blind Obedience", colors: ["W"], reason: "Verlangsamt Artefakte/Kreaturen und gewinnt über Extort Leben." },
+  { name: "Heliod, Sun-Crowned", colors: ["W"], reason: "Macht Lifegain zu Countern und ermöglicht Combo-Lines." },
   { name: "Walking Ballista", colors: [], reason: "Kombo-Piece mit Heliod und auch ohne Combo flexibel." },
   { name: "Voice of the Blessed", colors: ["W"], reason: "Wird durch Lifegain schnell zur evasiven Bedrohung." },
-  { name: "Cleric Class", colors: ["W"], reason: "Verstaerkt Lifegain und skaliert spaeter in Recursion." },
-  { name: "Resplendent Angel", colors: ["W"], reason: "Belohnt grosse Lifegain-Zuege mit evasiven Token." },
-  { name: "Rhox Faithmender", colors: ["W"], reason: "Verdoppelt Lifegain und macht Race-Situationen schwer fuer Gegner." },
+  { name: "Cleric Class", colors: ["W"], reason: "Verstärkt Lifegain und skaliert später in Recursion." },
+  { name: "Resplendent Angel", colors: ["W"], reason: "Belohnt große Lifegain-Züge mit evasiven Token." },
+  { name: "Rhox Faithmender", colors: ["W"], reason: "Verdoppelt Lifegain und macht Race-Situationen schwer für Gegner." },
   { name: "Vito, Thorn of the Dusk Rose", colors: ["B"], reason: "Verwandelt Lifegain in direkten Drain gegen Gegner." },
   { name: "Sanguine Bond", colors: ["B"], reason: "Macht jeden Lifegain-Trigger zu Schaden am Tisch." },
   { name: "Exquisite Blood", colors: ["B"], reason: "Premium-Combo-Piece mit Sanguine-Bond-Effekten." },
   { name: "Bloodchief Ascension", colors: ["B"], reason: "Verbindet gegnerische Graveyards, Mill und Drain besonders stark." },
-  { name: "Marauding Blight-Priest", colors: ["B"], reason: "Guenschtiger zweiter Vito-aehnlicher Payoff." },
-  { name: "Bolas's Citadel", colors: ["B"], reason: "Lifegain puffert die Life-Kosten und macht explosive Turns moeglich." },
-  { name: "Dina, Soul Steeper", colors: ["B", "G"], reason: "Drain-Payoff und Sac-Outlet fuer Lifegain-Decks." },
+  { name: "Marauding Blight-Priest", colors: ["B"], reason: "Günstiger zweiter Vito-ähnlicher Payoff." },
+  { name: "Bolas's Citadel", colors: ["B"], reason: "Lifegain puffert die Life-Kosten und macht explosive Turns möglich." },
+  { name: "Dina, Soul Steeper", colors: ["B", "G"], reason: "Drain-Payoff und Sac-Outlet für Lifegain-Decks." },
   { name: "Karlov of the Ghost Council", colors: ["W", "B"], reason: "Wird durch Lifegain riesig und exiliert Problemkreaturen." },
   { name: "Elas il-Kor, Sadistic Pilgrim", colors: ["W", "B"], reason: "Verbindet Creature-ETBs, Lifegain und Drain." },
   { name: "Kambal, Consul of Allocation", colors: ["W", "B"], reason: "Bestraft Noncreature-Spells mit Drain und stabilisiert dein Leben." },
 ];
 
 const PREMIUM_MILL_RECOMMENDATIONS: RecommendationCandidate[] = [
-  { name: "Altar of the Brood", colors: [], reason: "Guenschtiger permanenter Mill-Trigger fuer jedes eigene Permanent." },
-  { name: "Mindcrank", colors: [], reason: "Verknuepft Life Loss mit Mill und bildet starke Combo-Lines." },
-  { name: "Mesmeric Orb", colors: [], reason: "Sehr effizienter globaler Mill-Motor fuer lange Spiele." },
+  { name: "Altar of the Brood", colors: [], reason: "Günstiger permanenter Mill-Trigger für jedes eigene Permanent." },
+  { name: "Mindcrank", colors: [], reason: "Verknüpft Life Loss mit Mill und bildet starke Combo-Lines." },
+  { name: "Mesmeric Orb", colors: [], reason: "Sehr effizienter globaler Mill-Motor für lange Spiele." },
   { name: "Terisian Mindbreaker", colors: [], reason: "Millt riesige Mengen und kommt mit Unearth noch einmal." },
-  { name: "Keening Stone", colors: [], reason: "Finisher, wenn gegnerische Graveyards bereits gefuellt sind." },
-  { name: "Bruvac the Grandiloquent", colors: ["U"], reason: "Verdoppelt gegnerischen Mill und macht jeden Mill-Spell gefaehrlich." },
-  { name: "Maddening Cacophony", colors: ["U"], reason: "Skaliert vom fruehen Mill-Spell bis zum spaeten Finisher." },
+  { name: "Keening Stone", colors: [], reason: "Finisher, wenn gegnerische Graveyards bereits gefüllt sind." },
+  { name: "Bruvac the Grandiloquent", colors: ["U"], reason: "Verdoppelt gegnerischen Mill und macht jeden Mill-Spell gefährlich." },
+  { name: "Maddening Cacophony", colors: ["U"], reason: "Skaliert vom frühen Mill-Spell bis zum späten Finisher." },
   { name: "Fractured Sanity", colors: ["U"], reason: "Effizienter Mill-Spell, der auch gecycled noch alle Gegner trifft." },
   { name: "Tasha's Hideous Laughter", colors: ["U"], reason: "Exiliert viele Low-MV-Karten und trifft Commander-Decks oft hart." },
   { name: "Archive Trap", colors: ["U"], reason: "Sehr starker Gratis-Mill gegen Such- und Fetch-Effekte." },
   { name: "Court of Cunning", colors: ["U"], reason: "Wiederholter gegnerischer Mill mit Monarch-Value." },
-  { name: "Fraying Sanity", colors: ["U"], reason: "Verdoppelt Mill gegen einen ausgewaehlten Gegner." },
+  { name: "Fraying Sanity", colors: ["U"], reason: "Verdoppelt Mill gegen einen ausgewählten Gegner." },
   { name: "Psychic Corrosion", colors: ["U"], reason: "Macht deine Draw-Engines zu Mill-Engines gegen Gegner." },
   { name: "Sphinx's Tutelage", colors: ["U"], reason: "Belohnt Kartenziehen mit wiederholtem Gegner-Mill." },
-  { name: "Ruin Crab", colors: ["U"], reason: "Sehr effizienter Landfall-Mill fuer Fetchland-Decks." },
-  { name: "Hedron Crab", colors: ["U"], reason: "Zweiter guenstiger Landfall-Mill-Motor." },
+  { name: "Ruin Crab", colors: ["U"], reason: "Sehr effizienter Landfall-Mill für Fetchland-Decks." },
+  { name: "Hedron Crab", colors: ["U"], reason: "Zweiter günstiger Landfall-Mill-Motor." },
   { name: "Jace, the Perfected Mind", colors: ["U"], reason: "Flexibler Mill- und Draw-Planeswalker." },
   { name: "Jace, Memory Adept", colors: ["U"], reason: "Wiederholbarer zehn-Karten-Mill pro Aktivierung." },
   { name: "Consuming Aberration", colors: ["U", "B"], reason: "Wird riesig und millt bei jedem Spell weiter." },
   { name: "Phenax, God of Deception", colors: ["U", "B"], reason: "Verwandelt dein Board in wiederholbaren Mill." },
-  { name: "Glimpse the Unthinkable", colors: ["U", "B"], reason: "Zwei Mana fuer zehn Karten Mill ist extrem effizient." },
-  { name: "Mind Grind", colors: ["U", "B"], reason: "Skalierbarer Multiplayer-Finisher fuer grosse Mana-Zuege." },
+  { name: "Glimpse the Unthinkable", colors: ["U", "B"], reason: "Zwei Mana für zehn Karten Mill ist extrem effizient." },
+  { name: "Mind Grind", colors: ["U", "B"], reason: "Skalierbarer Multiplayer-Finisher für große Mana-Züge." },
   { name: "Duskmantle Guildmage", colors: ["U", "B"], reason: "Verbindet Mill mit Life Loss und comboed mit Mindcrank." },
 ];
 
 const PREMIUM_LIFEGAIN_MILL_RECOMMENDATIONS: RecommendationCandidate[] = [
-  { name: "Bloodchief Ascension", colors: ["B"], reason: "Der staerkste Glue zwischen gegnerischem Mill, Life Loss und deinem Lifegain." },
+  { name: "Bloodchief Ascension", colors: ["B"], reason: "Der stärkste Kleber zwischen gegnerischem Mill, Life Loss und deinem Lifegain." },
   { name: "Mindcrank", colors: [], reason: "Verbindet Life Loss und Mill und geht mit Bloodchief Ascension unendlich." },
   { name: "Duskmantle Guildmage", colors: ["U", "B"], reason: "Macht Mill zu Life Loss und bildet mit Mindcrank eine klare Winline." },
   { name: "Syr Konrad, the Grim", colors: ["B"], reason: "Bestraft Kreaturen im Graveyard und profitiert stark von Mill." },
   { name: "Vito, Thorn of the Dusk Rose", colors: ["B"], reason: "Macht Lifegain zu Drain, der wiederum Mindcrank-Lines anschiebt." },
-  { name: "Sanguine Bond", colors: ["B"], reason: "Zweiter Lifegain-zu-Drain-Payoff fuer Combo- und Grind-Spiele." },
+  { name: "Sanguine Bond", colors: ["B"], reason: "Zweiter Lifegain-zu-Drain-Payoff für Combo- und Grind-Spiele." },
   { name: "Exquisite Blood", colors: ["B"], reason: "Combo-Piece mit Sanguine Bond oder Vito und stark in Drain-Shells." },
-  { name: "Marauding Blight-Priest", colors: ["B"], reason: "Guenstiger redundancy-Payoff fuer Lifegain-zu-Drain." },
+  { name: "Marauding Blight-Priest", colors: ["B"], reason: "Günstiger redundancy-Payoff für Lifegain-zu-Drain." },
   { name: "Psychic Corrosion", colors: ["U"], reason: "Wenn dein Deck viel zieht, wird daraus wiederholter Gegner-Mill." },
-  { name: "Fraying Sanity", colors: ["U"], reason: "Verstaerkt einen Mill-Fokus enorm gegen den wichtigsten Gegner." },
+  { name: "Fraying Sanity", colors: ["U"], reason: "Verstärkt einen Mill-Fokus enorm gegen den wichtigsten Gegner." },
   { name: "Bruvac the Grandiloquent", colors: ["U"], reason: "Verdoppelt gegnerischen Mill und macht jede Mill-Line schneller." },
   { name: "Altar of the Brood", colors: [], reason: "Billiger Mill-Trigger, der mit permanentlastigen Lifegain-Boards skaliert." },
 ];
 
 const PREMIUM_PROTECTION_RECOMMENDATIONS: RecommendationCandidate[] = [
-  { name: "Lightning Greaves", colors: [], reason: "Schuetzt wichtige Kreaturen sofort und gibt dem Commander Haste-Linien." },
+  { name: "Lightning Greaves", colors: [], reason: "Schützt wichtige Kreaturen sofort und gibt dem Commander Haste-Linien." },
   { name: "Swiftfoot Boots", colors: [], reason: "Solider Commander-Schutz mit Hexproof und Haste." },
   { name: "The One Ring", colors: [], reason: "Kauft einen Schutzturn und zieht danach massiv Karten." },
-  { name: "Cavern of Souls", colors: [], reason: "Schuetzt den Commander oder zentrale Kreaturentypen vor Countern." },
-  { name: "Teferi's Protection", colors: ["W"], reason: "Schuetzt Board, Life Total und Combo-Turns gleichzeitig." },
+  { name: "Cavern of Souls", colors: [], reason: "Schützt den Commander oder zentrale Kreaturentypen vor Countern." },
+  { name: "Teferi's Protection", colors: ["W"], reason: "Schützt Board, Life Total und Combo-Turns gleichzeitig." },
   { name: "Flawless Maneuver", colors: ["W"], reason: "Kostenloser Board-Schutz, wenn dein Commander liegt." },
-  { name: "Grand Abolisher", colors: ["W"], reason: "Macht deinen eigenen Power-Turn deutlich schwerer zu stoeren." },
-  { name: "Silence", colors: ["W"], reason: "Sichert Combo- und Setup-Turns fuer nur ein Mana ab." },
+  { name: "Grand Abolisher", colors: ["W"], reason: "Macht deinen eigenen Power-Turn deutlich schwerer zu stören." },
+  { name: "Silence", colors: ["W"], reason: "Sichert Combo- und Setup-Turns für nur ein Mana ab." },
   { name: "Ranger-Captain of Eos", colors: ["W"], reason: "Findet kleine Engine-Pieces und kann gegnerische Antworten ausschalten." },
   { name: "Fierce Guardianship", colors: ["U"], reason: "Kostenloser Stack-Schutz, solange dein Commander liegt." },
   { name: "Force of Will", colors: ["U"], reason: "Stoppt kritische gegnerische Plays ohne offenes Mana." },
   { name: "Swan Song", colors: ["U"], reason: "Ein Mana gegen viele der wichtigsten Antworten und Wincons." },
   { name: "Deflecting Swat", colors: ["R"], reason: "Kostenloser Schutz- und Blowout-Slot mit Commander im Spiel." },
-  { name: "Veil of Summer", colors: ["G"], reason: "Schuetzt eigene Plays gegen Blau und Schwarz und ersetzt sich." },
-  { name: "Heroic Intervention", colors: ["G"], reason: "Schuetzt dein Board gegen Wipes und Spot Removal." },
-  { name: "Tamiyo's Safekeeping", colors: ["G"], reason: "Einmana-Schutz fuer Commander, Combo-Piece oder wichtige Engine." },
+  { name: "Veil of Summer", colors: ["G"], reason: "Schützt eigene Plays gegen Blau und Schwarz und ersetzt sich." },
+  { name: "Heroic Intervention", colors: ["G"], reason: "Schützt dein Board gegen Wipes und Spot Removal." },
+  { name: "Tamiyo's Safekeeping", colors: ["G"], reason: "Einmana-Schutz für Commander, Combo-Piece oder wichtige Engine." },
   { name: "Tyvar's Stand", colors: ["G"], reason: "Skalierbarer Schutz, der auch als Combat-Finisher dienen kann." },
-  { name: "Malakir Rebirth", colors: ["B"], reason: "Schuetzt eine Schluesselkreatur und kann notfalls als Land gespielt werden." },
-  { name: "Boros Charm", colors: ["R", "W"], reason: "Schuetzt Permanents oder beendet Spiele ueber Double Strike/Burn." },
+  { name: "Malakir Rebirth", colors: ["B"], reason: "Schützt eine Schlüsselkreatur und kann notfalls als Land gespielt werden." },
+  { name: "Boros Charm", colors: ["R", "W"], reason: "Schützt Permanents oder beendet Spiele über Double Strike/Burn." },
 ];
 
 const PREMIUM_CONSISTENCY_RECOMMENDATIONS: RecommendationCandidate[] = [
-  { name: "Demonic Tutor", colors: ["B"], reason: "Der effizienteste universelle Tutor fuer jedes fehlende Piece." },
-  { name: "Vampiric Tutor", colors: ["B"], reason: "Einmana-Setup fuer Combo, Antwort oder Engine." },
-  { name: "Imperial Seal", colors: ["B"], reason: "Zusaetzlicher Einmana-Tutor, wenn maximale Konsistenz zaehlt." },
+  { name: "Demonic Tutor", colors: ["B"], reason: "Der effizienteste universelle Tutor für jedes fehlende Piece." },
+  { name: "Vampiric Tutor", colors: ["B"], reason: "Einmana-Setup für Combo, Antwort oder Engine." },
+  { name: "Imperial Seal", colors: ["B"], reason: "Zusätzlicher Einmana-Tutor, wenn maximale Konsistenz zählt." },
   { name: "Diabolic Intent", colors: ["B"], reason: "Sehr starker Tutor, wenn das Deck Bodies oder Tokens entbehren kann." },
   { name: "Wishclaw Talisman", colors: [], reason: "Billiger Tutor, besonders stark wenn du direkt im selben Zug gewinnst." },
-  { name: "Enlightened Tutor", colors: ["W"], reason: "Findet zentrale Artefakte und Enchantments fuer Engine- oder Combo-Lines." },
-  { name: "Ranger-Captain of Eos", colors: ["W"], reason: "Sucht Einmana-Kreaturen und schuetzt spaeter den eigenen Zug." },
+  { name: "Enlightened Tutor", colors: ["W"], reason: "Findet zentrale Artefakte und Enchantments für Engine- oder Combo-Lines." },
+  { name: "Ranger-Captain of Eos", colors: ["W"], reason: "Sucht Einmana-Kreaturen und schützt später den eigenen Zug." },
   { name: "Mystical Tutor", colors: ["U"], reason: "Findet Interaktion, Wheels, Wipes oder Combo-Spells instant-speed." },
-  { name: "Intuition", colors: ["U"], reason: "Sehr stark fuer Graveyard-, Combo- und Redundanz-Pakete." },
+  { name: "Intuition", colors: ["U"], reason: "Sehr stark für Graveyard-, Combo- und Redundanz-Pakete." },
   { name: "Worldly Tutor", colors: ["G"], reason: "Sucht Commander-Payoffs, Combo-Kreaturen oder Utility-Bodies." },
-  { name: "Finale of Devastation", colors: ["G"], reason: "Tutor, Reanimation und spaeter Wincondition in einem Slot." },
+  { name: "Finale of Devastation", colors: ["G"], reason: "Tutor, Reanimation und später Wincondition in einem Slot." },
   { name: "Chord of Calling", colors: ["G"], reason: "Instant-Speed-Creature-Tutor, der breite Boards in Setup verwandelt." },
-  { name: "Green Sun's Zenith", colors: ["G"], reason: "Skaliert vom Mana-Dork bis zum zentralen gruenen Payoff." },
+  { name: "Green Sun's Zenith", colors: ["G"], reason: "Skaliert vom Mana-Dork bis zum zentralen grünen Payoff." },
   { name: "Gamble", colors: ["R"], reason: "Roter Einmana-Tutor mit hohem Ceiling, besonders bei Graveyard-Plan." },
-  { name: "Eladamri's Call", colors: ["G", "W"], reason: "Instant-Speed-Tutor fuer die beste Kreatur in Selesnya-Farben." },
+  { name: "Eladamri's Call", colors: ["G", "W"], reason: "Instant-Speed-Tutor für die beste Kreatur in Selesnya-Farben." },
 ];
 
 const PREMIUM_FINISHER_RECOMMENDATIONS: RecommendationCandidate[] = [
   { name: "Aetherflux Reservoir", colors: [], reason: "Macht lange Spell- oder Lifegain-Turns zu einer klaren Wincondition." },
   { name: "Walking Ballista", colors: [], reason: "Flexibles Removal, Mana-Sink und Combo-Finisher." },
   { name: "Heliod, Sun-Crowned", colors: ["W"], reason: "Verbindet Lifegain, Counter und Walking-Ballista-Lines." },
-  { name: "Approach of the Second Sun", colors: ["W"], reason: "Alternative Wincondition fuer Decks, die Zeit und Draw haben." },
-  { name: "Thassa's Oracle", colors: ["U"], reason: "Kompakte Wincondition fuer Decks mit Tutor- oder Selfmill-Lines." },
-  { name: "Laboratory Maniac", colors: ["U"], reason: "Zusaetzliche Redundanz fuer Draw- oder Selfmill-Finishes." },
-  { name: "Jace, Wielder of Mysteries", colors: ["U"], reason: "Planeswalker-Redundanz fuer leeres-Library-Lines." },
-  { name: "Exsanguinate", colors: ["B"], reason: "Skalierbarer Multiplayer-Finisher fuer grosse Mana-Zuege." },
+  { name: "Approach of the Second Sun", colors: ["W"], reason: "Alternative Wincondition für Decks, die Zeit und Draw haben." },
+  { name: "Thassa's Oracle", colors: ["U"], reason: "Kompakte Wincondition für Decks mit Tutor- oder Selfmill-Lines." },
+  { name: "Laboratory Maniac", colors: ["U"], reason: "Zusätzliche Redundanz für Draw- oder Selfmill-Finishes." },
+  { name: "Jace, Wielder of Mysteries", colors: ["U"], reason: "Planeswalker-Redundanz für leeres-Library-Lines." },
+  { name: "Exsanguinate", colors: ["B"], reason: "Skalierbarer Multiplayer-Finisher für große Mana-Züge." },
   { name: "Torment of Hailfire", colors: ["B"], reason: "Sehr starker Abschluss, wenn das Deck viel Mana erzeugt." },
   { name: "Bolas's Citadel", colors: ["B"], reason: "Explosive Engine, die Spiele mit genug Life und Topdeck-Kontrolle beendet." },
-  { name: "Underworld Breach", colors: ["R"], reason: "Ermoeglicht explosive Graveyard- und Combo-Turns." },
-  { name: "Finale of Devastation", colors: ["G"], reason: "Tutor frueh, Overrun-Finisher spaet." },
-  { name: "Craterhoof Behemoth", colors: ["G"], reason: "Klassischer Abschluss fuer breite Creature-Boards." },
+  { name: "Underworld Breach", colors: ["R"], reason: "Ermöglicht explosive Graveyard- und Combo-Turns." },
+  { name: "Finale of Devastation", colors: ["G"], reason: "Tutor früh, Overrun-Finisher spät." },
+  { name: "Craterhoof Behemoth", colors: ["G"], reason: "Klassischer Abschluss für breite Creature-Boards." },
   { name: "Triumph of the Hordes", colors: ["G"], reason: "Beendet Spiele aus scheinbar kleinen Boards sehr schnell." },
-  { name: "Kiki-Jiki, Mirror Breaker", colors: ["R"], reason: "Combo- und Value-Piece fuer rote Kreaturen-Shells." },
+  { name: "Kiki-Jiki, Mirror Breaker", colors: ["R"], reason: "Combo- und Value-Piece für rote Kreaturen-Shells." },
 ];
 
 const PREMIUM_META_TECH_RECOMMENDATIONS: RecommendationCandidate[] = [
   { name: "Grafdigger's Cage", colors: [], reason: "Sehr effizient gegen Graveyard-, Tutor- und Cheat-into-play-Strategien." },
-  { name: "Soul-Guide Lantern", colors: [], reason: "Guenschtiger Graveyard-Hate, der sich notfalls ersetzt." },
+  { name: "Soul-Guide Lantern", colors: [], reason: "Günstiger Graveyard-Hate, der sich notfalls ersetzt." },
   { name: "Pithing Needle", colors: [], reason: "Schaltet Commander, Planeswalker und Utility-Permanents billig aus." },
   { name: "The One Ring", colors: [], reason: "Starker Schutz- und Value-Slot gegen grindige Pods." },
   { name: "Drannith Magistrate", colors: ["W"], reason: "Stoppt Commander-Casts aus der Command Zone und viele Exile-Lines." },
-  { name: "Aven Mindcensor", colors: ["W"], reason: "Stoert Tutoren und Fetchlands instant-speed." },
+  { name: "Aven Mindcensor", colors: ["W"], reason: "Stört Tutoren und Fetchlands instant-speed." },
   { name: "Deafening Silence", colors: ["W"], reason: "Bremst Storm- und Noncreature-Combo-Decks massiv aus." },
   { name: "Narset, Parter of Veils", colors: ["U"], reason: "Schaltet gegnerischen Extra-Draw ab und findet Noncreature-Spells." },
   { name: "Flusterstorm", colors: ["U"], reason: "Sehr effizient in Stack-Fights und gegen schnelle Combo-Turns." },
@@ -1507,31 +1507,31 @@ const PREMIUM_META_TECH_RECOMMENDATIONS: RecommendationCandidate[] = [
   { name: "Opposition Agent", colors: ["B"], reason: "Bestraft Tutoren, Fetchlands und Ramp-Suchen brutal." },
   { name: "Orcish Bowmasters", colors: ["B"], reason: "Bestraft Draw-Engines und erzeugt nebenbei Boarddruck." },
   { name: "Pyroblast", colors: ["R"], reason: "Extrem effizient gegen blaue Decks und Counter-Wars." },
-  { name: "Red Elemental Blast", colors: ["R"], reason: "Zweite Einmana-Antwort fuer blaue Meta-Pods." },
+  { name: "Red Elemental Blast", colors: ["R"], reason: "Zweite Einmana-Antwort für blaue Meta-Pods." },
   { name: "Collector Ouphe", colors: ["G"], reason: "Schaltet Artifact-Ramp und viele Combo-Pieces ab." },
   { name: "Endurance", colors: ["G"], reason: "Free-Spell-Graveyard-Hate und Schutz gegen Mill-Lines." },
   { name: "Boseiju, Who Endures", colors: ["G"], reason: "Uncounterbare Antwort auf Artefakte, Enchantments und problematische Lands." },
-  { name: "Otawara, Soaring City", colors: ["U"], reason: "Kaum ein Deckbuilding-Kostenpunkt fuer flexiblen Bounce." },
-  { name: "Takenuma, Abandoned Mire", colors: ["B"], reason: "Utility-Land fuer Recursion und Grind-Spiele." },
+  { name: "Otawara, Soaring City", colors: ["U"], reason: "Kaum ein Deckbuilding-Kostenpunkt für flexiblen Bounce." },
+  { name: "Takenuma, Abandoned Mire", colors: ["B"], reason: "Utility-Land für Recursion und Grind-Spiele." },
   { name: "Eiganjo, Seat of the Empire", colors: ["W"], reason: "Fast kostenloser Removal-Modus auf einem Land-Slot." },
 ];
 
 const PREMIUM_VALUE_ENGINE_RECOMMENDATIONS: RecommendationCandidate[] = [
-  { name: "The One Ring", colors: [], reason: "Eine der staerksten generischen Value-Engines im Format." },
-  { name: "Skullclamp", colors: [], reason: "Macht kleine Kreaturen, Tokens und Opferplaene zu Kartenvorteil." },
-  { name: "Sensei's Divining Top", colors: [], reason: "Topdeck-Kontrolle fuer Fetchlands, Tutoren und lange Setup-Spiele." },
-  { name: "Esper Sentinel", colors: ["W"], reason: "Frueher Tax-Draw, der Gegner direkt unter Druck setzt." },
+  { name: "The One Ring", colors: [], reason: "Eine der stärksten generischen Value-Engines im Format." },
+  { name: "Skullclamp", colors: [], reason: "Macht kleine Kreaturen, Tokens und Opferpläne zu Kartenvorteil." },
+  { name: "Sensei's Divining Top", colors: [], reason: "Topdeck-Kontrolle für Fetchlands, Tutoren und lange Setup-Spiele." },
+  { name: "Esper Sentinel", colors: ["W"], reason: "Früher Tax-Draw, der Gegner direkt unter Druck setzt." },
   { name: "Trouble in Pairs", colors: ["W"], reason: "Belohnt typische Multiplayer-Spielmuster mit konstantem Kartenvorteil." },
   { name: "Archivist of Oghma", colors: ["W"], reason: "Zieht Karten aus gegnerischen Such- und Ramp-Effekten." },
   { name: "Rhystic Study", colors: ["U"], reason: "Premium-Draw-Engine, die jede gegnerische Entscheidung teurer macht." },
   { name: "Mystic Remora", colors: ["U"], reason: "Sehr effizient gegen schnelle Noncreature-Turns." },
-  { name: "Consecrated Sphinx", colors: ["U"], reason: "Uebernimmt lange Spiele, wenn sie nicht sofort beantwortet wird." },
-  { name: "Necropotence", colors: ["B"], reason: "Maximaler Kartenzug fuer Decks, die Life als Ressource nutzen koennen." },
+  { name: "Consecrated Sphinx", colors: ["U"], reason: "Übernimmt lange Spiele, wenn sie nicht sofort beantwortet wird." },
+  { name: "Necropotence", colors: ["B"], reason: "Maximaler Kartenzug für Decks, die Life als Ressource nutzen können." },
   { name: "Black Market Connections", colors: ["B"], reason: "Flexible Engine aus Karten, Treasures und Bodies." },
-  { name: "Dark Confidant", colors: ["B"], reason: "Fruehe wiederholbare Kartenquelle fuer niedrige Kurven." },
+  { name: "Dark Confidant", colors: ["B"], reason: "Frühe wiederholbare Kartenquelle für niedrige Kurven." },
   { name: "Sylvan Library", colors: ["G"], reason: "Topdeck-Kontrolle und explosiver Draw gegen Lebenspunkte." },
-  { name: "Guardian Project", colors: ["G"], reason: "Sehr gute Creature-Draw-Engine fuer Singleton-Decks." },
-  { name: "Beast Whisperer", colors: ["G"], reason: "Haelt Creature-Chains am Laufen und belohnt hohe Kreaturendichte." },
+  { name: "Guardian Project", colors: ["G"], reason: "Sehr gute Creature-Draw-Engine für Singleton-Decks." },
+  { name: "Beast Whisperer", colors: ["G"], reason: "Hält Creature-Chains am Laufen und belohnt hohe Kreaturendichte." },
   { name: "Professional Face-Breaker", colors: ["R"], reason: "Wandelt Combat-Damage in Treasures und Kartenimpuls." },
   { name: "Jeska's Will", colors: ["R"], reason: "Mana und Kartenimpuls in einem explosiven Commander-Turn." },
 ];
@@ -1982,7 +1982,7 @@ function collectRecommendationNeeds(
     needs.push({
       title: "Mehr Ramp",
       reason:
-        "Das Deck will stabil frueher auf seinen Commander und die teureren Plays kommen.",
+        "Das Deck will stabil früher auf seinen Commander und die teureren Plays kommen.",
       query: '(type:artifact oracle:"add" oracle:"mana" or type:creature oracle:"add" oracle:"mana" or oracle:"search your library for a land")',
       fallback: PREMIUM_RAMP_RECOMMENDATIONS,
       limit: 12,
@@ -1993,7 +1993,7 @@ function collectRecommendationNeeds(
     needs.push({
       title: "Mehr Card Draw",
       reason:
-        "Mehr Kartennachschub verhindert, dass du nach den ersten Turns leer laeufst.",
+        "Mehr Kartennachschub verhindert, dass du nach den ersten Turns leer läufst.",
       query: '(oracle:"draw a card" or oracle:"draw cards" or oracle:"draw two cards" or oracle:"draw three cards")',
       fallback: PREMIUM_DRAW_RECOMMENDATIONS,
       limit: 12,
@@ -2013,9 +2013,9 @@ function collectRecommendationNeeds(
 
   if ((stats.roleCounts.Boardwipe ?? 0) < 2) {
     needs.push({
-      title: "Boardwipes pruefen",
+      title: "Boardwipes prüfen",
       reason:
-        "Mindestens ein bis zwei Reset-Knoepfe retten Spiele, wenn das Board kippt.",
+        "Mindestens ein bis zwei Reset-Knöpfe retten Spiele, wenn das Board kippt.",
       query: '(oracle:"destroy all" or oracle:"exile all" or oracle:"all creatures" or oracle:"each creature")',
       fallback: PREMIUM_BOARDWIPE_RECOMMENDATIONS,
       limit: 10,
@@ -2036,7 +2036,7 @@ function collectRecommendationNeeds(
   if (hasGraveyardTheme) {
     needs.push({
       title: `${commanderLabel}: Graveyard-Synergie`,
-      reason: `Commander-Fokus (${graveyardEvidence}). Diese Karten fuellen, schuetzen oder nutzen den Graveyard gezielter.`,
+      reason: `Commander-Fokus (${graveyardEvidence}). Diese Karten füllen, schützen oder nutzen den Graveyard gezielter.`,
       query: '(oracle:"graveyard" or oracle:"mill" or oracle:"return target card")',
       fallback: PREMIUM_GRAVEYARD_RECOMMENDATIONS,
       limit: 12,
@@ -2056,7 +2056,7 @@ function collectRecommendationNeeds(
   if (hasCounterTheme) {
     needs.push({
       title: `${commanderLabel}: Counter-Synergie`,
-      reason: `Commander-Fokus (${counterEvidence}). Diese Karten verstaerken +1/+1-Counter- oder Proliferate-Plaene.`,
+      reason: `Commander-Fokus (${counterEvidence}). Diese Karten verstärken +1/+1-Counter- oder Proliferate-Pläne.`,
       query: '(oracle:"+1/+1 counter" or oracle:"proliferate")',
       fallback: PREMIUM_COUNTER_RECOMMENDATIONS,
       limit: 10,
@@ -2066,7 +2066,7 @@ function collectRecommendationNeeds(
   if (hasSpellsTheme) {
     needs.push({
       title: `${commanderLabel}: Spells-Synergie`,
-      reason: `Commander-Fokus (${spellsEvidence}). Wenn der Plan ueber Instants und Sorceries laeuft, helfen diese Payoffs.`,
+      reason: `Commander-Fokus (${spellsEvidence}). Wenn der Plan über Instants und Sorceries läuft, helfen diese Payoffs.`,
       query: '(oracle:"instant" or oracle:"sorcery" or oracle:"copy")',
       fallback: PREMIUM_SPELL_RECOMMENDATIONS,
       limit: 10,
@@ -2077,7 +2077,7 @@ function collectRecommendationNeeds(
     {
       title: `${commanderLabel}: Schutz & Stack-Sicherheit`,
       reason:
-        "Upgrade-Impulse, keine Pflichtluecke: Diese Karten schuetzen Commander, Engine oder entscheidenden Power-Turn gegen Removal, Wipes und Counter.",
+        "Upgrade-Impulse, keine Pflichtlücke: Diese Karten schützen Commander, Engine oder entscheidenden Power-Turn gegen Removal, Wipes und Counter.",
       query: '(oracle:"hexproof" or oracle:"indestructible" or oracle:"phase out" or oracle:"can\'t be countered" or oracle:"protection from")',
       fallback: PREMIUM_PROTECTION_RECOMMENDATIONS,
       limit: 10,
@@ -2085,7 +2085,7 @@ function collectRecommendationNeeds(
     {
       title: `${commanderLabel}: Konsistenz & Tutoren`,
       reason:
-        "Upgrade-Impulse fuer andere Builds: Tutoren und Setup-Karten finden genau den Teil deines Commander-Plans, der im jeweiligen Spiel fehlt.",
+        "Upgrade-Impulse für andere Builds: Tutoren und Setup-Karten finden genau den Teil deines Commander-Plans, der im jeweiligen Spiel fehlt.",
       query: '(oracle:"search your library" -oracle:"basic land")',
       fallback: PREMIUM_CONSISTENCY_RECOMMENDATIONS,
       limit: 10,
@@ -2093,7 +2093,7 @@ function collectRecommendationNeeds(
     {
       title: `${commanderLabel}: Alternative Wincons`,
       reason:
-        "Upgrade-Impulse fuer optimierte Decks: Diese Slots geben dem Deck eine zweite oder dritte Art, Spiele zu beenden, ohne den Commander-Fokus aufzugeben.",
+        "Upgrade-Impulse für optimierte Decks: Diese Slots geben dem Deck eine zweite oder dritte Art, Spiele zu beenden, ohne den Commander-Fokus aufzugeben.",
       query: '(oracle:"you win the game" or oracle:"each opponent loses" or oracle:"loses the game" or oracle:"each opponent loses life")',
       fallback: PREMIUM_FINISHER_RECOMMENDATIONS,
       limit: 10,
@@ -2101,7 +2101,7 @@ function collectRecommendationNeeds(
     {
       title: `${commanderLabel}: Meta-Tech & Flex-Slots`,
       reason:
-        "Upgrade-Impulse fuer starke Listen: Diese Karten sind eher Flex-Slots gegen bestimmte Pods, Graveyards, Tutoren, Fast Mana oder Stack-Fights.",
+        "Upgrade-Impulse für starke Listen: Diese Karten sind eher Flex-Slots gegen bestimmte Pods, Graveyards, Tutoren, Fast Mana oder Stack-Fights.",
       query: '(oracle:"players can\'t" or oracle:"opponents can\'t" or oracle:"counter target" or oracle:"exile target" or oracle:"graveyard")',
       fallback: PREMIUM_META_TECH_RECOMMENDATIONS,
       limit: 10,
@@ -2109,7 +2109,7 @@ function collectRecommendationNeeds(
     {
       title: `${commanderLabel}: Value-Engines`,
       reason:
-        "Upgrade-Impulse fuer grindige Spiele: Diese Karten geben dir alternative Ressourcenquellen, falls der Hauptplan beantwortet wird.",
+        "Upgrade-Impulse für grindige Spiele: Diese Karten geben dir alternative Ressourcenquellen, falls der Hauptplan beantwortet wird.",
       query: '(oracle:"whenever" oracle:"draw a card" or oracle:"draw an additional card" or oracle:"at the beginning of your upkeep" oracle:"draw")',
       fallback: PREMIUM_VALUE_ENGINE_RECOMMENDATIONS,
       limit: 10,
@@ -2382,7 +2382,7 @@ function scoreCutCandidate(
 
   if (card.manaValue >= 7 && !hasThemeRole) {
     score += 18;
-    reasonParts.push("Sehr hohe Mana Value fuer einen Slot ohne klares Theme-Signal.");
+    reasonParts.push("Sehr hohe Mana Value für einen Slot ohne klares Theme-Signal.");
   } else if (card.manaValue >= 5 && !hasThemeRole && functionalRoles.length <= 1) {
     score += 10;
     reasonParts.push("Relativ teuer und nicht direkt am Commander-Fokus.");
@@ -2421,13 +2421,13 @@ function scoreCutCandidate(
 
   if (stats.totalCards > 100) {
     score += 8;
-    reasonParts.push("Das Deck liegt ueber 100 Karten, also braucht es echte Cuts.");
+    reasonParts.push("Das Deck liegt über 100 Karten, also braucht es echte Cuts.");
   }
 
   if (card.isLand) {
     if (stats.landCount > 38) {
       score += 14;
-      reasonParts.push("Bei sehr vielen Laendern kann dieser Land-Slot geprueft werden.");
+      reasonParts.push("Bei sehr vielen Ländern kann dieser Land-Slot geprüft werden.");
     } else if (!CUT_UPGRADE_CANDIDATES.has(card.name.toLowerCase())) {
       score -= 16;
     }
@@ -2639,7 +2639,7 @@ async function fetchScryfallCards(lines: ParsedDeckLine[]) {
       const cardPrint = formatCardPrint(fuzzyCard);
       const note = exactPrint
         ? "Exakter Druck nicht gefunden, Standarddruck per Name genutzt."
-        : "Per Scryfall-Fuzzy-Suche aufgeloest.";
+        : "Per Scryfall-Fuzzy-Suche aufgelöst.";
 
       cards.set(request.key, {
         card: fuzzyCard,
@@ -2852,7 +2852,7 @@ async function fetchMoxfieldDeck(deckId: string) {
 
     if (response.status === 403) {
       throw new Error(
-        "Moxfield blockiert den direkten Server-Import gerade mit Cloudflare 403. Exportiere das Deck in Moxfield als Text und fuege die Liste unten in die Deckliste ein; Analyse und Empfehlungen funktionieren danach normal."
+        "Moxfield blockiert den direkten Server-Import gerade mit Cloudflare 403. Exportiere das Deck in Moxfield als Text und füge die Liste unten in die Deckliste ein; Analyse und Empfehlungen funktionieren danach normal."
       );
     }
 
@@ -2873,7 +2873,7 @@ async function fetchMoxfieldDeck(deckId: string) {
   }
 
   throw new Error(
-    "Dieses Moxfield-Deck konnte nicht gefunden werden. Ist der Link oeffentlich?"
+    "Dieses Moxfield-Deck konnte nicht gefunden werden. Ist der Link öffentlich?"
   );
 }
 
@@ -2883,7 +2883,7 @@ export async function importMoxfieldDeck(
   const deckId = getMoxfieldDeckId(sourceUrl);
 
   if (!deckId) {
-    throw new Error("Bitte fuege einen gueltigen Moxfield-Decklink ein.");
+    throw new Error("Bitte füge einen gültigen Moxfield-Decklink ein.");
   }
 
   const deck = await fetchMoxfieldDeck(deckId);
@@ -3034,7 +3034,7 @@ export async function listDeckLabDecks(ownerDiscordId: string) {
       return {
         decks: [],
         setupError:
-          "Die Supabase-Tabelle fuer das Deck Lab fehlt noch. Fuehre die neue Migration aus.",
+          "Die Supabase-Tabelle für das Deck Lab fehlt noch. Führe die neue Migration aus.",
       };
     }
 

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { FocusEvent, MouseEvent } from "react";
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import {
   analyzeDeckList,
   deleteDeck,
@@ -114,6 +114,8 @@ type DeckLabDeck = {
   updatedAt: string;
 };
 
+type ActiveTask = "analysis" | "save" | "delete";
+
 const starterCommander = "Muldrotha, the Gravetide";
 
 const starterList = `Deck
@@ -184,6 +186,27 @@ function getCutPriorityClass(priority: DeckLabCutSuggestion["priority"]) {
   }
 
   return "border-white/10 bg-white/5 text-zinc-300";
+}
+
+function estimateAnalysisSeconds(rawList: string) {
+  const cardLineCount = rawList
+    .split(/\r?\n/)
+    .filter((line) =>
+      /^\s*(?:(?:SB|Sideboard):\s*)?\d+\s*x?\s+\S+/i.test(line)
+    ).length;
+
+  return Math.min(90, Math.max(20, Math.ceil(cardLineCount * 0.8)));
+}
+
+function formatDuration(seconds: number) {
+  if (seconds < 60) return `${seconds}s`;
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  return remainingSeconds > 0
+    ? `${minutes}m ${remainingSeconds}s`
+    : `${minutes}m`;
 }
 
 function getPreviewPositionFromMouse(event: MouseEvent<HTMLElement>) {
@@ -278,7 +301,7 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
   if (!analysis) {
     return (
       <section className="rounded-3xl border border-white/10 bg-white/[0.04] p-6 text-zinc-400">
-        Fuege eine Deckliste ein und starte die Analyse.
+        Füge eine Deckliste ein und starte die Analyse.
       </section>
     );
   }
@@ -347,19 +370,19 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
           text={`${analysis.stats.mainCards} Main, ${analysis.stats.commanderCards} Commander`}
         />
         <Metric
-          label="Laender"
+          label="Länder"
           value={analysis.stats.landCount}
           text={`${analysis.stats.nonLandCount} Nonlands im Deck`}
         />
         <Metric
           label="Average MV"
           value={analysis.stats.averageManaValue}
-          text="ohne Laender gerechnet"
+          text="ohne Länder gerechnet"
         />
         <Metric
           label="Nicht gefunden"
           value={analysis.missing.length}
-          text="Namen, die Scryfall nicht aufloesen konnte"
+          text="Namen, die Scryfall nicht auflösen konnte"
         />
       </div>
 
@@ -400,11 +423,11 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h3 className="text-lg font-black text-emerald-100">
-                Analyse-Einschaetzung
+                Analyse-Einschätzung
               </h3>
               <p className="mt-1 max-w-3xl text-sm leading-6 text-emerald-50/75">
                 Wenige Empfehlungsbereiche sind nicht automatisch schlecht. Die
-                Analyse trennt Pflichtluecken von Upgrade-Impulsen und bleibt
+                Analyse trennt Pflichtlücken von Upgrade-Impulsen und bleibt
                 beim Commander-Plan, statt falsche Themes in das Deck zu lesen.
               </p>
             </div>
@@ -439,11 +462,11 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h3 className="text-lg font-black text-orange-100">
-                Pruefslots fuer Cuts
+                Prüfslots für Cuts
               </h3>
               <p className="mt-1 text-sm text-orange-50/70">
                 Konservative Hinweise auf austauschbare Slots. Gute Karten
-                koennen trotzdem bleiben, wenn sie fuer deinen Spielplan wichtig
+                können trotzdem bleiben, wenn sie für deinen Spielplan wichtig
                 sind.
               </p>
             </div>
@@ -534,7 +557,7 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
                 Empfehlungen
               </h3>
               <p className="mt-1 text-sm text-violet-50/65">
-                Commander-nahe Pflichtluecken plus Upgrade-Impulse fuer
+                Commander-nahe Pflichtlücken plus Upgrade-Impulse für
                 alternative Builds. Scryfall-Daten bleiben aktuell, vorhandene
                 Deckkarten werden ausgeblendet und Preise werden ignoriert.
               </p>
@@ -687,7 +710,7 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
             <div>
               <h3 className="text-lg font-black">Rollen</h3>
               <p className="mt-1 text-sm text-zinc-500">
-                Anklicken filtert unten die Bilduebersicht.
+                Anklicken filtert unten die Bildübersicht.
               </p>
             </div>
             {selectedRole && (
@@ -768,7 +791,7 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h3 className="text-lg font-black">
-              {selectedRole ? `${selectedRole}-Karten` : "Bilduebersicht"}
+              {selectedRole ? `${selectedRole}-Karten` : "Bildübersicht"}
             </h3>
             <p className="mt-1 text-sm text-zinc-500">
               {selectedRole
@@ -988,7 +1011,36 @@ export default function DeckLabClient({
     initialDecks[0]?.analysis ?? null
   );
   const [message, setMessage] = useState<string | null>(setupError);
+  const [activeTask, setActiveTask] = useState<ActiveTask | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isPending, startTransition] = useTransition();
+  const isBusy = activeTask !== null || isPending;
+  const analysisEstimateSeconds = useMemo(
+    () => estimateAnalysisSeconds(rawList),
+    [rawList]
+  );
+  const remainingAnalysisSeconds = Math.max(
+    0,
+    analysisEstimateSeconds - elapsedSeconds
+  );
+  const analysisProgress = Math.min(
+    96,
+    Math.max(8, Math.round((elapsedSeconds / analysisEstimateSeconds) * 92))
+  );
+
+  useEffect(() => {
+    if (!activeTask) {
+      return;
+    }
+
+    const startedAt = Date.now();
+
+    const intervalId = window.setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [activeTask]);
 
   function loadDeck(deck: DeckLabDeck) {
     setSelectedDeckId(deck.id);
@@ -1013,6 +1065,10 @@ export default function DeckLabClient({
   }
 
   function runAnalysis() {
+    if (activeTask) return;
+
+    setActiveTask("analysis");
+    setElapsedSeconds(0);
     setMessage(null);
     startTransition(async () => {
       try {
@@ -1027,12 +1083,18 @@ export default function DeckLabClient({
         setMessage("Analyse fertig.");
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Analyse fehlgeschlagen.");
+      } finally {
+        setActiveTask(null);
       }
     });
   }
 
   function saveCurrentDeck() {
-    setMessage(null);
+    if (activeTask) return;
+
+    setActiveTask("save");
+    setElapsedSeconds(0);
+    setMessage("Deck wird gespeichert...");
     startTransition(async () => {
       try {
         const savedDeck = await saveDeck({
@@ -1054,14 +1116,19 @@ export default function DeckLabClient({
         setMessage("Deck gespeichert.");
       } catch (error) {
         setMessage(error instanceof Error ? error.message : "Speichern fehlgeschlagen.");
+      } finally {
+        setActiveTask(null);
       }
     });
   }
 
   function deleteCurrentDeck() {
     if (!selectedDeckId) return;
+    if (activeTask) return;
 
-    setMessage(null);
+    setActiveTask("delete");
+    setElapsedSeconds(0);
+    setMessage("Deck wird gelöscht...");
     startTransition(async () => {
       try {
         await deleteDeck(selectedDeckId);
@@ -1069,9 +1136,11 @@ export default function DeckLabClient({
           currentDecks.filter((deck) => deck.id !== selectedDeckId)
         );
         startNewDeck();
-        setMessage("Deck geloescht.");
+        setMessage("Deck gelöscht.");
       } catch (error) {
-        setMessage(error instanceof Error ? error.message : "Loeschen fehlgeschlagen.");
+        setMessage(error instanceof Error ? error.message : "Löschen fehlgeschlagen.");
+      } finally {
+        setActiveTask(null);
       }
     });
   }
@@ -1094,15 +1163,16 @@ export default function DeckLabClient({
               <button
                 type="button"
                 onClick={deleteCurrentDeck}
-                disabled={isPending}
+                disabled={isBusy}
                 className="rounded-full border border-red-400/25 px-4 py-2 text-sm font-semibold text-red-200 transition hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Loeschen
+                {activeTask === "delete" ? "Lösche..." : "Löschen"}
               </button>
             )}
             <button
               type="button"
               onClick={startNewDeck}
+              disabled={isBusy}
               className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-zinc-200 transition hover:bg-white/10"
             >
               Neu
@@ -1143,7 +1213,10 @@ export default function DeckLabClient({
       </section>
 
       <section className="space-y-6">
-        <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+        <div
+          className="rounded-3xl border border-white/10 bg-white/[0.04] p-5"
+          aria-busy={activeTask === "analysis"}
+        >
           <div className="grid gap-4 lg:grid-cols-[1fr_1fr_180px]">
             <label className="block">
               <span className="text-sm font-bold text-zinc-300">Deckname</span>
@@ -1212,7 +1285,7 @@ Deck
               className="mt-2 w-full resize-y rounded-2xl border border-white/10 bg-zinc-900 px-4 py-3 text-sm leading-6 text-white outline-none transition focus:border-orange-200/50"
             />
             <span className="mt-2 block text-xs leading-5 text-zinc-500">
-              Optional: Wird zusammen mit den Commander-Karten fuer bessere
+              Optional: Wird zusammen mit den Commander-Karten für bessere
               Strategie-Empfehlungen ausgewertet.
             </span>
           </label>
@@ -1221,19 +1294,19 @@ Deck
             <button
               type="button"
               onClick={runAnalysis}
-              disabled={isPending}
+              disabled={isBusy}
               className="rounded-full bg-white px-5 py-2 text-sm font-bold text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Analysieren
+              {activeTask === "analysis" ? "Analysiere..." : "Analysieren"}
             </button>
 
             <button
               type="button"
               onClick={saveCurrentDeck}
-              disabled={isPending || Boolean(setupError)}
+              disabled={isBusy || Boolean(setupError)}
               className="rounded-full bg-orange-300 px-5 py-2 text-sm font-bold text-black transition hover:bg-orange-200 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Speichern
+              {activeTask === "save" ? "Speichere..." : "Speichern"}
             </button>
 
             {message && (
@@ -1242,6 +1315,46 @@ Deck
               </span>
             )}
           </div>
+
+          {activeTask === "analysis" && (
+            <div
+              className="mt-4 rounded-2xl border border-orange-200/20 bg-orange-300/10 p-4"
+              role="status"
+              aria-live="polite"
+            >
+              <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                <div className="flex items-center gap-2 font-bold text-orange-100">
+                  <span className="relative flex h-3 w-3">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-orange-200 opacity-60" />
+                    <span className="relative inline-flex h-3 w-3 rounded-full bg-orange-200" />
+                  </span>
+                  Analyse läuft
+                </div>
+                <div className="flex flex-wrap gap-2 text-xs text-orange-50/70">
+                  <span>{formatDuration(elapsedSeconds)} vergangen</span>
+                  <span>
+                    ca.{" "}
+                    {remainingAnalysisSeconds > 0
+                      ? formatDuration(remainingAnalysisSeconds)
+                      : "kurz"}{" "}
+                    übrig
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-black/30">
+                <div
+                  className="h-full rounded-full bg-orange-200 transition-all duration-500"
+                  style={{ width: `${analysisProgress}%` }}
+                />
+              </div>
+
+              <p className="mt-3 text-xs leading-5 text-orange-50/70">
+                Scryfall wird abgefragt, Kartenbilder werden aufgelöst und die
+                Empfehlungen werden neu gebaut.
+              </p>
+            </div>
+          )}
         </div>
 
         <AnalysisPanel analysis={analysis} />
