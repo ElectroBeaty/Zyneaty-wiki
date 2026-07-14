@@ -419,6 +419,10 @@ function inferRoles(card: ScryfallCard) {
   const text = getCardOracleText(card).toLowerCase();
   const roles = new Set<string>();
   const hasLifelink = text.includes("lifelink");
+  const hasYouGainLife =
+    /\byou gain(?:ed|s)?(?: [a-z0-9+-]+){0,4} life\b/.test(text) ||
+    text.includes("you gain that much life") ||
+    text.includes("you gain twice that much life");
   const hasLifePayoff =
     text.includes("whenever you gain life") ||
     text.includes("whenever you gain one or more life") ||
@@ -429,6 +433,10 @@ function inferRoles(card: ScryfallCard) {
     text.includes("each opponent mills") ||
     text.includes("target opponent mills") ||
     text.includes("opponent mills");
+  const hasSelfMill =
+    text.includes("you mill") ||
+    text.includes("mill yourself") ||
+    text.includes("mill cards");
   const hasMillPayoff =
     (
       text.includes("cards are put") ||
@@ -437,9 +445,41 @@ function inferRoles(card: ScryfallCard) {
     ) &&
     text.includes("graveyard") &&
     text.includes("library");
+  const hasRecursion =
+    text.includes("from your graveyard to your hand") ||
+    text.includes("from your graveyard to the battlefield") ||
+    text.includes("return target card from your graveyard") ||
+    text.includes("return target creature card from your graveyard") ||
+    (text.includes("cast") && text.includes("from your graveyard"));
+  const hasGraveyardPlan =
+    hasRecursion ||
+    hasSelfMill ||
+    text.includes("your graveyard") ||
+    text.includes("escape") ||
+    text.includes("delirium") ||
+    text.includes("descend");
+  const createsTokens = text.includes("create") && text.includes("token");
+  const hasTokenPayoff =
+    text.includes("tokens you control") ||
+    text.includes("for each token") ||
+    (text.includes("whenever you create") && text.includes("token"));
+  const hasCountersPlan =
+    text.includes("+1/+1 counter") ||
+    text.includes("proliferate") ||
+    (text.includes("counter on") && !text.includes("counter target"));
+  const hasSpellPayoff =
+    text.includes("magecraft") ||
+    text.includes("whenever you cast an instant") ||
+    text.includes("whenever you cast a sorcery") ||
+    text.includes("whenever you cast or copy") ||
+    text.includes("copy target instant") ||
+    text.includes("copy target sorcery");
 
   if (typeLine.includes("land")) roles.add("Land");
   if (typeLine.includes("creature")) roles.add("Creature");
+  if (typeLine.includes("instant") || typeLine.includes("sorcery")) {
+    roles.add("Spell");
+  }
   if (
     text.includes("add {") ||
     text.includes("add one mana") ||
@@ -476,9 +516,7 @@ function inferRoles(card: ScryfallCard) {
     roles.add("Boardwipe");
   }
   if (
-    text.includes("gain life") ||
-    text.includes("gains life") ||
-    text.includes("you gain") ||
+    hasYouGainLife ||
     hasLifelink
   ) {
     roles.add("Lifegain");
@@ -492,8 +530,15 @@ function inferRoles(card: ScryfallCard) {
   ) {
     roles.add("Mill");
   }
+  if (hasSelfMill) roles.add("Self Mill");
   if (hasOpponentMill) roles.add("Opponent Mill");
   if (hasMillPayoff) roles.add("Mill Payoff");
+  if (hasGraveyardPlan) roles.add("Graveyard");
+  if (hasRecursion) roles.add("Recursion");
+  if (createsTokens) roles.add("Token");
+  if (hasTokenPayoff) roles.add("Token Payoff");
+  if (hasCountersPlan) roles.add("Counters");
+  if (hasSpellPayoff) roles.add("Spell Payoff");
   if (
     text.includes("whenever") ||
     text.includes("at the beginning") ||
@@ -1448,6 +1493,43 @@ function includesAny(value: string, phrases: string[]) {
   return phrases.some((phrase) => value.includes(phrase));
 }
 
+function countCardsWithRoles(cards: DeckLabCard[], roles: string[]) {
+  const roleSet = new Set(roles);
+
+  return cards.reduce((total, card) => {
+    const matchesRole = card.roles.some((role) => roleSet.has(role));
+
+    return matchesRole ? total + card.quantity : total;
+  }, 0);
+}
+
+function countCardsByType(cards: DeckLabCard[], types: string[]) {
+  return cards.reduce((total, card) => {
+    const matchesType = types.some((type) => card.typeLine.includes(type));
+
+    return matchesType ? total + card.quantity : total;
+  }, 0);
+}
+
+function formatThemeEvidence(
+  commanderMatch: boolean,
+  notesMatch: boolean,
+  roleEvidence: Array<{ label: string; count: number; threshold: number }>
+) {
+  const evidence: string[] = [];
+
+  if (commanderMatch) evidence.push("Commander-Text");
+  if (notesMatch) evidence.push("Deckplan/Notizen");
+
+  for (const item of roleEvidence) {
+    if (item.count >= item.threshold) {
+      evidence.push(`${item.count} ${item.label}`);
+    }
+  }
+
+  return evidence.join(", ");
+}
+
 function collectRecommendationNeeds(
   cards: DeckLabCard[],
   stats: DeckLabStats,
@@ -1464,30 +1546,169 @@ function collectRecommendationNeeds(
     .map((card) => [card.name, card.typeLine, card.oracleText].join(" "))
     .join(" ")
     .toLowerCase();
-  const deckThemeText = cards
-    .map((card) => [card.name, card.typeLine, card.oracleText].join(" "))
-    .join(" ")
-    .toLowerCase();
   const notesText = strategyNotes?.trim().toLowerCase() ?? "";
-  const strategyText = `${commanderText} ${deckThemeText} ${notesText}`;
-  const hasLifegainTheme = includesAny(strategyText, [
-    "gain life",
-    "gains life",
+  const lifegainCards = countCardsWithRoles(cards, [
+    "Lifegain",
+    "Lifelink",
+  ]);
+  const lifePayoffCards = countCardsWithRoles(cards, ["Life Payoff"]);
+  const opponentMillCards = countCardsWithRoles(cards, ["Opponent Mill"]);
+  const millPayoffCards = countCardsWithRoles(cards, ["Mill Payoff"]);
+  const graveyardCards = countCardsWithRoles(cards, [
+    "Graveyard",
+    "Recursion",
+    "Self Mill",
+  ]);
+  const tokenCards = countCardsWithRoles(cards, ["Token", "Token Payoff"]);
+  const tokenPayoffCards = countCardsWithRoles(cards, ["Token Payoff"]);
+  const counterCards = countCardsWithRoles(cards, ["Counters"]);
+  const spellPayoffCards = countCardsWithRoles(cards, ["Spell Payoff"]);
+  const instantSorceryCards = countCardsByType(cards, ["Instant", "Sorcery"]);
+  const commanderHasLifegainTheme = includesAny(commanderText, [
     "you gain",
+    "whenever you gain life",
     "life total",
     "lifelink",
   ]);
-  const hasMillTheme = includesAny(strategyText, [
-    "mill",
-    "mills",
-    "milled",
+  const notesHasLifegainTheme = includesAny(notesText, [
+    "lifegain",
+    "life gain",
+    "life-gain",
+    "lifelink",
+    "soul sister",
+    "drain",
   ]);
+  const commanderHasMillTheme = includesAny(commanderText, [
+    "each opponent mills",
+    "target opponent mills",
+    "opponent mills",
+    "opponents mill",
+    "opponent would mill",
+  ]);
+  const notesHasMillTheme = includesAny(notesText, [
+    "opponent mill",
+    "opponents mill",
+    "gegner mill",
+    "gegner millen",
+    "deck mill",
+    "mill win",
+  ]);
+  const commanderHasGraveyardTheme = includesAny(commanderText, [
+    "your graveyard",
+    "from your graveyard",
+    "escape",
+    "delirium",
+    "descend",
+  ]);
+  const notesHasGraveyardTheme = includesAny(notesText, [
+    "graveyard",
+    "friedhof",
+    "reanimator",
+    "recursion",
+    "self mill",
+    "selfmill",
+  ]);
+  const commanderHasTokenTheme =
+    commanderText.includes("tokens you control") ||
+    commanderText.includes("whenever you create") ||
+    (commanderText.includes("create") && commanderText.includes("token"));
+  const notesHasTokenTheme = includesAny(notesText, [
+    "token",
+    "tokens",
+    "go wide",
+    "aristocrats",
+  ]);
+  const commanderHasCounterTheme = includesAny(commanderText, [
+    "+1/+1 counter",
+    "proliferate",
+    "counter on",
+  ]);
+  const notesHasCounterTheme = includesAny(notesText, [
+    "+1/+1",
+    "counter deck",
+    "counters",
+    "marken",
+    "proliferate",
+  ]);
+  const commanderHasSpellsTheme = includesAny(commanderText, [
+    "instant",
+    "sorcery",
+    "magecraft",
+    "copy target",
+    "cast or copy",
+  ]);
+  const notesHasSpellsTheme = includesAny(notesText, [
+    "spellslinger",
+    "instant",
+    "sorcery",
+    "storm",
+    "magecraft",
+  ]);
+  const hasLifegainTheme =
+    commanderHasLifegainTheme ||
+    notesHasLifegainTheme;
+  const hasMillTheme =
+    commanderHasMillTheme ||
+    notesHasMillTheme;
+  const hasGraveyardTheme =
+    commanderHasGraveyardTheme ||
+    notesHasGraveyardTheme;
+  const hasTokenTheme =
+    commanderHasTokenTheme ||
+    notesHasTokenTheme;
+  const hasCounterTheme =
+    commanderHasCounterTheme ||
+    notesHasCounterTheme;
+  const hasSpellsTheme =
+    commanderHasSpellsTheme ||
+    notesHasSpellsTheme;
+  const lifegainEvidence = formatThemeEvidence(
+    commanderHasLifegainTheme,
+    notesHasLifegainTheme,
+    [
+      { label: "Lifegain-Karten", count: lifegainCards, threshold: 5 },
+      { label: "Lifegain-Payoffs", count: lifePayoffCards, threshold: 2 },
+    ]
+  );
+  const millEvidence = formatThemeEvidence(
+    commanderHasMillTheme,
+    notesHasMillTheme,
+    [
+      { label: "Opponent-Mill-Karten", count: opponentMillCards, threshold: 2 },
+      { label: "Mill-Payoffs", count: millPayoffCards, threshold: 2 },
+    ]
+  );
+  const graveyardEvidence = formatThemeEvidence(
+    commanderHasGraveyardTheme,
+    notesHasGraveyardTheme,
+    [{ label: "Graveyard-Karten", count: graveyardCards, threshold: 4 }]
+  );
+  const tokenEvidence = formatThemeEvidence(
+    commanderHasTokenTheme,
+    notesHasTokenTheme,
+    [
+      { label: "Token-Karten", count: tokenCards, threshold: 5 },
+      { label: "Token-Payoffs", count: tokenPayoffCards, threshold: 2 },
+    ]
+  );
+  const counterEvidence = formatThemeEvidence(
+    commanderHasCounterTheme,
+    notesHasCounterTheme,
+    [{ label: "Counter-Karten", count: counterCards, threshold: 4 }]
+  );
+  const spellsEvidence = formatThemeEvidence(
+    commanderHasSpellsTheme,
+    notesHasSpellsTheme,
+    [
+      { label: "Spell-Payoffs", count: spellPayoffCards, threshold: 2 },
+      { label: "Instants/Sorceries", count: instantSorceryCards, threshold: 18 },
+    ]
+  );
 
   if (hasLifegainTheme && hasMillTheme) {
     needs.push({
       title: `${commanderLabel}: Lifegain + Mill verbinden`,
-      reason:
-        "Dein Plan zeigt Lifegain und gegnerischen Mill; diese Karten machen daraus echte Winlines statt nur Value.",
+      reason: `Commander-Fokus (${lifegainEvidence}; ${millEvidence}). Diese Karten verbinden Lifegain und gegnerischen Mill zu echten Winlines statt nur Value.`,
       query: '(oracle:"opponent" oracle:"graveyard" or oracle:"mill" oracle:"life")',
       fallback: PREMIUM_LIFEGAIN_MILL_RECOMMENDATIONS,
       limit: 10,
@@ -1497,8 +1718,7 @@ function collectRecommendationNeeds(
   if (hasLifegainTheme) {
     needs.push({
       title: `${commanderLabel}: Lifegain-Payoffs`,
-      reason:
-        "Das Deck will Lifegain nicht nur als Polster, sondern als Kartenvorteil, Boarddruck oder Wincondition nutzen.",
+      reason: `Commander-Fokus (${lifegainEvidence}). Diese Karten machen Lifegain zu Kartenvorteil, Boarddruck oder Wincondition.`,
       query: '(oracle:"whenever you gain life" or oracle:"you gain life" or oracle:"you gained life" or oracle:"if you gained life")',
       fallback: PREMIUM_LIFEGAIN_RECOMMENDATIONS,
       limit: 12,
@@ -1508,8 +1728,7 @@ function collectRecommendationNeeds(
   if (hasMillTheme) {
     needs.push({
       title: `${commanderLabel}: Gegner millen`,
-      reason:
-        "Der Deckplan millt Gegner; diese Karten verdichten den Mill-Plan oder machen gegnerische Graveyards verwertbar.",
+      reason: `Commander-Fokus (${millEvidence}). Diese Karten verdichten gezielten Gegner-Mill oder machen gegnerische Graveyards verwertbar.`,
       query: '(oracle:"target opponent mills" or oracle:"each opponent mills" or oracle:"opponent mills" or oracle:"opponents mill" or oracle:"opponent would mill")',
       fallback: PREMIUM_MILL_RECOMMENDATIONS,
       limit: 12,
@@ -1571,51 +1790,40 @@ function collectRecommendationNeeds(
     });
   }
 
-  if (
-    strategyText.includes("graveyard") ||
-    strategyText.includes("from your graveyard") ||
-    strategyText.includes("return target card")
-  ) {
+  if (hasGraveyardTheme) {
     needs.push({
       title: `${commanderLabel}: Graveyard-Synergie`,
-      reason:
-        "Der Commander deutet auf Friedhofsplaene hin; diese Karten fuellen oder nutzen den Graveyard.",
+      reason: `Commander-Fokus (${graveyardEvidence}). Diese Karten fuellen, schuetzen oder nutzen den Graveyard gezielter.`,
       query: '(oracle:"graveyard" or oracle:"mill" or oracle:"return target card")',
       fallback: PREMIUM_GRAVEYARD_RECOMMENDATIONS,
       limit: 12,
     });
   }
 
-  if (strategyText.includes("token")) {
+  if (hasTokenTheme) {
     needs.push({
       title: `${commanderLabel}: Token-Synergie`,
-      reason:
-        "Token-Decks profitieren stark von Verdopplern, Payoffs und Card-Draw aus kleinen Bodies.",
+      reason: `Commander-Fokus (${tokenEvidence}). Token-Decks profitieren stark von Verdopplern, Payoffs und Card-Draw aus kleinen Bodies.`,
       query: '(oracle:"token" or oracle:"tokens")',
       fallback: PREMIUM_TOKEN_RECOMMENDATIONS,
       limit: 10,
     });
   }
 
-  if (strategyText.includes("counter") || strategyText.includes("+1/+1")) {
+  if (hasCounterTheme) {
     needs.push({
       title: `${commanderLabel}: Counter-Synergie`,
-      reason: "Der Commander spricht fuer Marken- oder Counter-Plaene.",
+      reason: `Commander-Fokus (${counterEvidence}). Diese Karten verstaerken +1/+1-Counter- oder Proliferate-Plaene.`,
       query: '(oracle:"+1/+1 counter" or oracle:"proliferate")',
       fallback: PREMIUM_COUNTER_RECOMMENDATIONS,
       limit: 10,
     });
   }
 
-  if (
-    strategyText.includes("instant") ||
-    strategyText.includes("sorcery") ||
-    strategyText.includes("copy")
-  ) {
+  if (hasSpellsTheme) {
     needs.push({
       title: `${commanderLabel}: Spells-Synergie`,
-      reason:
-        "Wenn der Plan ueber Instants und Sorceries laeuft, helfen diese Payoffs.",
+      reason: `Commander-Fokus (${spellsEvidence}). Wenn der Plan ueber Instants und Sorceries laeuft, helfen diese Payoffs.`,
       query: '(oracle:"instant" or oracle:"sorcery" or oracle:"copy")',
       fallback: PREMIUM_SPELL_RECOMMENDATIONS,
       limit: 10,
