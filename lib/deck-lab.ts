@@ -73,6 +73,16 @@ const CUT_CORE_ROLES = new Set([
   "Interaction",
   "Boardwipe",
 ]);
+const CUT_PROTECTED_ROLES = new Set([
+  "Combo",
+  "Engine",
+  "Finisher",
+  "Graveyard Hate",
+  "Protection",
+  "Sac Outlet",
+  "Stax",
+  "Tutor",
+]);
 const CUT_THEME_ROLES = new Set([
   "Lifegain",
   "Lifelink",
@@ -86,6 +96,7 @@ const CUT_THEME_ROLES = new Set([
   "Token",
   "Token Payoff",
   "Counters",
+  "Finisher",
   "Spell Payoff",
 ]);
 const CUT_STRUCTURAL_ROLES = new Set(["Creature", "Land", "Spell"]);
@@ -557,6 +568,46 @@ function inferRoles(card: ScryfallCard) {
     text.includes("whenever you cast or copy") ||
     text.includes("copy target instant") ||
     text.includes("copy target sorcery");
+  const hasTutor =
+    text.includes("search your library") &&
+    !text.includes("search your library for a land") &&
+    !text.includes("search your library for a basic land");
+  const hasProtection =
+    text.includes("hexproof") ||
+    text.includes("indestructible") ||
+    text.includes("phase out") ||
+    text.includes("phases out") ||
+    text.includes("protection from") ||
+    text.includes("prevent all damage") ||
+    text.includes("can't be countered") ||
+    text.includes("ward ");
+  const hasFinisher =
+    text.includes("you win the game") ||
+    text.includes("each opponent loses") ||
+    text.includes("each opponent loses life") ||
+    text.includes("damage to each opponent") ||
+    text.includes("deals damage to each opponent") ||
+    text.includes("loses the game");
+  const hasSacOutlet =
+    text.includes("sacrifice a creature:") ||
+    text.includes("sacrifice another creature:") ||
+    text.includes("sacrifice a permanent:") ||
+    text.includes("sacrifice another permanent:") ||
+    text.includes("sacrifice a token:");
+  const hasGraveyardHate =
+    text.includes("exile target player's graveyard") ||
+    text.includes("exile all graveyards") ||
+    (text.includes("exile all cards from") && text.includes("graveyard")) ||
+    text.includes("cards in graveyards can't") ||
+    (text.includes("if a card would be put into") && text.includes("graveyard"));
+  const hasStax =
+    text.includes("can't cast") ||
+    text.includes("can't activate") ||
+    text.includes("can't attack") ||
+    text.includes("can't block") ||
+    text.includes("spells cost") ||
+    text.includes("enter the battlefield tapped") ||
+    text.includes("enters the battlefield tapped");
 
   if (typeLine.includes("land")) roles.add("Land");
   if (typeLine.includes("creature")) roles.add("Creature");
@@ -622,6 +673,12 @@ function inferRoles(card: ScryfallCard) {
   if (hasTokenPayoff) roles.add("Token Payoff");
   if (hasCountersPlan) roles.add("Counters");
   if (hasSpellPayoff) roles.add("Spell Payoff");
+  if (hasTutor) roles.add("Tutor");
+  if (hasProtection) roles.add("Protection");
+  if (hasFinisher) roles.add("Finisher");
+  if (hasSacOutlet) roles.add("Sac Outlet");
+  if (hasGraveyardHate) roles.add("Graveyard Hate");
+  if (hasStax) roles.add("Stax");
   if (
     text.includes("whenever") ||
     text.includes("at the beginning") ||
@@ -2143,24 +2200,40 @@ function scoreCutCandidate(
     (role) => !CUT_STRUCTURAL_ROLES.has(role)
   );
   const coreRoles = card.roles.filter((role) => CUT_CORE_ROLES.has(role));
+  const protectedRoles = card.roles.filter((role) =>
+    CUT_PROTECTED_ROLES.has(role)
+  );
   const hasThemeRole = card.roles.some((role) => profile.activeRoles.has(role));
   const offThemeRoles = card.roles.filter(
     (role) => CUT_THEME_ROLES.has(role) && !profile.activeRoles.has(role)
   );
+  const isUpgradeCandidate = CUT_UPGRADE_CANDIDATES.has(card.name.toLowerCase());
+  const isDuplicate = card.quantity > 1;
   const reasonParts: string[] = [];
   let score = 0;
 
-  if (functionalRoles.length === 0) {
-    score += card.isLand ? 8 : 26;
-    reasonParts.push("Keine klare erkannte Funktion im Commander-Plan.");
+  if (protectedRoles.length > 0 && !isDuplicate && !isUpgradeCandidate) {
+    return null;
   }
 
-  if (card.manaValue >= 7) {
-    score += 22;
-    reasonParts.push("Sehr hohe Mana Value fuer einen nicht geschuetzten Slot.");
-  } else if (card.manaValue >= 5 && !hasThemeRole) {
-    score += 12;
-    reasonParts.push("Relativ teuer, ohne klaren Commander-Fokus.");
+  if (functionalRoles.length === 0) {
+    if (card.manaValue >= 5) {
+      score += 22;
+      reasonParts.push("Teurer Slot ohne klar erkannte Aufgabe im Commander-Plan.");
+    } else if (card.manaValue >= 3) {
+      score += 14;
+      reasonParts.push("Keine klare erkannte Funktion im Commander-Plan.");
+    } else {
+      score += card.isLand ? 4 : 6;
+    }
+  }
+
+  if (card.manaValue >= 7 && !hasThemeRole) {
+    score += 18;
+    reasonParts.push("Sehr hohe Mana Value fuer einen Slot ohne klares Theme-Signal.");
+  } else if (card.manaValue >= 5 && !hasThemeRole && functionalRoles.length <= 1) {
+    score += 10;
+    reasonParts.push("Relativ teuer und nicht direkt am Commander-Fokus.");
   }
 
   if (
@@ -2178,24 +2251,24 @@ function scoreCutCandidate(
     !hasThemeRole &&
     coreRoles.length === 0
   ) {
-    score += 18;
+    score += 14;
     reasonParts.push(
-      `${offThemeRoles.slice(0, 2).join("/")} passt eher zu einem Nebenplan.`
+      `${offThemeRoles.slice(0, 2).join("/")} wirkt eher wie ein Nebenplan.`
     );
   }
 
-  if (CUT_UPGRADE_CANDIDATES.has(card.name.toLowerCase())) {
-    score += card.isLand ? 12 : 18;
-    reasonParts.push("Oft austauschbarer Commander-Slot mit besseren Alternativen.");
+  if (isUpgradeCandidate) {
+    score += card.isLand ? 16 : 24;
+    reasonParts.push("Typischer austauschbarer Commander-Slot mit starken Alternativen.");
   }
 
-  if (card.quantity > 1) {
-    score += 30;
+  if (isDuplicate) {
+    score += 36;
     reasonParts.push("Mehrfach vorhanden; in Commander meist nur als Singleton erlaubt.");
   }
 
   if (stats.totalCards > 100) {
-    score += 6;
+    score += 8;
     reasonParts.push("Das Deck liegt ueber 100 Karten, also braucht es echte Cuts.");
   }
 
@@ -2209,10 +2282,18 @@ function scoreCutCandidate(
   }
 
   if (hasThemeRole) {
-    score -= 28;
+    score -= 36;
   }
 
   if (card.roles.includes("Engine")) {
+    score -= 18;
+  }
+
+  if (protectedRoles.length > 0) {
+    score -= 30;
+  }
+
+  if (card.manaValue <= 2 && functionalRoles.length > 0 && !isUpgradeCandidate) {
     score -= 10;
   }
 
@@ -2221,13 +2302,15 @@ function scoreCutCandidate(
     const currentCount = stats.roleCounts[role] ?? 0;
 
     if (currentCount <= target) {
-      score -= 18;
+      return null;
     } else if (currentCount >= target + 3) {
-      score += 4;
+      score += 3;
+    } else {
+      score -= 10;
     }
   }
 
-  if (score < 14) return null;
+  if (score < 34) return null;
 
   return createCutSuggestion(card, score, reasonParts);
 }

@@ -298,6 +298,24 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
     (total, card) => total + card.quantity,
     0
   );
+  const coreCoverage = [
+    { label: "Ramp", count: analysis.stats.roleCounts.Ramp ?? 0, target: 10 },
+    { label: "Draw", count: analysis.stats.roleCounts.Draw ?? 0, target: 10 },
+    {
+      label: "Interaction",
+      count: analysis.stats.roleCounts.Interaction ?? 0,
+      target: 9,
+    },
+    {
+      label: "Boardwipes",
+      count: analysis.stats.roleCounts.Boardwipe ?? 0,
+      target: 2,
+    },
+  ];
+  const coveredCoreAreas = coreCoverage.filter(
+    (item) => item.count >= item.target
+  ).length;
+  const shouldExplainFewRecommendations = analysis.recommendations.length <= 1;
 
   function showPreview(card: PreviewCard, event: MouseEvent<HTMLElement>) {
     setPreviewCard(card);
@@ -377,16 +395,57 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
         </div>
       )}
 
+      {shouldExplainFewRecommendations && (
+        <section className="rounded-3xl border border-emerald-300/20 bg-emerald-300/10 p-5">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-black text-emerald-100">
+                Analyse-Einschaetzung
+              </h3>
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-emerald-50/75">
+                Wenige Empfehlungsbereiche sind nicht automatisch schlecht. Die
+                Analyse schlaegt nur dann neue Pakete vor, wenn der Commander
+                oder deine Notizen ein klares Theme zeigen, oder wenn eine
+                Basisrolle unter Ziel liegt.
+              </p>
+            </div>
+            <span className="rounded-full bg-black/20 px-3 py-1 text-xs text-emerald-50/75">
+              {coveredCoreAreas}/4 Kernbereiche gedeckt
+            </span>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            {coreCoverage.map((item) => {
+              const covered = item.count >= item.target;
+
+              return (
+                <span
+                  key={item.label}
+                  className={`rounded-full border px-3 py-1 text-sm ${
+                    covered
+                      ? "border-emerald-200/25 bg-emerald-300/10 text-emerald-100"
+                      : "border-orange-200/25 bg-orange-300/10 text-orange-100"
+                  }`}
+                >
+                  {item.label}: {item.count}/{item.target}
+                </span>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {analysis.cutSuggestions?.length > 0 && (
         <section className="rounded-3xl border border-orange-300/20 bg-orange-300/10 p-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h3 className="text-lg font-black text-orange-100">
-                Moegliche Cuts
+                Pruefslots fuer Cuts
               </h3>
               <p className="mt-1 text-sm text-orange-50/70">
-                Karten, die im aktuellen Commander-Plan weniger zentral wirken.
-                Keine harte Wahrheit, aber gute erste Slots zum Pruefen.
+                Konservative Hinweise auf austauschbare Slots. Gute Karten
+                koennen trotzdem bleiben, wenn sie fuer deinen Spielplan wichtig
+                sind.
               </p>
             </div>
             <span className="rounded-full bg-black/20 px-3 py-1 text-xs text-orange-50/75">
