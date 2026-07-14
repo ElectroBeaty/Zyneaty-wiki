@@ -294,6 +294,108 @@ function getEmptyStats(): DeckLabStats {
   };
 }
 
+const STORED_ANALYSIS_TEXT_REPLACEMENTS: Array<[string, string]> = [
+  ["Fuenffarben", "Fünffarben"],
+  ["Pflichtluecken", "Pflichtlücken"],
+  ["Pflichtluecke", "Pflichtlücke"],
+  ["Einschaetzung", "Einschätzung"],
+  ["Bilduebersicht", "Bildübersicht"],
+  ["aufgeloest", "aufgelöst"],
+  ["aufloesen", "auflösen"],
+  ["Pruefslots", "Prüfslots"],
+  ["Pruefe", "Prüfe"],
+  ["pruefen", "prüfen"],
+  ["Laendern", "Ländern"],
+  ["Laender", "Länder"],
+  ["laeufst", "läufst"],
+  ["laeuft", "läuft"],
+  ["koennen", "können"],
+  ["koennte", "könnte"],
+  ["koennten", "könnten"],
+  ["moegen", "mögen"],
+  ["moeglich", "möglich"],
+  ["ermoeglicht", "ermöglicht"],
+  ["Ermoeglicht", "Ermöglicht"],
+  ["Fruehe", "Frühe"],
+  ["fruehen", "frühen"],
+  ["frueher", "früher"],
+  ["frueh", "früh"],
+  ["Guenschtiger", "Günstiger"],
+  ["Guenstiger", "Günstiger"],
+  ["guenstiger", "günstiger"],
+  ["guenstige", "günstige"],
+  ["guenstig", "günstig"],
+  ["Gruen", "Grün"],
+  ["gruene", "grüne"],
+  ["gruenen", "grünen"],
+  ["gruenes", "grünes"],
+  ["Weiss", "Weiß"],
+  ["staerksten", "stärksten"],
+  ["staerkste", "stärkste"],
+  ["staerker", "stärker"],
+  ["Verstaerkt", "Verstärkt"],
+  ["verstaerken", "verstärken"],
+  ["groesser", "größer"],
+  ["grosse", "große"],
+  ["grossen", "großen"],
+  ["Zuege", "Züge"],
+  ["Knoepfe", "Knöpfe"],
+  ["Schluesselkreaturen", "Schlüsselkreaturen"],
+  ["Schluesselkreatur", "Schlüsselkreatur"],
+  ["Schluesselspells", "Schlüsselspells"],
+  ["Schuetzt", "Schützt"],
+  ["schuetzt", "schützt"],
+  ["schuetzen", "schützen"],
+  ["zurueck", "zurück"],
+  ["Fuellt", "Füllt"],
+  ["fuellt", "füllt"],
+  ["fuellen", "füllen"],
+  ["Haende", "Hände"],
+  ["Plaene", "Pläne"],
+  ["Opferplaene", "Opferpläne"],
+  ["Praesenz", "Präsenz"],
+  ["oeffentlich", "öffentlich"],
+  ["oeffnen", "öffnen"],
+  ["spaeterem", "späterem"],
+  ["spaeter", "später"],
+  ["spaet", "spät"],
+  ["Waehlt", "Wählt"],
+  ["waehlt", "wählt"],
+  ["ausgewaehlten", "ausgewählten"],
+  ["haelt", "hält"],
+  ["Haelt", "Hält"],
+  ["regelmaessig", "regelmäßig"],
+  ["laesst", "lässt"],
+  ["aehnlicher", "ähnlicher"],
+  ["aehnliche", "ähnliche"],
+  ["anfaengst", "anfängst"],
+  ["gefaehrlichsten", "gefährlichsten"],
+  ["gefaehrlich", "gefährlich"],
+  ["stoeren", "stören"],
+  ["Stoert", "Stört"],
+  ["Verknuepft", "Verknüpft"],
+  ["Zusaetzliche", "Zusätzliche"],
+  ["zusaetzliche", "zusätzliche"],
+  ["zaehlt", "zählt"],
+  ["gueltigen", "gültigen"],
+  ["ueber", "über"],
+  ["Ueber", "Über"],
+  ["Fuege", "Füge"],
+  ["fuege", "füge"],
+  ["fuer", "für"],
+  ["Fuer", "Für"],
+  ["geloescht", "gelöscht"],
+  ["Loeschen", "Löschen"],
+  ["loeschen", "löschen"],
+];
+
+function normalizeDeckLabText(value: string) {
+  return STORED_ANALYSIS_TEXT_REPLACEMENTS.reduce(
+    (text, [from, to]) => text.split(from).join(to),
+    value
+  );
+}
+
 function normalizeStoredAnalysis(value: unknown): DeckLabAnalysis {
   if (!value || typeof value !== "object") {
     return {
@@ -311,18 +413,44 @@ function normalizeStoredAnalysis(value: unknown): DeckLabAnalysis {
   const analysis = value as Partial<DeckLabAnalysis>;
 
   return {
-    cards: Array.isArray(analysis.cards) ? analysis.cards : [],
+    cards: Array.isArray(analysis.cards)
+      ? analysis.cards.map((card) => ({
+          ...card,
+          matchNote:
+            typeof card.matchNote === "string"
+              ? normalizeDeckLabText(card.matchNote)
+              : card.matchNote,
+        }))
+      : [],
     missing: Array.isArray(analysis.missing) ? analysis.missing : [],
     corrections: Array.isArray(analysis.corrections)
-      ? analysis.corrections
+      ? analysis.corrections.map((correction) => ({
+          ...correction,
+          note: normalizeDeckLabText(correction.note),
+        }))
       : [],
     recommendations: Array.isArray(analysis.recommendations)
-      ? analysis.recommendations
+      ? analysis.recommendations.map((recommendation) => ({
+          ...recommendation,
+          title: normalizeDeckLabText(recommendation.title),
+          reason: normalizeDeckLabText(recommendation.reason),
+          cards: Array.isArray(recommendation.cards)
+            ? recommendation.cards.map((card) => ({
+                ...card,
+                reason: normalizeDeckLabText(card.reason),
+              }))
+            : [],
+        }))
       : [],
     cutSuggestions: Array.isArray(analysis.cutSuggestions)
-      ? analysis.cutSuggestions
+      ? analysis.cutSuggestions.map((suggestion) => ({
+          ...suggestion,
+          reason: normalizeDeckLabText(suggestion.reason),
+        }))
       : [],
-    warnings: Array.isArray(analysis.warnings) ? analysis.warnings : [],
+    warnings: Array.isArray(analysis.warnings)
+      ? analysis.warnings.map(normalizeDeckLabText)
+      : [],
     stats: analysis.stats ?? getEmptyStats(),
     commanderName: analysis.commanderName ?? null,
   };
