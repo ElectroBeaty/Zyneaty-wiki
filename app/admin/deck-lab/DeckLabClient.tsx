@@ -315,7 +315,7 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
   const coveredCoreAreas = coreCoverage.filter(
     (item) => item.count >= item.target
   ).length;
-  const shouldExplainFewRecommendations = analysis.recommendations.length <= 1;
+  const shouldExplainFewRecommendations = analysis.recommendations.length <= 2;
 
   function showPreview(card: PreviewCard, event: MouseEvent<HTMLElement>) {
     setPreviewCard(card);
@@ -404,9 +404,8 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
               </h3>
               <p className="mt-1 max-w-3xl text-sm leading-6 text-emerald-50/75">
                 Wenige Empfehlungsbereiche sind nicht automatisch schlecht. Die
-                Analyse schlaegt nur dann neue Pakete vor, wenn der Commander
-                oder deine Notizen ein klares Theme zeigen, oder wenn eine
-                Basisrolle unter Ziel liegt.
+                Analyse trennt Pflichtluecken von Upgrade-Impulsen und bleibt
+                beim Commander-Plan, statt falsche Themes in das Deck zu lesen.
               </p>
             </div>
             <span className="rounded-full bg-black/20 px-3 py-1 text-xs text-emerald-50/75">
@@ -535,9 +534,9 @@ function AnalysisPanel({ analysis }: { analysis: DeckLabAnalysis | null }) {
                 Empfehlungen
               </h3>
               <p className="mt-1 text-sm text-violet-50/65">
-                Best-of-Kandidaten mit aktuellen Scryfall-Daten, passend zur
-                Farbidentitaet und ohne Karten, die schon im Deck sind. Preise
-                werden ignoriert.
+                Commander-nahe Pflichtluecken plus Upgrade-Impulse fuer
+                alternative Builds. Scryfall-Daten bleiben aktuell, vorhandene
+                Deckkarten werden ausgeblendet und Preise werden ignoriert.
               </p>
             </div>
             <span className="rounded-full bg-black/20 px-3 py-1 text-xs text-violet-50/70">
