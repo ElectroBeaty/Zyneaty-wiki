@@ -22,6 +22,13 @@ const adminSections = [
     text: "Decklisten analysieren, speichern und privat weiterbauen.",
     cta: "MTG Lab oeffnen",
   },
+  {
+    href: "/admin/announcements",
+    label: "Discord",
+    title: "Embed Sender",
+    text: "Embeds bauen, @everyone setzen und Reactions vorbereiten.",
+    cta: "Embed Sender oeffnen",
+  },
 ];
 
 export default async function AdminHubPage() {
@@ -52,7 +59,7 @@ export default async function AdminHubPage() {
           </p>
         </div>
 
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
+        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {adminSections.map((section) => (
             <Link
               key={section.href}
