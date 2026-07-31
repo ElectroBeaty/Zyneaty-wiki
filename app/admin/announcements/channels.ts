@@ -1,3 +1,5 @@
+import { getDiscordBotToken, getDiscordChannelLoadError } from "./discord";
+
 export type AnnouncementChannel = {
   id: string;
   name: string;
@@ -24,7 +26,7 @@ type AnnouncementChannelsResult = {
 const sendableChannelTypes = new Set([0, 5]);
 
 export async function getAnnouncementChannels(): Promise<AnnouncementChannelsResult> {
-  const token = process.env.DISCORD_BOT_TOKEN;
+  const token = getDiscordBotToken();
   const guildId = process.env.DISCORD_GUILD_ID;
   const defaultChannelId = process.env.DISCORD_ANNOUNCEMENT_CHANNEL_ID ?? "";
 
@@ -47,7 +49,7 @@ export async function getAnnouncementChannels(): Promise<AnnouncementChannelsRes
     return {
       channels: [],
       defaultChannelId,
-      error: `Discord Channels konnten nicht geladen werden (${response.status}). Channel-ID kann trotzdem manuell gesetzt werden.`,
+      error: getDiscordChannelLoadError(response.status),
     };
   }
 

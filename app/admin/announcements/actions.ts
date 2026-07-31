@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/auth";
 import { isAdminDiscordId } from "@/lib/admin";
+import { getDiscordBotToken, getDiscordMessageError } from "./discord";
 
 export type AnnouncementInput = {
   channelId: string;
@@ -118,7 +119,7 @@ async function addReactions(token: string, channelId: string, messageId: string,
 export async function sendAnnouncement(input: AnnouncementInput): Promise<AnnouncementResult> {
   await requireAnnouncementAdmin();
 
-  const token = process.env.DISCORD_BOT_TOKEN;
+  const token = getDiscordBotToken();
   if (!token) {
     return { ok: false, error: "DISCORD_BOT_TOKEN fehlt in den Server-Umgebungsvariablen." };
   }
@@ -174,7 +175,7 @@ export async function sendAnnouncement(input: AnnouncementInput): Promise<Announ
   });
 
   if (!response.ok) {
-    return { ok: false, error: `Discord API Fehler (${response.status}). Pruefe Bot-Rechte, Channel-ID und Token.` };
+    return { ok: false, error: getDiscordMessageError(response.status) };
   }
 
   const message = (await response.json()) as DiscordMessage;
