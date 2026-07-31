@@ -143,12 +143,13 @@ export async function sendAnnouncement(input: AnnouncementInput): Promise<Announ
     return { ok: false, error: "Der Titel ist zu lang. Discord erlaubt maximal 256 Zeichen." };
   }
 
-  if (description.length > 4000) {
-    return { ok: false, error: "Der Text ist zu lang. Bitte unter 4000 Zeichen bleiben." };
-  }
-
   if (!isHttpUrl(link) || !isHttpUrl(imageUrl)) {
     return { ok: false, error: "Links muessen mit http:// oder https:// beginnen." };
+  }
+
+  const embedDescription = link ? `${description}\n\n${link}` : description;
+  if (embedDescription.length > 4096) {
+    return { ok: false, error: "Der Text inklusive Link ist zu lang. Discord erlaubt maximal 4096 Zeichen." };
   }
 
   const response = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
@@ -165,9 +166,8 @@ export async function sendAnnouncement(input: AnnouncementInput): Promise<Announ
       embeds: [
         {
           title,
-          description,
+          description: embedDescription,
           color: parseColor(clean(input.color)),
-          url: link || undefined,
           image: imageUrl ? { url: imageUrl } : undefined,
         },
       ],
