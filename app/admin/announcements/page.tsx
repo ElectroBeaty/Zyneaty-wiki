@@ -5,6 +5,7 @@ import { authOptions } from "@/auth";
 import TopBar from "@/components/TopBar";
 import { isAdminDiscordId } from "@/lib/admin";
 import { AnnouncementClient } from "./AnnouncementClient";
+import { getAnnouncementChannels } from "./channels";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +16,7 @@ export default async function AnnouncementsPage() {
     redirect("/denied");
   }
 
-  const defaultChannelId = process.env.DISCORD_ANNOUNCEMENT_CHANNEL_ID ?? "1176211895666090015";
+  const channelResult = await getAnnouncementChannels();
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,#ffffff1f,transparent_28%),radial-gradient(circle_at_bottom_left,rgba(251,146,60,0.1),transparent_24%),linear-gradient(135deg,#050505,#111113,#050505)] text-white">
@@ -50,7 +51,11 @@ export default async function AnnouncementsPage() {
         </div>
 
         <div className="mt-8">
-          <AnnouncementClient defaultChannelId={defaultChannelId} />
+          <AnnouncementClient
+            channels={channelResult.channels}
+            channelLoadError={channelResult.error}
+            defaultChannelId={channelResult.defaultChannelId}
+          />
         </div>
       </section>
     </main>

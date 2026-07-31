@@ -3,8 +3,11 @@
 import { useMemo, useState, useTransition } from "react";
 
 import { sendAnnouncement } from "./actions";
+import type { AnnouncementChannel } from "./channels";
 
 type AnnouncementClientProps = {
+  channels: AnnouncementChannel[];
+  channelLoadError?: string;
   defaultChannelId: string;
 };
 
@@ -18,7 +21,7 @@ const defaultDescription = `Explore my portfolio and discover everything I'm wor
 
 Whether you're looking for my latest projects, development updates, fanart, or just want to learn more about me, you'll find it all here.`;
 
-export function AnnouncementClient({ defaultChannelId }: AnnouncementClientProps) {
+export function AnnouncementClient({ channels, channelLoadError, defaultChannelId }: AnnouncementClientProps) {
   const [channelId, setChannelId] = useState(defaultChannelId);
   const [title, setTitle] = useState("Official Website");
   const [description, setDescription] = useState(defaultDescription);
@@ -31,6 +34,7 @@ export function AnnouncementClient({ defaultChannelId }: AnnouncementClientProps
   const [isPending, startTransition] = useTransition();
 
   const previewDescription = useMemo(() => description || "Embed-Text", [description]);
+  const selectedKnownChannelId = channels.some((channel) => channel.id === channelId) ? channelId : "";
 
   function handleSend() {
     setStatus({ tone: "info", text: "Sende Nachricht..." });
@@ -65,15 +69,39 @@ export function AnnouncementClient({ defaultChannelId }: AnnouncementClientProps
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px]">
       <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-5 shadow-2xl shadow-black/20 sm:p-6">
         <div className="grid gap-5">
-          <label className="grid gap-2 text-sm font-semibold text-zinc-200">
-            Channel-ID
-            <input
-              value={channelId}
-              onChange={(event) => setChannelId(event.target.value)}
-              className="h-11 rounded-2xl border border-white/10 bg-black/20 px-3 text-sm text-white outline-none transition focus:border-orange-100/50"
-              placeholder="1176211895666090015"
-            />
-          </label>
+          <div className="grid gap-5 sm:grid-cols-2">
+            <label className="grid gap-2 text-sm font-semibold text-zinc-200">
+              Channel
+              <select
+                value={selectedKnownChannelId}
+                onChange={(event) => setChannelId(event.target.value)}
+                className="h-11 rounded-2xl border border-white/10 bg-black/20 px-3 text-sm text-white outline-none transition focus:border-orange-100/50"
+              >
+                <option value="">Channel auswaehlen</option>
+                {channels.map((channel) => (
+                  <option key={channel.id} value={channel.id}>
+                    {channel.parentName ? `${channel.parentName} / #${channel.name}` : `#${channel.name}`}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid gap-2 text-sm font-semibold text-zinc-200">
+              Channel-ID
+              <input
+                value={channelId}
+                onChange={(event) => setChannelId(event.target.value)}
+                className="h-11 rounded-2xl border border-white/10 bg-black/20 px-3 text-sm text-white outline-none transition focus:border-orange-100/50"
+                placeholder="Channel-ID eintragen"
+              />
+            </label>
+          </div>
+
+          {channelLoadError ? (
+            <p className="rounded-2xl border border-orange-200/20 bg-orange-300/10 px-3 py-2 text-sm text-orange-100">
+              {channelLoadError}
+            </p>
+          ) : null}
 
           <div className="grid gap-5 sm:grid-cols-[minmax(0,1fr)_120px]">
             <label className="grid gap-2 text-sm font-semibold text-zinc-200">
@@ -134,7 +162,7 @@ export function AnnouncementClient({ defaultChannelId }: AnnouncementClientProps
               value={reactions}
               onChange={(event) => setReactions(event.target.value)}
               className="h-11 rounded-2xl border border-white/10 bg-black/20 px-3 text-sm text-white outline-none transition focus:border-orange-100/50"
-              placeholder="🔥 ❤️ <:staff:1234567890>"
+              placeholder="Unicode-Emoji oder <:staff:1234567890>"
             />
           </label>
 
